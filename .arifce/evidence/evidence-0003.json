@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "EVIDENCE-0003",
+  "claimId": "CLAIM-0001",
+  "kind": "TEST_RUN",
+  "command": "dotnet test ArifCE.slnx --no-build --no-restore --disable-build-servers -m:1",
+  "exitCode": 0,
+  "summary": "C:\\Projects2\\ArifCE\\tests\\ArifCE.Tests\\bin\\Debug\\net10.0\\ArifCE.Tests.dll (.NETCoreApp,Version=v10.0) i\u00E7in test \u00E7al\u0131\u015Ft\u0131rmas\u0131\r\nToplam 1 test dosyas\u0131 belirtilen desenle e\u015Fle\u015Fti.\r\n\r\nBa\u015Far\u0131l\u0131!  - Ba\u015Far\u0131s\u0131z:     0, Ba\u015Far\u0131l\u0131:    10, Atlanan:     0, Toplam:    10, S\u00FCre: 15 s - ArifCE.Tests.dll (net10.0)\r\n",
+  "snapshot": {
+    "commit": "482e95bd8d4caf73afbc47e5979de59fb2ab9da9",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/journal/events.jsonl",
+      ".arifce/refactors/",
+      "src/ArifCE.Cli/Program.cs",
+      "src/ArifCE.Core/Domain.cs",
+      "src/ArifCE.Infrastructure/CommandEvidenceParser.cs",
+      "src/ArifCE.Infrastructure/ProjectService.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "dc5f6f23b67d7bf9757b356980ca4e7031df82efc319ca93678c1ead746b6899"
+  },
+  "createdAtUtc": "2026-08-26T20:40:14.0851484+00:00",
+  "metrics": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": null,
+    "errors": null
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "REF-0001",
+  "title": "Evidence parser follow-up",
+  "objective": "Exercise CLI refactor authoring",
+  "status": "Abandoned",
+  "invariants": [
+    "Preserve CLI contracts"
+  ],
+  "inventory": [],
+  "guards": [
+    {
+      "kind": "forbiddenReference",
+      "value": "DefinitelyAbsentLegacySymbol",
+      "blocking": true
+    }
+  ],
+  "createdAtUtc": "2026-08-26T20:39:47.455445+00:00"
+}

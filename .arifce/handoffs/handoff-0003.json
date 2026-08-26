@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "HANDOFF-0003",
+  "markdown": "# Handoff\n\n## Current State\n\n# Current State\n\n## Objective\n\nDeliver a credible, tested ArifCE V0.1 without overstating incomplete scope.\n\n## Status\n\nTASK-0001 is open. The product contract, .NET 10 solution, canonical store, journal, FTS index, core CLI flows, structured .NET build/test evidence, handoff, refactor authoring/guards/inventory/abandonment, agent adapters, redaction, doctor command, and 11 behavior tests are implemented. REF-0001 was abandoned after a correctly detected guard conflict; REF-0002 completed successfully.\n\n## Blockers\n\nPublic release is blocked by license selection, observed cross-platform CI results, a complete packaged CLI end-to-end fixture, typed blind-review interfaces, advanced refactor workstreams/rollback metadata, and additional deterministic evidence adapters. Local packaged global-tool installation and smoke verification now pass.\n\n## Next steps\n\nExpand the packaged CLI smoke test to the complete definition-of-done flow and run the configured CI matrix on a remote repository. Define typed blind-review interfaces without claiming external-agent invocation. Ask the owner to select MIT or Apache-2.0 before public release.\n\n\n## Latest Task\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022TASK-0001\u0022,\r\n  \u0022title\u0022: \u0022Deliver the first credible ArifCE V0.1\u0022,\r\n  \u0022description\u0022: null,\r\n  \u0022status\u0022: \u0022Open\u0022,\r\n  \u0022risk\u0022: \u0022Medium\u0022,\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T17:10:37.2030968\u002B00:00\u0022\r\n}\n\n## Latest Checkpoint\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022CHECKPOINT-0003\u0022,\r\n  \u0022summary\u0022: \u0022Repository relocated; structured evidence, task state commands, refactor authoring/abandonment, 11 tests, CI matrix, and packaged global-tool smoke test completed\u0022,\r\n  \u0022snapshot\u0022: {\r\n    \u0022commit\u0022: \u0022482e95bd8d4caf73afbc47e5979de59fb2ab9da9\u0022,\r\n    \u0022branch\u0022: \u0022master\u0022,\r\n    \u0022isDirty\u0022: true,\r\n    \u0022changedFiles\u0022: [\r\n      \u0022.arifce/CURRENT.md\u0022,\r\n      \u0022.arifce/attempts/\u0022,\r\n      \u0022.arifce/claims/claim-0001.json\u0022,\r\n      \u0022.arifce/evidence/evidence-0003.json\u0022,\r\n      \u0022.arifce/evidence/evidence-0004.json\u0022,\r\n      \u0022.arifce/journal/events.jsonl\u0022,\r\n      \u0022.arifce/refactors/\u0022,\r\n      \u0022.github/\u0022,\r\n      \u0022CHANGELOG.md\u0022,\r\n      \u0022ROADMAP.md\u0022,\r\n      \u0022docs/release/v0.1-checklist.md\u0022,\r\n      \u0022scripts/\u0022,\r\n      \u0022src/ArifCE.Cli/ArifCE.Cli.csproj\u0022,\r\n      \u0022src/ArifCE.Cli/Program.cs\u0022,\r\n      \u0022src/ArifCE.Core/Domain.cs\u0022,\r\n      \u0022src/ArifCE.Infrastructure/CommandEvidenceParser.cs\u0022,\r\n      \u0022src/ArifCE.Infrastructure/ProjectService.cs\u0022,\r\n      \u0022tests/ArifCE.Tests/BehaviorTests.cs\u0022\r\n    ],\r\n    \u0022digest\u0022: \u0022463d72315c0847121eb579fa56a3fbad97a84d09db781c68b5b39a4bde3614d0\u0022\r\n  },\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T20:48:38.7009434\u002B00:00\u0022\r\n}\n\n## Latest Claim and Verification\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022CLAIM-0001\u0022,\r\n  \u0022statement\u0022: \u0022ArifCE builds and its current behavior test suite passes on .NET 10\u0022,\r\n  \u0022status\u0022: \u0022Supported\u0022,\r\n  \u0022risk\u0022: \u0022Medium\u0022,\r\n  \u0022snapshot\u0022: {\r\n    \u0022commit\u0022: null,\r\n    \u0022branch\u0022: \u0022master\u0022,\r\n    \u0022isDirty\u0022: true,\r\n    \u0022changedFiles\u0022: [\r\n      \u0022.arifce/\u0022,\r\n      \u0022.dotnet-cli/\u0022,\r\n      \u0022.gitignore\u0022,\r\n      \u0022.packages/\u0022,\r\n      \u0022AGENTS.md\u0022,\r\n      \u0022ArifCE.slnx\u0022,\r\n      \u0022CLAUDE.md\u0022,\r\n      \u0022Directory.Build.props\u0022,\r\n      \u0022README.md\u0022,\r\n      \u0022ROADMAP.md\u0022,\r\n      \u0022docs/\u0022,\r\n      \u0022global.json\u0022,\r\n      \u0022opencode.json\u0022,\r\n      \u0022src/\u0022,\r\n      \u0022tests/\u0022\r\n    ],\r\n    \u0022digest\u0022: \u0022b537dba8439a28f14a0ca98cb49bd0cc76175775b12844738dde851535fb5ee9\u0022\r\n  },\r\n  \u0022evidence\u0022: [\r\n    \u0022EVIDENCE-0001\u0022,\r\n    \u0022EVIDENCE-0002\u0022,\r\n    \u0022EVIDENCE-0003\u0022,\r\n    \u0022EVIDENCE-0004\u0022\r\n  ],\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T17:10:38.87059\u002B00:00\u0022\r\n}\n\n## Git State\n\n- Branch: master\n- Commit: 482e95bd8d4caf73afbc47e5979de59fb2ab9da9\n- Dirty: True\n- Modified files: .arifce/CURRENT.md, .arifce/attempts/, .arifce/checkpoints/checkpoint-0003.json, .arifce/claims/claim-0001.json, .arifce/evidence/evidence-0003.json, .arifce/evidence/evidence-0004.json, .arifce/journal/events.jsonl, .arifce/refactors/, .github/, CHANGELOG.md, ROADMAP.md, docs/release/v0.1-checklist.md, scripts/, src/ArifCE.Cli/ArifCE.Cli.csproj, src/ArifCE.Cli/Program.cs, src/ArifCE.Core/Domain.cs, src/ArifCE.Infrastructure/CommandEvidenceParser.cs, src/ArifCE.Infrastructure/ProjectService.cs, tests/ArifCE.Tests/BehaviorTests.cs\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n",
+  "snapshot": {
+    "commit": "482e95bd8d4caf73afbc47e5979de59fb2ab9da9",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/attempts/",
+      ".arifce/checkpoints/checkpoint-0003.json",
+      ".arifce/claims/claim-0001.json",
+      ".arifce/evidence/evidence-0003.json",
+      ".arifce/evidence/evidence-0004.json",
+      ".arifce/journal/events.jsonl",
+      ".arifce/refactors/",
+      ".github/",
+      "CHANGELOG.md",
+      "ROADMAP.md",
+      "docs/release/v0.1-checklist.md",
+      "scripts/",
+      "src/ArifCE.Cli/ArifCE.Cli.csproj",
+      "src/ArifCE.Cli/Program.cs",
+      "src/ArifCE.Core/Domain.cs",
+      "src/ArifCE.Infrastructure/CommandEvidenceParser.cs",
+      "src/ArifCE.Infrastructure/ProjectService.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "533ab1b5effa28e9eb753aed726f52943d8455f82942e6502a2ea9c625a08e65"
+  },
+  "createdAtUtc": "2026-08-26T20:48:40.0239728+00:00"
+}

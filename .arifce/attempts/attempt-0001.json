@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0001",
+  "task": "TASK-0001",
+  "approach": "Dogfood a forbidden-reference guard using the sample symbol DefinitelyAbsentLegacySymbol.",
+  "result": "rejected",
+  "reason": "The sample symbol already appeared in the behavior test source, so the deterministic guard correctly blocked REF-0001.",
+  "evidence": ["REF-0001"],
+  "provenance": "OBSERVED",
+  "createdAtUtc": "2026-08-26T20:40:00Z"
+}

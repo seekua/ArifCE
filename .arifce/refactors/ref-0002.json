@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "REF-0002",
+  "title": "Refactor CLI successful path",
+  "objective": "Exercise guarded completion",
+  "status": "Completed",
+  "invariants": [
+    "Preserve CLI contracts"
+  ],
+  "inventory": [],
+  "guards": [
+    {
+      "kind": "forbiddenReference",
+      "value": "__ARIFCE_FORBIDDEN_9F17B0__",
+      "blocking": true
+    }
+  ],
+  "createdAtUtc": "2026-08-26T20:42:19.9931054+00:00"
+}

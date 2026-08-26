@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0003",
+  "summary": "Repository relocated; structured evidence, task state commands, refactor authoring/abandonment, 11 tests, CI matrix, and packaged global-tool smoke test completed",
+  "snapshot": {
+    "commit": "482e95bd8d4caf73afbc47e5979de59fb2ab9da9",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/attempts/",
+      ".arifce/claims/claim-0001.json",
+      ".arifce/evidence/evidence-0003.json",
+      ".arifce/evidence/evidence-0004.json",
+      ".arifce/journal/events.jsonl",
+      ".arifce/refactors/",
+      ".github/",
+      "CHANGELOG.md",
+      "ROADMAP.md",
+      "docs/release/v0.1-checklist.md",
+      "scripts/",
+      "src/ArifCE.Cli/ArifCE.Cli.csproj",
+      "src/ArifCE.Cli/Program.cs",
+      "src/ArifCE.Core/Domain.cs",
+      "src/ArifCE.Infrastructure/CommandEvidenceParser.cs",
+      "src/ArifCE.Infrastructure/ProjectService.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "463d72315c0847121eb579fa56a3fbad97a84d09db781c68b5b39a4bde3614d0"
+  },
+  "createdAtUtc": "2026-08-26T20:48:38.7009434+00:00"
+}
