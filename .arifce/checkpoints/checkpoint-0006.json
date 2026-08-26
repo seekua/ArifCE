@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0006",
+  "summary": "V0.1 documentation parity completed; 64 Markdown link checks and secret scan pass while release remains blocked by license and remote CI evidence",
+  "snapshot": {
+    "commit": "e4bb16aff3cc45c2315d5363a1e5b035a3ec9123",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".gitignore",
+      "CHANGELOG.md",
+      "README.md",
+      "ROADMAP.md",
+      "docs/agents/",
+      "docs/architecture/agent-adapters.md",
+      "docs/architecture/context-retrieval.md",
+      "docs/architecture/event-journal.md",
+      "docs/architecture/indexing.md",
+      "docs/architecture/mcp.md",
+      "docs/architecture/security.md",
+      "docs/architecture/storage.md",
+      "docs/concepts/",
+      "docs/getting-started/",
+      "docs/reference/configuration.md",
+      "docs/reference/events.md",
+      "docs/reference/schemas.md",
+      "docs/release/v0.1-checklist.md",
+      "docs/research/benchmarks.md",
+      "docs/research/design-decisions.md",
+      "docs/research/prior-art.md"
+    ],
+    "digest": "4bf82d7c14c077e9ecd9eef937183bdcdfd1ad20f29d219f944e25b1fc365dfb"
+  },
+  "createdAtUtc": "2026-08-26T21:42:54.0252839+00:00"
+}
