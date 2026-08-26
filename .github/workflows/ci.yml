@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+      - name: Restore
+        run: dotnet restore ArifCE.slnx
+      - name: Build
+        run: dotnet build ArifCE.slnx --configuration Release --no-restore
+      - name: Test
+        run: dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+      - name: Package smoke test
+        shell: pwsh
+        run: ./scripts/package-smoke.ps1 -Configuration Release

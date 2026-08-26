@@ -74,6 +74,52 @@ public sealed class BehaviorTests : IDisposable
         Assert.False(ClaimTransitions.IsAllowed(ClaimStatus.Verified, ClaimStatus.Unverified));
     }
 
+    [Fact]
+    public void Command_evidence_parser_extracts_localized_test_and_build_metrics()
+    {
+        var tests = CommandEvidenceParser.Parse("dotnet test", "Başarısız: 1, Başarılı: 7, Atlanan: 2, Toplam: 10");
+        Assert.Equal("TEST_RUN", tests.Kind); Assert.Equal(10, tests.Metrics!.Total); Assert.Equal(7, tests.Metrics.Passed); Assert.Equal(1, tests.Metrics.Failed); Assert.Equal(2, tests.Metrics.Skipped);
+        var build = CommandEvidenceParser.Parse("dotnet build", "Build succeeded.\n    3 Warning(s)\n    0 Error(s)");
+        Assert.Equal("BUILD", build.Kind); Assert.Equal(3, build.Metrics!.Warnings); Assert.Equal(0, build.Metrics.Errors);
+    }
+
+    [Fact]
+    public async Task Definition_of_done_core_flow_survives_index_deletion()
+    {
+        await Service.InitializeAsync(root, false);
+        var task = await Service.CreateTaskAsync(root, "Exercise the continuity flow", RiskLevel.Low);
+        await Service.CheckpointAsync(root, "Task represented and checkpointed");
+        var claim = await Service.CreateClaimAsync(root, "A deterministic command succeeds", RiskLevel.Low);
+        var verified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        Assert.Equal(ClaimStatus.Verified, verified.Claim.Status);
+        var handoff = await Service.HandoffAsync(root); Assert.Contains(task.Id, handoff.Markdown);
+        var campaign = await Service.StartRefactorAsync(root, "Fixture refactor", "Prove guarded completion");
+        Assert.Empty(await Service.VerifyRefactorAsync(root, campaign.Id)); Assert.Equal(WorkStatus.Completed, (await Service.FinishRefactorAsync(root, campaign.Id)).Status);
+        Assert.Equal(WorkStatus.Completed, (await Service.CompleteTaskAsync(root, task.Id)).Status);
+        File.Delete(Path.Combine(root, ".arifce", "index", "arifce.db")); await index.RebuildAsync(root);
+        Assert.NotEmpty(await index.SearchAsync(root, "continuity OR deterministic"));
+    }
+
+    [Fact]
+    public async Task Refactor_inventory_can_be_resolved_before_guarded_completion()
+    {
+        await Service.InitializeAsync(root, false);
+        var campaign = await Service.StartRefactorAsync(root, "Migrate cache", "Remove legacy cache", ["Preserve behavior"], ["LegacyCache.cs"], [new RefactorGuard("forbiddenReference", "DefinitelyAbsentLegacySymbol", true)]);
+        Assert.Single((await Service.VerifyRefactorAsync(root, campaign.Id)));
+        var updated = await Service.ResolveRefactorInventoryAsync(root, campaign.Id, "LegacyCache.cs"); Assert.Empty(updated.Inventory);
+        Assert.Empty(await Service.VerifyRefactorAsync(root, campaign.Id)); Assert.Equal(WorkStatus.Completed, (await Service.FinishRefactorAsync(root, campaign.Id)).Status);
+    }
+
+    [Fact]
+    public async Task Blocked_refactor_can_be_abandoned_but_completed_refactor_cannot()
+    {
+        await Service.InitializeAsync(root, false);
+        var blocked = await Service.StartRefactorAsync(root, "Blocked", "Exercise abandonment", inventory: ["remaining"]);
+        Assert.Equal(WorkStatus.Abandoned, (await Service.AbandonRefactorAsync(root, blocked.Id)).Status);
+        var completed = await Service.StartRefactorAsync(root, "Completed", "Protect terminal state"); await Service.FinishRefactorAsync(root, completed.Id);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.AbandonRefactorAsync(root, completed.Id));
+    }
+
     private void RunGit(string arguments) { using var process = Process.Start(new ProcessStartInfo("git", arguments) { WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true }); process!.WaitForExit(); Assert.Equal(0, process.ExitCode); }
     public void Dispose() { try { Directory.Delete(root, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
 }
