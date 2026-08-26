@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0005",
+  "summary": "Release core: full packaged fixture, 18 tests, blind review, trust records, refactor continuity, recovery, secret scan, schema-compatible enums, and complete semantic handoff pass",
+  "snapshot": {
+    "commit": "195ac41043d86ff86abe7311f8b26f1cf990c6de",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/attempts/attempt-0002.json",
+      ".arifce/checkpoints/checkpoint-0004.json",
+      ".arifce/claims/claim-0001.json",
+      ".arifce/decisions/adr-0002.json",
+      ".arifce/evidence/evidence-0005.json",
+      ".arifce/evidence/evidence-0006.json",
+      ".arifce/findings/",
+      ".arifce/handoffs/handoff-0004.json",
+      ".arifce/journal/events.jsonl",
+      ".github/workflows/ci.yml",
+      "CHANGELOG.md",
+      "README.md",
+      "ROADMAP.md",
+      "docs/architecture/verification-pipeline.md",
+      "docs/reference/cli.md",
+      "docs/release/v0.1-checklist.md",
+      "scripts/package-smoke.ps1",
+      "scripts/secret-scan.ps1",
+      "src/ArifCE.Cli/Program.cs",
+      "src/ArifCE.Core/Domain.cs",
+      "src/ArifCE.Infrastructure/FlexibleEnumConverter.cs",
+      "src/ArifCE.Infrastructure/ProjectService.cs",
+      "src/ArifCE.Infrastructure/Services.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "d0325ed6f54766095ba37c7b9b5c2c612f5557bab66e35318b303cae5b92fb62"
+  },
+  "createdAtUtc": "2026-08-26T21:26:50.5441364+00:00"
+}

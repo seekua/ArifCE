@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "HANDOFF-0004",
+  "markdown": "# Handoff\n\n## Current State\n\n# Current State\n\n## Objective\n\nDeliver a credible, tested ArifCE V0.1 without overstating incomplete scope.\n\n## Status\n\nTASK-0001 is open. The complete packaged-tool definition-of-done fixture now passes. Typed two-phase blind review and risk policy, decision/attempt/finding/review authoring, refactor workstreams and Git safe points, structured evidence, handoff, backup-first journal repair, agent adapters, secret scanning, and 17 behavior tests are implemented. Positive review agreement cannot manufacture verification; disagreement can dispute a claim.\n\n## Blockers\n\nPublic release is blocked by license selection and observed Windows/Linux/macOS CI results. Documentation parity and additional deterministic evidence adapters remain quality work and are not represented as implemented.\n\n## Next steps\n\nFinish CLI and getting-started documentation parity, then run the configured CI matrix on a remote repository. Ask the owner to select MIT or Apache-2.0 before public release.\n\n\n## Latest Task\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022TASK-0001\u0022,\r\n  \u0022title\u0022: \u0022Deliver the first credible ArifCE V0.1\u0022,\r\n  \u0022description\u0022: null,\r\n  \u0022status\u0022: \u0022Open\u0022,\r\n  \u0022risk\u0022: \u0022Medium\u0022,\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T17:10:37.2030968\u002B00:00\u0022\r\n}\n\n## Latest Checkpoint\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022CHECKPOINT-0004\u0022,\r\n  \u0022summary\u0022: \u0022Complete packaged definition-of-done, blind review contracts, workstreams/safe points, decision/attempt/finding/review commands, journal repair, secret scan, and 18 tests pass\u0022,\r\n  \u0022snapshot\u0022: {\r\n    \u0022commit\u0022: \u0022195ac41043d86ff86abe7311f8b26f1cf990c6de\u0022,\r\n    \u0022branch\u0022: \u0022master\u0022,\r\n    \u0022isDirty\u0022: true,\r\n    \u0022changedFiles\u0022: [\r\n      \u0022.arifce/CURRENT.md\u0022,\r\n      \u0022.arifce/attempts/attempt-0002.json\u0022,\r\n      \u0022.arifce/claims/claim-0001.json\u0022,\r\n      \u0022.arifce/decisions/adr-0002.json\u0022,\r\n      \u0022.arifce/evidence/evidence-0005.json\u0022,\r\n      \u0022.arifce/findings/\u0022,\r\n      \u0022.arifce/journal/events.jsonl\u0022,\r\n      \u0022.github/workflows/ci.yml\u0022,\r\n      \u0022CHANGELOG.md\u0022,\r\n      \u0022README.md\u0022,\r\n      \u0022ROADMAP.md\u0022,\r\n      \u0022docs/architecture/verification-pipeline.md\u0022,\r\n      \u0022docs/reference/cli.md\u0022,\r\n      \u0022docs/release/v0.1-checklist.md\u0022,\r\n      \u0022scripts/package-smoke.ps1\u0022,\r\n      \u0022scripts/secret-scan.ps1\u0022,\r\n      \u0022src/ArifCE.Cli/Program.cs\u0022,\r\n      \u0022src/ArifCE.Core/Domain.cs\u0022,\r\n      \u0022src/ArifCE.Infrastructure/FlexibleEnumConverter.cs\u0022,\r\n      \u0022src/ArifCE.Infrastructure/ProjectService.cs\u0022,\r\n      \u0022src/ArifCE.Infrastructure/Services.cs\u0022,\r\n      \u0022tests/ArifCE.Tests/BehaviorTests.cs\u0022\r\n    ],\r\n    \u0022digest\u0022: \u00222b4bfc31aa5ac60f4828e35cb6a1d635c8ee29a99f49cbaf5978a49c0140b053\u0022\r\n  },\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T21:22:30.5998878\u002B00:00\u0022\r\n}\n\n## Latest Claim and Verification\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022CLAIM-0001\u0022,\r\n  \u0022statement\u0022: \u0022ArifCE builds and its current behavior test suite passes on .NET 10\u0022,\r\n  \u0022status\u0022: \u0022SUPPORTED\u0022,\r\n  \u0022risk\u0022: \u0022MEDIUM\u0022,\r\n  \u0022snapshot\u0022: {\r\n    \u0022commit\u0022: null,\r\n    \u0022branch\u0022: \u0022master\u0022,\r\n    \u0022isDirty\u0022: true,\r\n    \u0022changedFiles\u0022: [\r\n      \u0022.arifce/\u0022,\r\n      \u0022.dotnet-cli/\u0022,\r\n      \u0022.gitignore\u0022,\r\n      \u0022.packages/\u0022,\r\n      \u0022AGENTS.md\u0022,\r\n      \u0022ArifCE.slnx\u0022,\r\n      \u0022CLAUDE.md\u0022,\r\n      \u0022Directory.Build.props\u0022,\r\n      \u0022README.md\u0022,\r\n      \u0022ROADMAP.md\u0022,\r\n      \u0022docs/\u0022,\r\n      \u0022global.json\u0022,\r\n      \u0022opencode.json\u0022,\r\n      \u0022src/\u0022,\r\n      \u0022tests/\u0022\r\n    ],\r\n    \u0022digest\u0022: \u0022b537dba8439a28f14a0ca98cb49bd0cc76175775b12844738dde851535fb5ee9\u0022\r\n  },\r\n  \u0022evidence\u0022: [\r\n    \u0022EVIDENCE-0001\u0022,\r\n    \u0022EVIDENCE-0002\u0022,\r\n    \u0022EVIDENCE-0003\u0022,\r\n    \u0022EVIDENCE-0004\u0022,\r\n    \u0022EVIDENCE-0005\u0022\r\n  ],\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T17:10:38.87059\u002B00:00\u0022\r\n}\n\n## Git State\n\n- Branch: master\n- Commit: 195ac41043d86ff86abe7311f8b26f1cf990c6de\n- Dirty: True\n- Modified files: .arifce/CURRENT.md, .arifce/attempts/attempt-0002.json, .arifce/checkpoints/checkpoint-0004.json, .arifce/claims/claim-0001.json, .arifce/decisions/adr-0002.json, .arifce/evidence/evidence-0005.json, .arifce/findings/, .arifce/journal/events.jsonl, .github/workflows/ci.yml, CHANGELOG.md, README.md, ROADMAP.md, docs/architecture/verification-pipeline.md, docs/reference/cli.md, docs/release/v0.1-checklist.md, scripts/package-smoke.ps1, scripts/secret-scan.ps1, src/ArifCE.Cli/Program.cs, src/ArifCE.Core/Domain.cs, src/ArifCE.Infrastructure/FlexibleEnumConverter.cs, src/ArifCE.Infrastructure/ProjectService.cs, src/ArifCE.Infrastructure/Services.cs, tests/ArifCE.Tests/BehaviorTests.cs\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n",
+  "snapshot": {
+    "commit": "195ac41043d86ff86abe7311f8b26f1cf990c6de",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/attempts/attempt-0002.json",
+      ".arifce/checkpoints/checkpoint-0004.json",
+      ".arifce/claims/claim-0001.json",
+      ".arifce/decisions/adr-0002.json",
+      ".arifce/evidence/evidence-0005.json",
+      ".arifce/findings/",
+      ".arifce/journal/events.jsonl",
+      ".github/workflows/ci.yml",
+      "CHANGELOG.md",
+      "README.md",
+      "ROADMAP.md",
+      "docs/architecture/verification-pipeline.md",
+      "docs/reference/cli.md",
+      "docs/release/v0.1-checklist.md",
+      "scripts/package-smoke.ps1",
+      "scripts/secret-scan.ps1",
+      "src/ArifCE.Cli/Program.cs",
+      "src/ArifCE.Core/Domain.cs",
+      "src/ArifCE.Infrastructure/FlexibleEnumConverter.cs",
+      "src/ArifCE.Infrastructure/ProjectService.cs",
+      "src/ArifCE.Infrastructure/Services.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "a471afc381f824f90604b097bb43f35c24c4e594e510b99673dab5de645fa715"
+  },
+  "createdAtUtc": "2026-08-26T21:22:32.2198239+00:00"
+}

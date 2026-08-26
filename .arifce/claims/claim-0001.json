@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "CLAIM-0001",
   "statement": "ArifCE builds and its current behavior test suite passes on .NET 10",
-  "status": "Supported",
-  "risk": "Medium",
+  "status": "SUPPORTED",
+  "risk": "MEDIUM",
   "snapshot": {
     "commit": null,
     "branch": "master",
@@ -31,7 +31,9 @@
     "EVIDENCE-0001",
     "EVIDENCE-0002",
     "EVIDENCE-0003",
-    "EVIDENCE-0004"
+    "EVIDENCE-0004",
+    "EVIDENCE-0005",
+    "EVIDENCE-0006"
   ],
   "createdAtUtc": "2026-08-26T17:10:38.87059+00:00"
 }

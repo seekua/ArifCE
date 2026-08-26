@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0002",
+  "title": "Keep semantic review vendor-neutral",
+  "decision": "Expose a typed blind-review adapter boundary without invoking external agents in V0.1",
+  "historicalRationale": "The founding specification requires policy-driven review and forbids pretending cross-agent support exists",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-08-26T21:05:28.5218327+00:00"
+}

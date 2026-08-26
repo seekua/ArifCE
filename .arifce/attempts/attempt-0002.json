@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0002",
+  "taskId": "TASK-0001",
+  "approach": "Treat CI configuration as cross-platform pass evidence",
+  "result": "rejected",
+  "reason": "A workflow definition is not execution evidence; remote Windows, Linux, and macOS results are still required",
+  "evidenceIds": [
+    "ADR-0002"
+  ],
+  "createdAtUtc": "2026-08-26T21:05:30.4300976+00:00"
+}

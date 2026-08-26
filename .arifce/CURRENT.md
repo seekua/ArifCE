@@ -6,12 +6,12 @@ Deliver a credible, tested ArifCE V0.1 without overstating incomplete scope.
 
 ## Status
 
-TASK-0001 is open. The product contract, .NET 10 solution, canonical store, journal, FTS index, core CLI flows, structured .NET build/test evidence, handoff, refactor authoring/guards/inventory/abandonment, agent adapters, redaction, doctor command, and 11 behavior tests are implemented. REF-0001 was abandoned after a correctly detected guard conflict; REF-0002 completed successfully.
+TASK-0001 is open. The complete packaged-tool definition-of-done fixture passes. Typed two-phase blind review and risk policy, decision/attempt/finding/review authoring, refactor workstreams and Git safe points, structured evidence, complete semantic handoff, backup-first journal repair, agent adapters, secret scanning, canonical enum compatibility, and 18 behavior tests are implemented. EVIDENCE-0006 records 18 passed and 0 failed.
 
 ## Blockers
 
-Public release is blocked by license selection, observed cross-platform CI results, a complete packaged CLI end-to-end fixture, typed blind-review interfaces, advanced refactor workstreams/rollback metadata, and additional deterministic evidence adapters. Local packaged global-tool installation and smoke verification now pass.
+Public release is blocked by license selection and observed Windows/Linux/macOS CI results. FINDING-0001 tracks the missing remote CI evidence. Documentation parity and additional deterministic evidence adapters remain quality work and are not represented as implemented.
 
 ## Next steps
 
-Expand the packaged CLI smoke test to the complete definition-of-done flow and run the configured CI matrix on a remote repository. Define typed blind-review interfaces without claiming external-agent invocation. Ask the owner to select MIT or Apache-2.0 before public release.
+Finish CLI and getting-started documentation parity, then run the configured CI matrix on a remote repository. Ask the owner to select MIT or Apache-2.0 before public release.

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0004",
+  "summary": "Complete packaged definition-of-done, blind review contracts, workstreams/safe points, decision/attempt/finding/review commands, journal repair, secret scan, and 18 tests pass",
+  "snapshot": {
+    "commit": "195ac41043d86ff86abe7311f8b26f1cf990c6de",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/attempts/attempt-0002.json",
+      ".arifce/claims/claim-0001.json",
+      ".arifce/decisions/adr-0002.json",
+      ".arifce/evidence/evidence-0005.json",
+      ".arifce/findings/",
+      ".arifce/journal/events.jsonl",
+      ".github/workflows/ci.yml",
+      "CHANGELOG.md",
+      "README.md",
+      "ROADMAP.md",
+      "docs/architecture/verification-pipeline.md",
+      "docs/reference/cli.md",
+      "docs/release/v0.1-checklist.md",
+      "scripts/package-smoke.ps1",
+      "scripts/secret-scan.ps1",
+      "src/ArifCE.Cli/Program.cs",
+      "src/ArifCE.Core/Domain.cs",
+      "src/ArifCE.Infrastructure/FlexibleEnumConverter.cs",
+      "src/ArifCE.Infrastructure/ProjectService.cs",
+      "src/ArifCE.Infrastructure/Services.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "2b4bfc31aa5ac60f4828e35cb6a1d635c8ee29a99f49cbaf5978a49c0140b053"
+  },
+  "createdAtUtc": "2026-08-26T21:22:30.5998878+00:00"
+}

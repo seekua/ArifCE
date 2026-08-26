@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "EVIDENCE-0005",
+  "claimId": "CLAIM-0001",
+  "kind": "TEST_RUN",
+  "command": "dotnet test ArifCE.slnx -c Release --no-build --no-restore --disable-build-servers -m:1",
+  "exitCode": 0,
+  "summary": "C:\\Projects2\\ArifCE\\tests\\ArifCE.Tests\\bin\\Release\\net10.0\\ArifCE.Tests.dll (.NETCoreApp,Version=v10.0) i\u00E7in test \u00E7al\u0131\u015Ft\u0131rmas\u0131\r\nToplam 1 test dosyas\u0131 belirtilen desenle e\u015Fle\u015Fti.\r\n\r\nBa\u015Far\u0131l\u0131!  - Ba\u015Far\u0131s\u0131z:     0, Ba\u015Far\u0131l\u0131:    18, Atlanan:     0, Toplam:    18, S\u00FCre: 29 s - ArifCE.Tests.dll (net10.0)\r\n",
+  "snapshot": {
+    "commit": "195ac41043d86ff86abe7311f8b26f1cf990c6de",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/attempts/attempt-0002.json",
+      ".arifce/decisions/adr-0002.json",
+      ".arifce/findings/",
+      ".arifce/journal/events.jsonl",
+      ".github/workflows/ci.yml",
+      "CHANGELOG.md",
+      "README.md",
+      "ROADMAP.md",
+      "docs/architecture/verification-pipeline.md",
+      "docs/reference/cli.md",
+      "docs/release/v0.1-checklist.md",
+      "scripts/package-smoke.ps1",
+      "scripts/secret-scan.ps1",
+      "src/ArifCE.Cli/Program.cs",
+      "src/ArifCE.Core/Domain.cs",
+      "src/ArifCE.Infrastructure/FlexibleEnumConverter.cs",
+      "src/ArifCE.Infrastructure/ProjectService.cs",
+      "src/ArifCE.Infrastructure/Services.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "dfacd63759983c6550da25ead980d0de9d489ab0e9b86371173918a922e4beec"
+  },
+  "createdAtUtc": "2026-08-26T21:22:28.9302033+00:00",
+  "metrics": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": null,
+    "errors": null
+  }
+}
