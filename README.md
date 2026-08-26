@@ -56,4 +56,4 @@ See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](
 
 ## License
 
-No final license has been selected yet because that is an owner decision. Candidate permissive licenses are documented in the roadmap.
+ArifCE is licensed under the [Apache License 2.0](LICENSE).

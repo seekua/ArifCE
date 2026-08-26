@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0003",
+  "title": "License ArifCE under Apache-2.0",
+  "decision": "Use Apache License 2.0 for the repository and NuGet tool package",
+  "historicalRationale": "The repository owner explicitly selected Apache-2.0 for V0.1",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-08-26T22:14:01.9817314+00:00"
+}

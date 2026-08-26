@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0003",
+  "taskId": "TASK-0001",
+  "approach": "Use preinstalled GitHub CLI for remote publication",
+  "result": "blocked, then remediated",
+  "reason": "GitHub CLI was not installed; GitHub CLI 2.98.0 was installed before authentication",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-08-26T22:15:34.8439514+00:00"
+}

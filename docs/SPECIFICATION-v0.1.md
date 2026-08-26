@@ -80,4 +80,4 @@ In temporary new and existing Git repositories, automated tests shall prove init
 3. **SQLite canonicality:** event replay alone may not reproduce edited Markdown. Rebuild therefore indexes both canonical files and events; the journal is a timeline, not the sole source of truth.
 4. **Claim terminality:** `VERIFIED` is snapshot-relative, not permanent truth. Relevant changes make it `STALE`; contradictory current evidence makes it `CONTRADICTED`.
 5. **Cross-agent wording:** V0.1 supports cross-agent review records and abstractions, not automatic vendor invocation. Documentation must retain that distinction.
-6. **License requirement:** choosing a license is a legal/product decision reserved for the owner. Release readiness remains failed until a license is selected.
+6. **License requirement:** the owner selected Apache-2.0. The repository includes the complete license text and package metadata declares the SPDX expression.

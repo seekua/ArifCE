@@ -5,10 +5,12 @@
     <ToolCommandName>arifce</ToolCommandName>
     <PackageId>ArifCE.Cli</PackageId>
     <Version>0.1.0</Version>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" />
     <None Include="../../README.md" Pack="true" PackagePath="/" Link="README.md" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" Link="LICENSE" />
   </ItemGroup>
 </Project>
