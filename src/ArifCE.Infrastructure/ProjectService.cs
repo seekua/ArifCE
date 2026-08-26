@@ -57,6 +57,53 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         await RecordAsync(root, "task.completed", id, updated, cancellationToken); return updated;
     }
 
+    public async Task<DecisionRecord> CreateDecisionAsync(string root, string title, string decision, string? historicalRationale, CancellationToken cancellationToken = default)
+    {
+        var id = canonical.NextId(root, "decisions", "ADR");
+        var item = new DecisionRecord(1, id, title, decision, string.IsNullOrWhiteSpace(historicalRationale) ? "Unknown." : historicalRationale, "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UtcNow);
+        await canonical.WriteAsync(root, "decisions", id, item, cancellationToken); await RecordAsync(root, "decision.created", id, item, cancellationToken); return item;
+    }
+
+    public Task<DecisionRecord?> GetDecisionAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<DecisionRecord>(root, "decisions", id, cancellationToken);
+
+    public async Task<AttemptRecord> RecordAttemptAsync(string root, string taskId, string approach, string result, string reason, IReadOnlyList<string>? evidenceIds = null, CancellationToken cancellationToken = default)
+    {
+        if (await GetTaskAsync(root, taskId, cancellationToken) is null) throw new InvalidOperationException($"Task {taskId} was not found.");
+        var id = canonical.NextId(root, "attempts", "ATTEMPT");
+        var item = new AttemptRecord(1, id, taskId, approach, result, reason, evidenceIds ?? [], DateTimeOffset.UtcNow);
+        await canonical.WriteAsync(root, "attempts", id, item, cancellationToken); await RecordAsync(root, "attempt.recorded", id, item, cancellationToken); return item;
+    }
+
+    public Task<AttemptRecord?> GetAttemptAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<AttemptRecord>(root, "attempts", id, cancellationToken);
+
+    public async Task<FindingRecord> CreateFindingAsync(string root, string title, string description, RiskLevel severity, string? taskId, string? path, CancellationToken cancellationToken = default)
+    {
+        if (!string.IsNullOrWhiteSpace(taskId) && await GetTaskAsync(root, taskId, cancellationToken) is null) throw new InvalidOperationException($"Task {taskId} was not found.");
+        var id = canonical.NextId(root, "findings", "FINDING"); var item = new FindingRecord(1, id, title, description, severity, WorkStatus.Open, taskId, path, DateTimeOffset.UtcNow);
+        await canonical.WriteAsync(root, "findings", id, item, cancellationToken); await RecordAsync(root, "finding.created", id, item, cancellationToken); return item;
+    }
+
+    public Task<FindingRecord?> GetFindingAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<FindingRecord>(root, "findings", id, cancellationToken);
+
+    public async Task<FindingRecord> ResolveFindingAsync(string root, string id, CancellationToken cancellationToken = default)
+    {
+        var item = await GetFindingAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Finding {id} was not found.");
+        if (item.Status == WorkStatus.Completed) throw new InvalidOperationException($"Finding {id} is already resolved.");
+        var updated = item with { Status = WorkStatus.Completed }; await canonical.WriteAsync(root, "findings", id, updated, cancellationToken); await RecordAsync(root, "finding.resolved", id, updated, cancellationToken); return updated;
+    }
+
+    public async Task<ReviewRecord> RecordReviewAsync(string root, string claimId, string reviewer, ReviewVerdict verdict, string summary, IReadOnlyList<string> findingIds, CancellationToken cancellationToken = default)
+    {
+        var claim = await GetClaimAsync(root, claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
+        foreach (var findingId in findingIds) if (await GetFindingAsync(root, findingId, cancellationToken) is null) throw new InvalidOperationException($"Finding {findingId} was not found.");
+        var id = canonical.NextId(root, "reviews", "REVIEW"); var item = new ReviewRecord(1, id, claimId, reviewer, verdict, summary, findingIds, await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow);
+        await canonical.WriteAsync(root, "reviews", id, item, cancellationToken);
+        if (verdict == ReviewVerdict.Disagree && ClaimTransitions.IsAllowed(claim.Status, ClaimStatus.Disputed)) await canonical.WriteAsync(root, "claims", claim.Id, claim with { Status = ClaimStatus.Disputed }, cancellationToken);
+        await RecordAsync(root, "review.created", id, item, cancellationToken); return item;
+    }
+
+    public Task<ReviewRecord?> GetReviewAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<ReviewRecord>(root, "reviews", id, cancellationToken);
+
     public async Task<CheckpointRecord> CheckpointAsync(string root, string summary, CancellationToken cancellationToken = default)
     {
         var id = canonical.NextId(root, "checkpoints", "CHECKPOINT");
@@ -94,8 +141,8 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     {
         var snapshot = await git.CaptureAsync(root, cancellationToken);
         var current = await File.ReadAllTextAsync(Path.Combine(root, ".arifce", "CURRENT.md"), cancellationToken);
-        var tasks = await LatestJsonAsync(root, "tasks", cancellationToken); var claims = await LatestJsonAsync(root, "claims", cancellationToken); var checkpoints = await LatestJsonAsync(root, "checkpoints", cancellationToken);
-        var markdown = $"# Handoff\n\n## Current State\n\n{current}\n\n## Latest Task\n\n{tasks}\n\n## Latest Checkpoint\n\n{checkpoints}\n\n## Latest Claim and Verification\n\n{claims}\n\n## Git State\n\n- Branch: {snapshot.Branch ?? "unknown"}\n- Commit: {snapshot.Commit ?? "none"}\n- Dirty: {snapshot.IsDirty}\n- Modified files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles))}\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n";
+        var tasks = await LatestJsonAsync(root, "tasks", cancellationToken); var decisions = await LatestJsonAsync(root, "decisions", cancellationToken); var attempts = await LatestJsonAsync(root, "attempts", cancellationToken); var checkpoints = await LatestJsonAsync(root, "checkpoints", cancellationToken); var claims = await LatestJsonAsync(root, "claims", cancellationToken); var evidence = await LatestJsonAsync(root, "evidence", cancellationToken); var findings = await LatestJsonAsync(root, "findings", cancellationToken); var reviews = await LatestJsonAsync(root, "reviews", cancellationToken);
+        var markdown = $"# Handoff\n\n## Current State\n\n{current}\n\n## Latest Task\n\n{tasks}\n\n## Latest Decision\n\n{decisions}\n\n## Latest Failed Attempt\n\n{attempts}\n\n## Latest Checkpoint\n\n{checkpoints}\n\n## Latest Claim\n\n{claims}\n\n## Latest Evidence\n\n{evidence}\n\n## Latest Finding\n\n{findings}\n\n## Latest Review\n\n{reviews}\n\n## Git State\n\n- Branch: {snapshot.Branch ?? "unknown"}\n- Commit: {snapshot.Commit ?? "none"}\n- Dirty: {snapshot.IsDirty}\n- Modified files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles))}\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n";
         var id = canonical.NextId(root, "handoffs", "HANDOFF"); var item = new HandoffRecord(1, id, markdown, snapshot, DateTimeOffset.UtcNow);
         await canonical.WriteAsync(root, "handoffs", id, item, cancellationToken); await RecordAsync(root, "handoff.created", id, item, cancellationToken); return item;
     }
@@ -113,6 +160,29 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (remaining.Length == item.Inventory.Count) throw new InvalidOperationException($"Inventory item '{inventoryItem}' was not found in {id}.");
         var updated = item with { Inventory = remaining };
         await canonical.WriteAsync(root, "refactors", id, updated, cancellationToken); await RecordAsync(root, "refactor.inventory-resolved", id, new { inventoryItem, remaining = remaining.Length }, cancellationToken); return updated;
+    }
+
+    public async Task<RefactorCampaign> AddRefactorWorkstreamAsync(string root, string id, string name, string owner, IReadOnlyList<string> paths, CancellationToken cancellationToken = default)
+    {
+        var item = await canonical.ReadAsync<RefactorCampaign>(root, "refactors", id, cancellationToken) ?? throw new InvalidOperationException($"Refactor {id} was not found.");
+        if (item.Status is WorkStatus.Completed or WorkStatus.Abandoned) throw new InvalidOperationException($"Refactor {id} is terminal.");
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(owner) || paths.Count == 0) throw new ArgumentException("Workstream name, owner, and at least one path are required.");
+        var workstreams = item.Workstreams ?? [];
+        if (workstreams.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException($"Workstream '{name}' already exists.");
+        var updated = item with { Workstreams = workstreams.Concat([new RefactorWorkstream(name, owner, paths, WorkStatus.Open)]).ToArray() };
+        await canonical.WriteAsync(root, "refactors", id, updated, cancellationToken); await RecordAsync(root, "refactor.workstream-added", id, new { name, owner, paths }, cancellationToken); return updated;
+    }
+
+    public async Task<RefactorCampaign> AddRefactorSafePointAsync(string root, string id, string name, string? notes, CancellationToken cancellationToken = default)
+    {
+        var item = await canonical.ReadAsync<RefactorCampaign>(root, "refactors", id, cancellationToken) ?? throw new InvalidOperationException($"Refactor {id} was not found.");
+        if (item.Status is WorkStatus.Completed or WorkStatus.Abandoned) throw new InvalidOperationException($"Refactor {id} is terminal.");
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Safe point name is required.");
+        var safePoints = item.SafePoints ?? [];
+        if (safePoints.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException($"Safe point '{name}' already exists.");
+        var safePoint = new RefactorSafePoint(name, await git.CaptureAsync(root, cancellationToken), notes, DateTimeOffset.UtcNow);
+        var updated = item with { SafePoints = safePoints.Concat([safePoint]).ToArray() };
+        await canonical.WriteAsync(root, "refactors", id, updated, cancellationToken); await RecordAsync(root, "refactor.safe-point-added", id, safePoint, cancellationToken); return updated;
     }
 
     public async Task<RefactorCampaign> FinishRefactorAsync(string root, string id, CancellationToken cancellationToken = default)
@@ -144,13 +214,20 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         await Task.CompletedTask; return failures;
     }
 
-    public async Task<string> DoctorAsync(string root, CancellationToken cancellationToken = default)
+    public async Task<string> DoctorAsync(string root, bool repair = false, CancellationToken cancellationToken = default)
     {
         var findings = new List<string>(); var store = Path.Combine(root, ".arifce");
         foreach (var required in new[] { "PROJECT.md", "CURRENT.md", "PROTOCOL.md", "config.json", Path.Combine("journal", "events.jsonl") }) if (!File.Exists(Path.Combine(store, required))) findings.Add($"MISSING {required}");
-        try { await foreach (var _ in journal.ReadAsync(root, false, cancellationToken)) { } } catch (InvalidDataException exception) { findings.Add($"CORRUPT {exception.Message}"); }
+        var journalIssues = await journal.InspectAsync(root, cancellationToken); findings.AddRange(journalIssues.Select(x => $"CORRUPT {x}"));
+        string? repairSummary = null;
+        if (repair && journalIssues.Count > 0)
+        {
+            var result = await journal.RepairAsync(root, cancellationToken);
+            if (result is not null) { await index.RebuildAsync(root, cancellationToken); repairSummary = $"Repaired journal: kept {result.Value.Kept}, removed {result.Value.Removed}, backup {result.Value.BackupPath}"; findings.RemoveAll(x => x.StartsWith("CORRUPT Journal line", StringComparison.Ordinal)); }
+        }
         if (!File.Exists(Path.Combine(store, "index", "arifce.db"))) findings.Add("MISSING derived index; run 'arifce rebuild'.");
-        return findings.Count == 0 ? "Doctor: healthy" : "Doctor findings:\n- " + string.Join("\n- ", findings);
+        var health = findings.Count == 0 ? "Doctor: healthy" : "Doctor findings:\n- " + string.Join("\n- ", findings);
+        return repairSummary is null ? health : repairSummary + Environment.NewLine + health;
     }
 
     private async Task RecordAsync(string root, string type, string id, object value, CancellationToken ct) { await journal.AppendAsync(root, new JournalEvent(1, Guid.NewGuid().ToString("N"), type, DateTimeOffset.UtcNow, id, value), ct); await index.RebuildAsync(root, ct); }

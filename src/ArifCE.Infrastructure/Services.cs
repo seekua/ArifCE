@@ -10,7 +10,13 @@ namespace ArifCE.Infrastructure;
 
 public static class JsonDefaults
 {
-    public static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web) { WriteIndented = true, PropertyNameCaseInsensitive = true };
+    public static readonly JsonSerializerOptions Options = Create();
+
+    private static JsonSerializerOptions Create()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true, PropertyNameCaseInsensitive = true };
+        options.Converters.Add(new FlexibleEnumConverterFactory()); return options;
+    }
 }
 
 public sealed class ProjectLocator
@@ -79,6 +85,41 @@ public sealed class JournalStore
             catch (JsonException exception) { throw new InvalidDataException($"Journal line {i + 1} is corrupt.", exception); }
             if (item is not null) yield return item;
         }
+    }
+
+    public async Task<IReadOnlyList<string>> InspectAsync(string root, CancellationToken cancellationToken = default)
+    {
+        var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
+        if (!File.Exists(path)) return [];
+        var lines = await File.ReadAllLinesAsync(path, cancellationToken); var issues = new List<string>();
+        for (var i = 0; i < lines.Length; i++)
+        {
+            if (string.IsNullOrWhiteSpace(lines[i])) continue;
+            try { using var _ = JsonDocument.Parse(lines[i]); }
+            catch (JsonException) { issues.Add(i == lines.Length - 1 ? $"Journal line {i + 1} is a partial or corrupt final line." : $"Journal line {i + 1} is corrupt."); }
+        }
+        return issues;
+    }
+
+    public async Task<(string BackupPath, int Kept, int Removed)?> RepairAsync(string root, CancellationToken cancellationToken = default)
+    {
+        var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
+        if (!File.Exists(path)) return null;
+        var lines = await File.ReadAllLinesAsync(path, cancellationToken); var valid = new List<string>(); var removed = 0;
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+            try { using var _ = JsonDocument.Parse(line); valid.Add(line); }
+            catch (JsonException) { removed++; }
+        }
+        if (removed == 0) return null;
+        var backupDirectory = Path.Combine(root, ".arifce", "backups", "journal"); Directory.CreateDirectory(backupDirectory);
+        var backup = Path.Combine(backupDirectory, $"events-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}.jsonl.bak");
+        File.Copy(path, backup, false);
+        var temporary = path + ".repair.tmp";
+        await File.WriteAllTextAsync(temporary, valid.Count == 0 ? "" : string.Join(Environment.NewLine, valid) + Environment.NewLine, new UTF8Encoding(false), cancellationToken);
+        File.Move(temporary, path, true);
+        return (backup, valid.Count, removed);
     }
 }
 

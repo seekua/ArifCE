@@ -27,6 +27,9 @@ jobs:
         run: dotnet build ArifCE.slnx --configuration Release --no-restore
       - name: Test
         run: dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+      - name: Secret scan
+        shell: pwsh
+        run: ./scripts/secret-scan.ps1
       - name: Package smoke test
         shell: pwsh
         run: ./scripts/package-smoke.ps1 -Configuration Release

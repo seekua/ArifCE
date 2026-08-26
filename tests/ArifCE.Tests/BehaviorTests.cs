@@ -61,8 +61,8 @@ public sealed class BehaviorTests : IDisposable
     [Fact]
     public async Task Handoff_is_semantic_and_refactor_finish_is_guarded()
     {
-        await Service.InitializeAsync(root, false); await Service.CreateTaskAsync(root, "Deliver continuity", RiskLevel.Medium); await Service.CheckpointAsync(root, "Core flow works");
-        var handoff = await Service.HandoffAsync(root); Assert.Contains("Latest Checkpoint", handoff.Markdown); Assert.DoesNotContain("raw/", handoff.Markdown);
+        await Service.InitializeAsync(root, false); var task = await Service.CreateTaskAsync(root, "Deliver continuity", RiskLevel.Medium); await Service.CreateDecisionAsync(root, "Keep handoffs semantic", "Select current state", "Avoid transcript dumps"); await Service.RecordAttemptAsync(root, task.Id, "Dump transcript", "rejected", "Irrelevant context"); await Service.CreateFindingAsync(root, "Open continuity question", "Fresh agent behavior needs review", RiskLevel.Medium, task.Id, null); await Service.CheckpointAsync(root, "Core flow works");
+        var handoff = await Service.HandoffAsync(root); Assert.Contains("Latest Checkpoint", handoff.Markdown); Assert.Contains("Latest Decision", handoff.Markdown); Assert.Contains("Latest Failed Attempt", handoff.Markdown); Assert.Contains("Latest Finding", handoff.Markdown); Assert.DoesNotContain("raw/", handoff.Markdown);
         var campaign = await Service.StartRefactorAsync(root, "Remove legacy", "Remove old resolver"); var blocked = campaign with { Inventory = ["LegacyResolver.cs"] }; await canonical.WriteAsync(root, "refactors", campaign.Id, blocked);
         await Assert.ThrowsAsync<InvalidOperationException>(() => Service.FinishRefactorAsync(root, campaign.Id));
     }
@@ -118,6 +118,82 @@ public sealed class BehaviorTests : IDisposable
         Assert.Equal(WorkStatus.Abandoned, (await Service.AbandonRefactorAsync(root, blocked.Id)).Status);
         var completed = await Service.StartRefactorAsync(root, "Completed", "Protect terminal state"); await Service.FinishRefactorAsync(root, completed.Id);
         await Assert.ThrowsAsync<InvalidOperationException>(() => Service.AbandonRefactorAsync(root, completed.Id));
+    }
+
+    [Fact]
+    public void Blind_review_protocol_prevents_builder_claim_anchoring()
+    {
+        var snapshot = new GitSnapshot("abc", "main", false, [], "digest");
+        var independent = new BlindReviewRequest(1, "REVIEW-REQUEST-0001", ReviewPhase.IndependentInspection, "Inspect authorization change", ["Tenant isolation is preserved"], snapshot, "diff", ["EVIDENCE-0001"], ["Domain cannot reference Infrastructure"], null);
+        Assert.Empty(BlindReviewProtocol.Validate(independent));
+        Assert.Contains(BlindReviewProtocol.Validate(independent with { BuilderClaim = "Everything is correct." }), error => error.Contains("must not include", StringComparison.Ordinal));
+        var reconciliation = independent with { Phase = ReviewPhase.Reconciliation, BuilderClaim = "Authorization behavior is preserved." };
+        Assert.Empty(BlindReviewProtocol.Validate(reconciliation));
+    }
+
+    [Fact]
+    public void Verification_policy_escalates_review_and_human_approval_by_risk()
+    {
+        Assert.False(VerificationPolicy.For(RiskLevel.Medium).IndependentReview);
+        Assert.True(VerificationPolicy.For(RiskLevel.High).IndependentReview);
+        Assert.False(VerificationPolicy.For(RiskLevel.High).HumanApproval);
+        Assert.True(VerificationPolicy.For(RiskLevel.Critical).HumanApproval);
+    }
+
+    [Fact]
+    public async Task Refactor_workstreams_and_safe_points_capture_coordination_metadata()
+    {
+        await Service.InitializeAsync(root, false);
+        var campaign = await Service.StartRefactorAsync(root, "Split migration", "Track independent path ownership");
+        var withWorkstream = await Service.AddRefactorWorkstreamAsync(root, campaign.Id, "domain", "codex", ["src/Domain/**", "src/Application/**"]);
+        Assert.Equal("codex", Assert.Single(withWorkstream.Workstreams!).Owner);
+        var withSafePoint = await Service.AddRefactorSafePointAsync(root, campaign.Id, "before-domain", "Known rollback position");
+        Assert.Equal("before-domain", Assert.Single(withSafePoint.SafePoints!).Name); Assert.NotEmpty(withSafePoint.SafePoints![0].Snapshot.Digest);
+        await Service.FinishRefactorAsync(root, campaign.Id);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.AddRefactorWorkstreamAsync(root, campaign.Id, "api", "claude", ["src/Api/**"]));
+    }
+
+    [Fact]
+    public async Task Decisions_preserve_unknown_rationale_and_attempts_require_real_tasks()
+    {
+        await Service.InitializeAsync(root, false);
+        var decision = await Service.CreateDecisionAsync(root, "Use lexical search", "Use SQLite FTS5 in V0.1", null);
+        Assert.Equal("Unknown.", decision.HistoricalRationale); Assert.Equal("USER_CONFIRMED", decision.Provenance);
+        var task = await Service.CreateTaskAsync(root, "Evaluate cache invalidation", RiskLevel.Medium);
+        var attempt = await Service.RecordAttemptAsync(root, task.Id, "Redis Pub/Sub", "rejected", "Reconnect reliability risk", ["ADR-0001"]);
+        Assert.Equal(task.Id, attempt.TaskId); Assert.Equal("rejected", attempt.Result);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.RecordAttemptAsync(root, "TASK-9999", "Unknown", "failed", "No task"));
+    }
+
+    [Fact]
+    public async Task Doctor_repairs_corrupt_journal_only_after_creating_a_backup()
+    {
+        await Service.InitializeAsync(root, false); var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
+        await File.AppendAllTextAsync(path, "{corrupt-middle}\n{partial-final");
+        var diagnosis = await Service.DoctorAsync(root); Assert.Contains("CORRUPT Journal line", diagnosis); Assert.False(Directory.Exists(Path.Combine(root, ".arifce", "backups")));
+        var repaired = await Service.DoctorAsync(root, true); Assert.Contains("Repaired journal", repaired); Assert.Contains("Doctor: healthy", repaired);
+        Assert.Single(Directory.EnumerateFiles(Path.Combine(root, ".arifce", "backups", "journal"), "*.bak"));
+        Assert.Empty(await journal.InspectAsync(root)); var events = 0; await foreach (var _ in journal.ReadAsync(root)) events++; Assert.True(events >= 1);
+    }
+
+    [Fact]
+    public async Task Reviews_link_findings_without_turning_agreement_into_truth()
+    {
+        await Service.InitializeAsync(root, false); var task = await Service.CreateTaskAsync(root, "Review risky change", RiskLevel.High); var claim = await Service.CreateClaimAsync(root, "Authorization is correct", RiskLevel.High);
+        var finding = await Service.CreateFindingAsync(root, "Missing tenant test", "No tenant-isolation regression test was found.", RiskLevel.High, task.Id, "tests/AuthTests.cs");
+        var agreeing = await Service.RecordReviewAsync(root, claim.Id, "claude", ReviewVerdict.Agree, "Implementation appears consistent.", []);
+        Assert.Equal(ReviewVerdict.Agree, agreeing.Verdict); Assert.Equal(ClaimStatus.Unverified, (await Service.GetClaimAsync(root, claim.Id))!.Status);
+        await Service.RecordReviewAsync(root, claim.Id, "codex", ReviewVerdict.Disagree, "Required test is missing.", [finding.Id]);
+        Assert.Equal(ClaimStatus.Disputed, (await Service.GetClaimAsync(root, claim.Id))!.Status);
+        Assert.Equal(WorkStatus.Completed, (await Service.ResolveFindingAsync(root, finding.Id)).Status);
+    }
+
+    [Fact]
+    public void Canonical_enums_write_upper_snake_case_and_read_legacy_values()
+    {
+        var current = System.Text.Json.JsonSerializer.Serialize(WorkStatus.InProgress, JsonDefaults.Options); Assert.Equal("\"IN_PROGRESS\"", current);
+        var legacy = System.Text.Json.JsonSerializer.Deserialize<WorkStatus>("\"InProgress\"", JsonDefaults.Options); Assert.Equal(WorkStatus.InProgress, legacy);
+        var snake = System.Text.Json.JsonSerializer.Deserialize<ClaimStatus>("\"PARTIALLY_VERIFIED\"", JsonDefaults.Options); Assert.Equal(ClaimStatus.PartiallyVerified, snake);
     }
 
     private void RunGit(string arguments) { using var process = Process.Start(new ProcessStartInfo("git", arguments) { WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true }); process!.WaitForExit(); Assert.Equal(0, process.ExitCode); }
