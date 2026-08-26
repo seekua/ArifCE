@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0002",
+  "summary": "Final reconciliation: build clean, 7 behavior tests pass, init idempotent, rebuild/context/doctor dogfood checks pass",
+  "snapshot": {
+    "commit": null,
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/",
+      ".gitignore",
+      "AGENTS.md",
+      "ArifCE.slnx",
+      "CHANGELOG.md",
+      "CLAUDE.md",
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.md",
+      "Directory.Build.props",
+      "GOVERNANCE.md",
+      "README.md",
+      "ROADMAP.md",
+      "SECURITY.md",
+      "docs/",
+      "global.json",
+      "opencode.json",
+      "src/",
+      "tests/"
+    ],
+    "digest": "bd45649782ce490e37a101f2ba7451073faf4d8c401970fabde9b2c0941876c5"
+  },
+  "createdAtUtc": "2026-08-26T17:15:07.8634841+00:00"
+}

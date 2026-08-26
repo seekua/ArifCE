@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "HANDOFF-0001",
+  "markdown": "# Handoff\n\n## Current State\n\n# Current State\n\n## Objective\n\nEstablish the next engineering objective.\n\n## Status\n\nNo active task.\n\n## Blockers\n\nNone recorded.\n\n## Next steps\n\nCreate a task and checkpoint meaningful work.\n\n\n## Latest Task\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022TASK-0001\u0022,\r\n  \u0022title\u0022: \u0022Deliver the first credible ArifCE V0.1\u0022,\r\n  \u0022description\u0022: null,\r\n  \u0022status\u0022: \u0022Open\u0022,\r\n  \u0022risk\u0022: \u0022Medium\u0022,\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T17:10:37.2030968\u002B00:00\u0022\r\n}\n\n## Latest Checkpoint\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022CHECKPOINT-0001\u0022,\r\n  \u0022summary\u0022: \u0022Product contract, .NET 10 core, canonical store, FTS index, CLI, and behavior tests implemented\u0022,\r\n  \u0022snapshot\u0022: {\r\n    \u0022commit\u0022: null,\r\n    \u0022branch\u0022: \u0022master\u0022,\r\n    \u0022isDirty\u0022: true,\r\n    \u0022changedFiles\u0022: [\r\n      \u0022.arifce/\u0022,\r\n      \u0022.dotnet-cli/\u0022,\r\n      \u0022.gitignore\u0022,\r\n      \u0022.packages/\u0022,\r\n      \u0022AGENTS.md\u0022,\r\n      \u0022ArifCE.slnx\u0022,\r\n      \u0022CLAUDE.md\u0022,\r\n      \u0022Directory.Build.props\u0022,\r\n      \u0022README.md\u0022,\r\n      \u0022ROADMAP.md\u0022,\r\n      \u0022docs/\u0022,\r\n      \u0022global.json\u0022,\r\n      \u0022opencode.json\u0022,\r\n      \u0022src/\u0022,\r\n      \u0022tests/\u0022\r\n    ],\r\n    \u0022digest\u0022: \u0022b537dba8439a28f14a0ca98cb49bd0cc76175775b12844738dde851535fb5ee9\u0022\r\n  },\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T17:10:38.1356186\u002B00:00\u0022\r\n}\n\n## Latest Claim and Verification\n\n{\r\n  \u0022schemaVersion\u0022: 1,\r\n  \u0022id\u0022: \u0022CLAIM-0001\u0022,\r\n  \u0022statement\u0022: \u0022ArifCE builds and its current behavior test suite passes on .NET 10\u0022,\r\n  \u0022status\u0022: \u0022Supported\u0022,\r\n  \u0022risk\u0022: \u0022Medium\u0022,\r\n  \u0022snapshot\u0022: {\r\n    \u0022commit\u0022: null,\r\n    \u0022branch\u0022: \u0022master\u0022,\r\n    \u0022isDirty\u0022: true,\r\n    \u0022changedFiles\u0022: [\r\n      \u0022.arifce/\u0022,\r\n      \u0022.dotnet-cli/\u0022,\r\n      \u0022.gitignore\u0022,\r\n      \u0022.packages/\u0022,\r\n      \u0022AGENTS.md\u0022,\r\n      \u0022ArifCE.slnx\u0022,\r\n      \u0022CLAUDE.md\u0022,\r\n      \u0022Directory.Build.props\u0022,\r\n      \u0022README.md\u0022,\r\n      \u0022ROADMAP.md\u0022,\r\n      \u0022docs/\u0022,\r\n      \u0022global.json\u0022,\r\n      \u0022opencode.json\u0022,\r\n      \u0022src/\u0022,\r\n      \u0022tests/\u0022\r\n    ],\r\n    \u0022digest\u0022: \u0022b537dba8439a28f14a0ca98cb49bd0cc76175775b12844738dde851535fb5ee9\u0022\r\n  },\r\n  \u0022evidence\u0022: [\r\n    \u0022EVIDENCE-0001\u0022\r\n  ],\r\n  \u0022createdAtUtc\u0022: \u00222026-08-26T17:10:38.87059\u002B00:00\u0022\r\n}\n\n## Git State\n\n- Branch: master\n- Commit: none\n- Dirty: True\n- Modified files: .arifce/, .dotnet-cli/, .gitignore, .packages/, AGENTS.md, ArifCE.slnx, CLAUDE.md, Directory.Build.props, README.md, ROADMAP.md, docs/, global.json, opencode.json, src/, tests/\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n",
+  "snapshot": {
+    "commit": null,
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/",
+      ".dotnet-cli/",
+      ".gitignore",
+      ".packages/",
+      "AGENTS.md",
+      "ArifCE.slnx",
+      "CLAUDE.md",
+      "Directory.Build.props",
+      "README.md",
+      "ROADMAP.md",
+      "docs/",
+      "global.json",
+      "opencode.json",
+      "src/",
+      "tests/"
+    ],
+    "digest": "b537dba8439a28f14a0ca98cb49bd0cc76175775b12844738dde851535fb5ee9"
+  },
+  "createdAtUtc": "2026-08-26T17:11:26.7090044+00:00"
+}

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0001",
+  "title": "Treat the owner-provided bootstrap attachment as the founding product seed",
+  "status": "ACTIVE",
+  "decision": "Store the stable product contract at docs/PRODUCT-SEED.md and use docs/SPECIFICATION-v0.1.md as the precise implementation contract.",
+  "rationale": "The Git repository was empty and the requested arifce/docs/PRODUCT-SEED.md path did not exist. Creating a nested Git project would make root discovery ambiguous.",
+  "provenance": "USER_CONFIRMED",
+  "createdAtUtc": "2026-08-26T17:00:00Z"
+}

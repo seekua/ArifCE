@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0001",
+  "summary": "Product contract, .NET 10 core, canonical store, FTS index, CLI, and behavior tests implemented",
+  "snapshot": {
+    "commit": null,
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/",
+      ".dotnet-cli/",
+      ".gitignore",
+      ".packages/",
+      "AGENTS.md",
+      "ArifCE.slnx",
+      "CLAUDE.md",
+      "Directory.Build.props",
+      "README.md",
+      "ROADMAP.md",
+      "docs/",
+      "global.json",
+      "opencode.json",
+      "src/",
+      "tests/"
+    ],
+    "digest": "b537dba8439a28f14a0ca98cb49bd0cc76175775b12844738dde851535fb5ee9"
+  },
+  "createdAtUtc": "2026-08-26T17:10:38.1356186+00:00"
+}
