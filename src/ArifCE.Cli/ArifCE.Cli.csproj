@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>arifce</ToolCommandName>
+    <PackageId>ArifCE.Cli</PackageId>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" /></ItemGroup>
+</Project>

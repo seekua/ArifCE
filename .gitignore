@@ -1,0 +1,7 @@
+.arifce/index/
+.arifce/cache/
+.arifce/raw/
+.dotnet-cli/
+.packages/
+**/bin/
+**/obj/

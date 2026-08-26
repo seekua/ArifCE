@@ -1,0 +1,79 @@
+using System.Diagnostics;
+using ArifCE.Core;
+using ArifCE.Infrastructure;
+using Xunit;
+
+namespace ArifCE.Tests;
+
+public sealed class BehaviorTests : IDisposable
+{
+    private readonly string root = Path.Combine(Path.GetTempPath(), "arifce-tests", Guid.NewGuid().ToString("N"));
+    private readonly CanonicalStore canonical = new();
+    private readonly JournalStore journal = new();
+    private readonly IndexStore index = new();
+    private readonly GitInspector git = new();
+
+    public BehaviorTests() { Directory.CreateDirectory(root); RunGit("init"); }
+    private ProjectService Service => new(canonical, journal, index, git);
+
+    [Fact]
+    public async Task Initialization_is_idempotent_and_rebuildable()
+    {
+        var first = await Service.InitializeAsync(root, false); var second = await Service.InitializeAsync(root, false);
+        Assert.NotEmpty(first); Assert.Empty(second); Assert.True(File.Exists(Path.Combine(root, ".arifce", "PROJECT.md")));
+        File.Delete(Path.Combine(root, ".arifce", "index", "arifce.db")); await index.RebuildAsync(root);
+        Assert.NotEmpty(await index.SearchAsync(root, "Project"));
+    }
+
+    [Fact]
+    public async Task Adoption_reports_observation_without_inventing_rationale()
+    {
+        await File.WriteAllTextAsync(Path.Combine(root, "README.md"), "Existing"); await Service.InitializeAsync(root, true);
+        var text = await File.ReadAllTextAsync(Path.Combine(root, ".arifce", "PROJECT.md"));
+        Assert.Contains("README.md", text); Assert.Contains("Historical rationale\n\nUnknown", text);
+    }
+
+    [Fact]
+    public async Task Journal_ignores_partial_final_line_but_reports_middle_corruption()
+    {
+        await Service.InitializeAsync(root, false); var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
+        await File.AppendAllTextAsync(path, "{partial"); var count = 0; await foreach (var _ in journal.ReadAsync(root)) count++; Assert.True(count >= 1);
+        await File.WriteAllTextAsync(path, "{bad}\n{}\n"); await Assert.ThrowsAsync<InvalidDataException>(async () => { await foreach (var _ in journal.ReadAsync(root)) { } });
+    }
+
+    [Fact]
+    public async Task Context_search_and_redaction_have_user_visible_behavior()
+    {
+        await Service.InitializeAsync(root, false); await canonical.WriteAsync(root, "decisions", "ADR-0001", new { schemaVersion = 1, id = "ADR-0001", rationale = "Use deterministic lexical retrieval" }); await index.RebuildAsync(root);
+        Assert.Contains(await index.SearchAsync(root, "deterministic"), x => x.Path.Contains("adr-0001", StringComparison.Ordinal));
+        var redacted = new SecretRedactor().Redact("password=hunter2 Authorization: Bearer abc.def.ghi"); Assert.Equal(2, redacted.Count); Assert.DoesNotContain("hunter2", redacted.Text); Assert.DoesNotContain("abc.def.ghi", redacted.Text);
+    }
+
+    [Fact]
+    public async Task Claim_verification_and_git_freshness_are_snapshot_scoped()
+    {
+        await Service.InitializeAsync(root, false); var claim = await Service.CreateClaimAsync(root, "Command succeeds", RiskLevel.Low); var result = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal(0, result.Evidence.ExitCode);
+        await File.WriteAllTextAsync(Path.Combine(root, "changed.txt"), "change"); var after = await git.CaptureAsync(root); Assert.NotEqual(result.Evidence.Snapshot.Digest, after.Digest);
+        Assert.Equal(EvidenceFreshness.Stale, EvidenceEvaluator.Evaluate(result.Evidence.Snapshot, after));
+    }
+
+    [Fact]
+    public async Task Handoff_is_semantic_and_refactor_finish_is_guarded()
+    {
+        await Service.InitializeAsync(root, false); await Service.CreateTaskAsync(root, "Deliver continuity", RiskLevel.Medium); await Service.CheckpointAsync(root, "Core flow works");
+        var handoff = await Service.HandoffAsync(root); Assert.Contains("Latest Checkpoint", handoff.Markdown); Assert.DoesNotContain("raw/", handoff.Markdown);
+        var campaign = await Service.StartRefactorAsync(root, "Remove legacy", "Remove old resolver"); var blocked = campaign with { Inventory = ["LegacyResolver.cs"] }; await canonical.WriteAsync(root, "refactors", campaign.Id, blocked);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.FinishRefactorAsync(root, campaign.Id));
+    }
+
+    [Fact]
+    public void Claim_transitions_reject_unsupported_shortcuts()
+    {
+        Assert.True(ClaimTransitions.IsAllowed(ClaimStatus.Verified, ClaimStatus.Stale));
+        Assert.False(ClaimTransitions.IsAllowed(ClaimStatus.Verified, ClaimStatus.Unverified));
+    }
+
+    private void RunGit(string arguments) { using var process = Process.Start(new ProcessStartInfo("git", arguments) { WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true }); process!.WaitForExit(); Assert.Equal(0, process.ExitCode); }
+    public void Dispose() { try { Directory.Delete(root, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+}

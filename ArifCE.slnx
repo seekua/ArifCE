@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ArifCE.Core/ArifCE.Core.csproj" />
+    <Project Path="src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" />
+    <Project Path="src/ArifCE.Cli/ArifCE.Cli.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ArifCE.Tests/ArifCE.Tests.csproj" />
+  </Folder>
+</Solution>
