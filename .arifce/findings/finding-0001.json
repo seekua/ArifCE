@@ -4,7 +4,7 @@
   "title": "Remote cross-platform CI evidence is missing",
   "description": "The CI matrix is configured, but no remote Windows, Linux, and macOS run has been observed.",
   "severity": "HIGH",
-  "status": "OPEN",
+  "status": "COMPLETED",
   "taskId": "TASK-0001",
   "path": ".github/workflows/ci.yml",
   "createdAtUtc": "2026-08-26T21:21:49.2045608+00:00"

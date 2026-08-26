@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0005",
+  "taskId": "TASK-0001",
+  "approach": "Validate every Markdown file under the working tree",
+  "result": "false failure",
+  "reason": "The scan included local NuGet cache PACKAGE.md files outside repository documentation; validation was narrowed to Git-tracked Markdown",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-08-26T22:22:52.2501166+00:00"
+}

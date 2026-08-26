@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0007",
+  "summary": "V0.1 release ready: Apache-2.0 selected and GitHub Actions run 33019098780 passed Windows, Ubuntu, and macOS build, tests, secret scan, and packaged-tool smoke fixture",
+  "snapshot": {
+    "commit": "cbf91d8179dcb69915a93c4302908864a858885c",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/attempts/attempt-0005.json",
+      ".arifce/findings/finding-0001.json",
+      ".arifce/findings/finding-0002.json",
+      ".arifce/journal/events.jsonl",
+      ".arifce/tasks/task-0001.json",
+      "CHANGELOG.md",
+      "ROADMAP.md",
+      "docs/release/v0.1-checklist.md",
+      "docs/release/v0.1-ci-evidence.md"
+    ],
+    "digest": "1434f6ed2333011d9b083de0282a71d6f217e7f74d67ba3a7dcf0915da281dff"
+  },
+  "createdAtUtc": "2026-08-26T22:23:10.0511453+00:00"
+}

@@ -1,6 +1,7 @@
 # Changelog
 
 - Select Apache-2.0 for the repository and NuGet tool package.
+- Record the successful Windows, Ubuntu, and macOS GitHub Actions run that closes the V0.1 release checklist.
 
 All notable changes will be documented here. The project follows semantic versioning after its first published release.
 

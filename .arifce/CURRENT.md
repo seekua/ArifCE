@@ -2,16 +2,16 @@
 
 ## Objective
 
-Deliver a credible, tested ArifCE V0.1 without overstating incomplete scope.
+Maintain the released-ready ArifCE V0.1 baseline without overstating future scope.
 
 ## Status
 
-TASK-0001 is open. The complete packaged-tool definition-of-done fixture passes. Typed two-phase blind review and risk policy, trust records, refactor continuity, structured evidence, semantic handoff, backup-first repair, agent adapters, secret scanning, canonical enum compatibility, 18 behavior tests, and the complete V0.1 documentation set are implemented. Sixty-four Markdown link checks passed; EVIDENCE-0006 records 18 passed and 0 failed.
+TASK-0001 is complete. Apache-2.0 is selected and included in repository and package metadata. GitHub Actions run 33019098780 passed restore, Release build, 18 behavior tests, secret scan, and the complete packaged-tool fixture on Windows, Ubuntu, and macOS for commit cbf91d8. The V0.1 release checklist is complete.
 
 ## Blockers
 
-Public release is blocked by license selection and observed Windows/Linux/macOS CI results. FINDING-0001 tracks the missing remote CI evidence. Additional deterministic evidence adapters remain future quality work and are not represented as implemented.
+No V0.1 release blocker remains. FINDING-0002 tracks non-blocking GitHub Actions Node runtime deprecation warnings. Additional deterministic evidence adapters remain future quality work and are not represented as implemented.
 
 ## Next steps
 
-Run the configured CI matrix on a remote repository and record its results. Ask the owner to select MIT or Apache-2.0 before public release.
+Tag and publish V0.1 when desired. Upgrade GitHub action majors in post-V0.1 maintenance and rerun the matrix before relying on the updated workflow.
