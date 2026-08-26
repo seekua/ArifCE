@@ -20,3 +20,4 @@ All notable changes will be documented here. The project follows semantic versio
 - Added canonical finding lifecycle and manual review records linked to claims and findings.
 - Ensured positive semantic agreement cannot verify a claim while disagreement can dispute it.
 - Aligned canonical enum output with the specified `UPPER_SNAKE_CASE` format while retaining legacy read compatibility.
+- Completed the V0.1 getting-started, concepts, architecture, agent, reference, research, and release documentation sets.

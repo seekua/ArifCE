@@ -16,7 +16,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 9: campaign lifecycle, invariants, inventory, guards, findings, checkpoints, workstream ownership/path scopes, Git safe points, verification, finish, and abandonment work. Autonomous worktree orchestration remains a non-goal.
 - [x] Phase 10: concise Codex, Claude Code, and OpenCode adapters.
 - [x] Phase 11: redaction, diagnostics, partial/corrupt journal detection, backup-first repair, and index recovery work.
-- [ ] Phase 12: core documentation matches behavior; the full manual set remains deferred below.
+- [x] Phase 12: getting-started, concepts, architecture, agent, reference, research, and release documentation match implemented behavior and mark deferred boundaries explicitly.
 - [ ] Phase 13: build/tests, CLI dogfood, and the complete packaged global-tool definition-of-done fixture pass; license and observed cross-platform CI results remain release blockers.
 
 ## Explicit deferrals
@@ -29,7 +29,6 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - **License selection:** permissive MIT and Apache-2.0 are candidates. The repository owner must choose before public release; a placeholder-free final `LICENSE` will then be added.
 - **Manual evidence authoring:** decision, failed-attempt, finding, and review commands persist canonical records. Deterministic command evidence remains available through `verify`; arbitrary manual evidence waits for a provenance and trust policy.
 - **Autonomous refactor coordination:** CLI metadata now covers invariants, inventory, forbidden-reference guards, workstream ownership/path scopes, and Git-snapshot safe points. Creating worktrees, assigning agents, merging, and rollback execution remain explicit post-V0.1 orchestration work.
-- **Full documentation tree:** high-value contract and architecture documents exist. Topic files that would only repeat the specification are deferred until their corresponding command contracts stabilize.
 - **Additional automated evidence kinds:** .NET test/build commands are classified and localized summary counts are stored as structured metrics. API-diff, architecture-boundary, and database-compatibility adapters are not yet implemented.
 
 ## Environment note
