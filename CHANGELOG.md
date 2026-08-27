@@ -3,6 +3,7 @@
 - Start V0.2 with an explicit deterministic verification-adapter contract covering architecture, API surface, and SQLite schema compatibility.
 - Add repository-confined, deterministic architecture-boundary evidence with actionable file-and-line findings and packaged CLI coverage.
 - Begin the V0.2 public API surface adapter with normalized assembly baselines and compatibility comparison commands.
+- Prepare V0.2 release metadata and a consolidated release-readiness checklist.
 
 - Select Apache-2.0 for the repository and NuGet tool package.
 - Record the successful Windows, Ubuntu, and macOS GitHub Actions run that closes the V0.1 release checklist.
