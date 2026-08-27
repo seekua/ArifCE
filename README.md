@@ -8,6 +8,14 @@ ArifCE is a local-first project intelligence and continuity layer for AI-assiste
 
 > The repository owns the context. The agent only borrows it.
 
+## Why ArifCE exists
+
+Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
+
+The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
+
+ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
+
 ## How ArifCE works
 
 ```mermaid
