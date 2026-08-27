@@ -158,6 +158,26 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         return (updated, evidence);
     }
 
+    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyApiSurfaceAsync(string root, string claimId, string assemblyPath, string baselinePath, CancellationToken cancellationToken = default)
+    {
+        var claim = await GetClaimAsync(root, claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
+        var assembly = ResolveRepositoryPath(root, assemblyPath); var baseline = ResolveRepositoryPath(root, baselinePath);
+        var current = ApiSurfaceAnalyzer.Read(assembly); var previous = await ApiSurfaceAnalyzer.ReadBaselineAsync(baseline, cancellationToken); var diff = ApiSurfaceAnalyzer.Compare(previous, current);
+        var evidenceId = canonical.NextId(root, "evidence", "EVIDENCE"); var summary = $"API compatibility {(diff.IsCompatible ? "passed" : "failed")}. Added: {diff.Added.Count}; removed: {diff.Removed.Count}; changed: {diff.Changed.Count}.";
+        if (diff.Removed.Count > 0) summary += $"\nRemoved:\n{string.Join('\n', diff.Removed.Take(20))}";
+        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, "PUBLIC_API_SURFACE", $"arifce api compare {assemblyPath} --baseline {baselinePath}", diff.IsCompatible ? 0 : 1, summary, await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow, new EvidenceMetrics(current.Count, diff.Added.Count, diff.Removed.Count, diff.Changed.Count));
+        await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
+        var status = diff.IsCompatible ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
+        var updated = claim with { Status = status, Evidence = claim.Evidence.Concat([evidenceId]).ToArray() }; await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken); await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
+    }
+
+    private static string ResolveRepositoryPath(string root, string path)
+    {
+        var fullRoot = Path.GetFullPath(root); var resolved = Path.GetFullPath(Path.Combine(fullRoot, path)); var relative = Path.GetRelativePath(fullRoot, resolved);
+        if (relative == ".." || relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal) || Path.IsPathRooted(relative)) throw new ArgumentException($"Path '{path}' is outside the repository root.");
+        if (!File.Exists(resolved)) throw new ArgumentException($"Path '{path}' does not exist."); return resolved;
+    }
+
     public async Task<HandoffRecord> HandoffAsync(string root, CancellationToken cancellationToken = default)
     {
         var snapshot = await git.CaptureAsync(root, cancellationToken);

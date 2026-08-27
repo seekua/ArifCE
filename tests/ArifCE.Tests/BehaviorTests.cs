@@ -99,6 +99,21 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Api_surface_baseline_reports_breaking_removals_and_records_evidence()
+    {
+        await Service.InitializeAsync(root, false);
+        var assembly = Path.Combine(root, "fixture.dll"); File.Copy(typeof(ProjectService).Assembly.Location, assembly); var baseline = Path.Combine(root, "api-baseline.json");
+        await ApiSurfaceAnalyzer.WriteBaselineAsync(baseline, ApiSurfaceAnalyzer.Read(assembly));
+        var claim = await Service.CreateClaimAsync(root, "Public API remains compatible", RiskLevel.Low);
+        var result = await Service.VerifyApiSurfaceAsync(root, claim.Id, assembly, "api-baseline.json");
+        Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal("PUBLIC_API_SURFACE", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
+        var modified = (await ApiSurfaceAnalyzer.ReadBaselineAsync(baseline)).Where(entry => !entry.Contains("ArchitectureBoundaryScanner", StringComparison.Ordinal)).ToArray();
+        await ApiSurfaceAnalyzer.WriteBaselineAsync(baseline, modified);
+        var breaking = await Service.VerifyApiSurfaceAsync(root, claim.Id, assembly, "api-baseline.json");
+        Assert.Equal(ClaimStatus.Contradicted, breaking.Claim.Status); Assert.Equal(1, breaking.Evidence.ExitCode); Assert.Contains("removed", breaking.Evidence.Summary, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task Definition_of_done_core_flow_survives_index_deletion()
     {
         await Service.InitializeAsync(root, false);
