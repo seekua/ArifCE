@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0008",
+  "summary": "Published GitHub Release v0.1.0 for verified commit 8f60731 with ArifCE.Cli.0.1.0.nupkg and SHA-256 asset after successful Windows, Ubuntu, and macOS CI",
+  "snapshot": {
+    "commit": "8f607311223126b8594becd6c37e0e8337b2a048",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/journal/events.jsonl",
+      ".arifce/tasks/task-0002.json",
+      "CHANGELOG.md",
+      "docs/release/v0.1-checklist.md"
+    ],
+    "digest": "cf679bb5968d32c2c3f1a8b6bf0817c2caf86ecfcab1a92880ab1e1ee2911bd3"
+  },
+  "createdAtUtc": "2026-08-27T09:32:03.7232837+00:00"
+}
