@@ -60,6 +60,12 @@ try {
         if ($LASTEXITCODE -ne 0 -or $apiClaimId -notmatch '^CLAIM-\d{4}$') { throw "API claim creation failed: $apiClaimId" }
         $apiOutput = (& $executable api compare ArifCE.Cli.dll --baseline api-baseline.json --claim $apiClaimId | Out-String)
         if ($LASTEXITCODE -ne 0 -or $apiOutput -notmatch "${apiClaimId}: \w+ \(EVIDENCE-\d{4}\)") { throw 'Packaged API compatibility verification failed.' }
+        & $executable schema baseline .arifce/index/arifce.db --baseline schema-baseline.json
+        if ($LASTEXITCODE -ne 0) { throw 'Packaged SQLite schema baseline creation failed.' }
+        $schemaClaimId = (& $executable claim create 'The packaged SQLite schema remains compatible' | Select-Object -Last 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or $schemaClaimId -notmatch '^CLAIM-\d{4}$') { throw "Schema claim creation failed: $schemaClaimId" }
+        $schemaOutput = (& $executable schema compare .arifce/index/arifce.db --baseline schema-baseline.json --claim $schemaClaimId | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $schemaOutput -notmatch "${schemaClaimId}: \w+ \(EVIDENCE-\d{4}\)") { throw 'Packaged SQLite schema verification failed.' }
         $findingId = (& $executable finding create 'Package fixture review finding' --description 'Exercise canonical finding linkage' --severity 'LOW' --task $taskId --path 'src/**' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $findingId -notmatch '^FINDING-\d{4}$') { throw "Finding creation failed: $findingId" }
         $reviewId = (& $executable review record $claimId --reviewer 'package-smoke' --verdict 'INCONCLUSIVE' --summary 'Fixture review cannot establish semantic truth' --finding $findingId | Select-Object -Last 1).Trim()
@@ -103,6 +109,8 @@ try {
         if ($claimRecord.status -ne 'SUPPORTED' -or $claimRecord.evidence.Count -lt 1) { throw 'Canonical claim/evidence state is incomplete.' }
         if ($architectureClaimRecord.evidence.Count -ne 1) { throw 'Canonical architecture-boundary state is incomplete.' }
         if ($apiClaimRecord.evidence.Count -ne 1) { throw 'Canonical API evidence state is incomplete.' }
+        $schemaClaimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($schemaClaimId.ToLowerInvariant()).json") | ConvertFrom-Json
+        if ($schemaClaimRecord.evidence.Count -ne 1) { throw 'Canonical SQLite schema evidence state is incomplete.' }
         if ($findingRecord.status -ne 'COMPLETED' -or $reviewRecord.claimId -ne $claimId -or $reviewRecord.verdict -ne 'INCONCLUSIVE') { throw 'Canonical finding/review state is incomplete.' }
         if ($refactorRecord.status -ne 'COMPLETED' -or $refactorRecord.inventory.Count -ne 0 -or $refactorRecord.workstreams.Count -ne 1 -or $refactorRecord.safePoints.Count -ne 1) { throw 'Canonical refactor state is incomplete.' }
 

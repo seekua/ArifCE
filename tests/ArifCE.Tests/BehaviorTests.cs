@@ -123,6 +123,15 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Sqlite_schema_evidence_links_compatible_baseline_to_claim()
+    {
+        await Service.InitializeAsync(root, false); var database = Path.Combine(root, ".arifce", "index", "arifce.db"); var baseline = Path.Combine(root, "schema.json");
+        await SqliteSchemaAnalyzer.WriteBaselineAsync(baseline, await SqliteSchemaAnalyzer.ReadAsync(database)); var claim = await Service.CreateClaimAsync(root, "SQLite schema remains compatible", RiskLevel.Low);
+        var result = await Service.VerifySqliteSchemaAsync(root, claim.Id, ".arifce/index/arifce.db", "schema.json");
+        Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal("SQLITE_SCHEMA", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
+    }
+
+    [Fact]
     public async Task Definition_of_done_core_flow_survives_index_deletion()
     {
         await Service.InitializeAsync(root, false);
