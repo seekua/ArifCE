@@ -32,7 +32,7 @@ The core separates domain rules, canonical storage and indexing, Git observation
 
 ## Installation and quick start
 
-V0.1 requires the .NET 10 SDK. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
 
 ```bash
 dotnet restore
