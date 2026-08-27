@@ -3,7 +3,7 @@
   "id": "TASK-0003",
   "title": "Upgrade GitHub Actions to Node 24 runtimes",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "MEDIUM",
   "createdAtUtc": "2026-08-27T09:46:27.6369795+00:00"
 }

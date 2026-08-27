@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0009",
+  "summary": "Upgraded GitHub Actions checkout and setup-dotnet to Node 24-based v5 majors; run 33060123591 passed Windows, Ubuntu, and macOS without Node 20 deprecation annotations",
+  "snapshot": {
+    "commit": "b810ec4cb966dc07ddc18267bea7f69f22e27ee0",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/findings/finding-0002.json",
+      ".arifce/journal/events.jsonl",
+      ".arifce/tasks/task-0003.json",
+      "CHANGELOG.md",
+      "docs/release/ci-maintenance-2026-08-27.md"
+    ],
+    "digest": "69a7b6072eda1e350fa147dcfff88c04192b8c563f12b16c887ab0b1365be479"
+  },
+  "createdAtUtc": "2026-08-27T09:50:28.0535587+00:00"
+}

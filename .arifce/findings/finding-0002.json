@@ -4,7 +4,7 @@
   "title": "GitHub Actions v4 actions emit Node 20 deprecation warnings",
   "description": "checkout@v4 and setup-dotnet@v4 passed but GitHub forced Node 24 and emitted deprecation annotations; upgrade action majors during post-V0.1 maintenance",
   "severity": "LOW",
-  "status": "OPEN",
+  "status": "COMPLETED",
   "taskId": "TASK-0001",
   "path": ".github/workflows/ci.yml",
   "createdAtUtc": "2026-08-26T22:21:25.6023264+00:00"

@@ -10,8 +10,8 @@ TASK-0001 is complete. Apache-2.0 is selected and included in repository and pac
 
 ## Blockers
 
-No V0.1 release blocker remains. FINDING-0002 tracks non-blocking GitHub Actions Node runtime deprecation warnings. Additional deterministic evidence adapters remain future quality work and are not represented as implemented.
+No V0.1 release blocker remains. The GitHub Actions Node 20 deprecation warning was eliminated and verified across Windows, Ubuntu, and macOS. Additional deterministic evidence adapters remain future quality work and are not represented as implemented.
 
 ## Next steps
 
-Upgrade GitHub action majors in post-V0.1 maintenance and rerun the matrix before relying on the updated workflow. Define V0.2 scope only through a new owner-approved product decision.
+Define V0.2 scope only through a new owner-approved product decision.

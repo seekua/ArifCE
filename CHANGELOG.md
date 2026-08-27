@@ -4,6 +4,7 @@
 - Record the successful Windows, Ubuntu, and macOS GitHub Actions run that closes the V0.1 release checklist.
 - Replace placeholder NuGet publication metadata with the V0.1 product identity and repository information.
 - Publish GitHub Release [`v0.1.0`](https://github.com/seekua/ArifCE/releases/tag/v0.1.0) with the verified global-tool package and SHA-256 checksum.
+- Upgrade CI to Node 24-based `actions/checkout@v5` and `actions/setup-dotnet@v5`; the verified matrix no longer emits Node 20 deprecation annotations.
 
 All notable changes will be documented here. The project follows semantic versioning after its first published release.
 
