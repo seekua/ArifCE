@@ -107,7 +107,7 @@ public sealed class BehaviorTests : IDisposable
         var claim = await Service.CreateClaimAsync(root, "Public API remains compatible", RiskLevel.Low);
         var result = await Service.VerifyApiSurfaceAsync(root, claim.Id, assembly, "api-baseline.json");
         Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal("PUBLIC_API_SURFACE", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
-        var modified = (await ApiSurfaceAnalyzer.ReadBaselineAsync(baseline)).Skip(1).ToArray();
+        var modified = new[] { "Removed.Public.Api.Entry" };
         await ApiSurfaceAnalyzer.WriteBaselineAsync(baseline, modified);
         var breaking = await Service.VerifyApiSurfaceAsync(root, claim.Id, assembly, "api-baseline.json");
         Assert.Equal(ClaimStatus.Contradicted, breaking.Claim.Status); Assert.Equal(1, breaking.Evidence.ExitCode); Assert.Contains("removed", breaking.Evidence.Summary, StringComparison.OrdinalIgnoreCase);
