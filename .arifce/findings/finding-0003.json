@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "FINDING-0003",
+  "title": "NuGet package description is still the SDK placeholder",
+  "description": "The v0.1.0 release candidate nuspec contains Package Description and incomplete publication metadata; replace it before publishing the GitHub Release asset",
+  "severity": "MEDIUM",
+  "status": "COMPLETED",
+  "taskId": null,
+  "path": "src/ArifCE.Cli/ArifCE.Cli.csproj",
+  "createdAtUtc": "2026-08-27T09:04:34.3514205+00:00"
+}

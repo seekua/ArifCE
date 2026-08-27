@@ -2,6 +2,7 @@
 
 - Select Apache-2.0 for the repository and NuGet tool package.
 - Record the successful Windows, Ubuntu, and macOS GitHub Actions run that closes the V0.1 release checklist.
+- Replace placeholder NuGet publication metadata with the V0.1 product identity and repository information.
 
 All notable changes will be documented here. The project follows semantic versioning after its first published release.
 

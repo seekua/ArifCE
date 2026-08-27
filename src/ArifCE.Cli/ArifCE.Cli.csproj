@@ -4,9 +4,16 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>arifce</ToolCommandName>
     <PackageId>ArifCE.Cli</PackageId>
+    <Title>ArifCE Project Intelligence CLI</Title>
     <Version>0.1.0</Version>
+    <Authors>ArifCE Contributors</Authors>
+    <Description>Local-first project intelligence, continuity, evidence, handoff, and refactor tracking for software engineering agents.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/seekua/ArifCE</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/seekua/ArifCE.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>project-intelligence;ai-agents;developer-tools;cli;continuity</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" />
