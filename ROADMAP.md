@@ -33,8 +33,8 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 20: implement the MCP server adapter over existing application services without creating a second source of truth.
 - [x] Phase 21: add deterministic MCP protocol tests, malformed-input handling, capability discovery, and fixture coverage.
 - [ ] Phase 22: document MCP setup for coding agents and record observed cross-platform CI evidence.
-- [ ] Phase 23: design the UI/IDE integration boundary and A2A/multi-worktree contracts; implementation remains separately gated.
-- [ ] Phase 24: define the benchmark protocol for retrieval and verification quality; do not claim effectiveness before repeatable runs.
+- [x] Phase 23: design the UI/IDE integration boundary and A2A/multi-worktree contracts; implementation remains separately gated.
+- [x] Phase 24: define the benchmark protocol for retrieval and verification quality; do not claim effectiveness before repeatable runs.
 
 ## Explicit deferrals
 
