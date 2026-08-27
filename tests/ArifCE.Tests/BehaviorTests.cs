@@ -114,6 +114,15 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Sqlite_schema_snapshot_is_normalized_and_detects_removed_objects()
+    {
+        await Service.InitializeAsync(root, false);
+        var database = Path.Combine(root, ".arifce", "index", "arifce.db"); var snapshot = await SqliteSchemaAnalyzer.ReadAsync(database);
+        var diff = SqliteSchemaAnalyzer.Compare(snapshot, snapshot.Skip(1).ToArray());
+        Assert.NotEmpty(diff.Removed); Assert.False(diff.IsCompatible); Assert.Equal(snapshot.Order(StringComparer.Ordinal).ToArray(), snapshot.ToArray());
+    }
+
+    [Fact]
     public async Task Definition_of_done_core_flow_survives_index_deletion()
     {
         await Service.InitializeAsync(root, false);
