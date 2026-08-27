@@ -51,14 +51,14 @@ try {
         if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
         $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)
         if ($LASTEXITCODE -ne 0 -or $architectureOutput -notmatch "${architectureClaimId}: \w+ \(EVIDENCE-\d{4}\)") { throw 'Packaged architecture boundary verification failed.' }
-        $apiAssembly = (Get-ChildItem -LiteralPath $toolDirectory -Filter 'ArifCE.Core.dll' -Recurse | Select-Object -First 1).FullName
-        if ([string]::IsNullOrWhiteSpace($apiAssembly)) { throw 'Packaged core assembly was not found.' }
-        Copy-Item -Force -LiteralPath $apiAssembly -Destination (Join-Path $repositoryDirectory 'ArifCE.Core.dll')
-        & $executable api baseline ArifCE.Core.dll --baseline api-baseline.json
+        $apiAssembly = (Get-ChildItem -LiteralPath $toolDirectory -Filter 'ArifCE.Cli.dll' -Recurse | Select-Object -First 1).FullName
+        if ([string]::IsNullOrWhiteSpace($apiAssembly)) { throw 'Packaged CLI assembly was not found.' }
+        Copy-Item -Force -LiteralPath $apiAssembly -Destination (Join-Path $repositoryDirectory 'ArifCE.Cli.dll')
+        & $executable api baseline ArifCE.Cli.dll --baseline api-baseline.json
         if ($LASTEXITCODE -ne 0) { throw 'Packaged API baseline creation failed.' }
         $apiClaimId = (& $executable claim create 'The packaged CLI API baseline remains compatible' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $apiClaimId -notmatch '^CLAIM-\d{4}$') { throw "API claim creation failed: $apiClaimId" }
-        $apiOutput = (& $executable api compare ArifCE.Core.dll --baseline api-baseline.json --claim $apiClaimId | Out-String)
+        $apiOutput = (& $executable api compare ArifCE.Cli.dll --baseline api-baseline.json --claim $apiClaimId | Out-String)
         if ($LASTEXITCODE -ne 0 -or $apiOutput -notmatch "${apiClaimId}: \w+ \(EVIDENCE-\d{4}\)") { throw 'Packaged API compatibility verification failed.' }
         $findingId = (& $executable finding create 'Package fixture review finding' --description 'Exercise canonical finding linkage' --severity 'LOW' --task $taskId --path 'src/**' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $findingId -notmatch '^FINDING-\d{4}$') { throw "Finding creation failed: $findingId" }
