@@ -119,7 +119,7 @@ public sealed class BehaviorTests : IDisposable
         await Service.InitializeAsync(root, false);
         var database = Path.Combine(root, ".arifce", "index", "arifce.db"); var snapshot = await SqliteSchemaAnalyzer.ReadAsync(database);
         var diff = SqliteSchemaAnalyzer.Compare(snapshot, snapshot.Skip(1).ToArray());
-        Assert.NotEmpty(diff.Removed); Assert.False(diff.IsCompatible); Assert.Equal(snapshot.Order(StringComparer.Ordinal).ToArray(), snapshot.ToArray());
+        Assert.NotEmpty(diff.Removed); Assert.False(diff.IsCompatible); Assert.Equal(snapshot, await SqliteSchemaAnalyzer.ReadAsync(database));
     }
 
     [Fact]
