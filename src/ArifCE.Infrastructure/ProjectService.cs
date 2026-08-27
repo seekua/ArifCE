@@ -171,6 +171,15 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var updated = claim with { Status = status, Evidence = claim.Evidence.Concat([evidenceId]).ToArray() }; await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken); await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
     }
 
+    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifySqliteSchemaAsync(string root, string claimId, string databasePath, string baselinePath, CancellationToken cancellationToken = default)
+    {
+        var claim = await GetClaimAsync(root, claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
+        var database = ResolveRepositoryPath(root, databasePath); var baseline = ResolveRepositoryPath(root, baselinePath); var current = await SqliteSchemaAnalyzer.ReadAsync(database, cancellationToken); var diff = SqliteSchemaAnalyzer.Compare(await SqliteSchemaAnalyzer.ReadBaselineAsync(baseline, cancellationToken), current);
+        var id = canonical.NextId(root, "evidence", "EVIDENCE"); var summary = $"SQLite schema compatibility {(diff.IsCompatible ? "passed" : "failed")}. Added: {diff.Added.Count}; removed: {diff.Removed.Count}; changed: {diff.Changed.Count}.";
+        var evidence = new EvidenceRecord(1, id, claim.Id, "SQLITE_SCHEMA", $"arifce schema compare {databasePath} --baseline {baselinePath}", diff.IsCompatible ? 0 : 1, summary, await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow, new EvidenceMetrics(current.Count, diff.Added.Count, diff.Removed.Count, diff.Changed.Count));
+        await canonical.WriteAsync(root, "evidence", id, evidence, cancellationToken); var updated = claim with { Status = diff.IsCompatible ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted, Evidence = claim.Evidence.Concat([id]).ToArray() }; await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken); await RecordAsync(root, "evidence.recorded", id, evidence, cancellationToken); return (updated, evidence);
+    }
+
     private static string ResolveRepositoryPath(string root, string path)
     {
         var fullRoot = Path.GetFullPath(root); var resolved = Path.GetFullPath(Path.Combine(fullRoot, path)); var relative = Path.GetRelativePath(fullRoot, resolved);
