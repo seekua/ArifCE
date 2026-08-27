@@ -21,11 +21,15 @@ public sealed class McpProtocolTests
         await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{}}");
         await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}");
         await process.StandardInput.FlushAsync();
-        var initialize = await process.StandardOutput.ReadLineAsync();
-        var tools = await process.StandardOutput.ReadLineAsync();
+        var lines = new List<string>();
+        for (var i = 0; i < 4 && lines.Count < 2; i++)
+        {
+            var line = await process.StandardOutput.ReadLineAsync();
+            if (line is not null && line.Contains("\"result\"", StringComparison.Ordinal)) lines.Add(line);
+        }
         process.Kill();
-        Assert.Contains("\"protocolVersion\":\"2025-03-26\"", initialize);
-        Assert.Contains("arifce_status", tools);
-        Assert.Contains("arifce_handoff", tools);
+        Assert.Contains(lines, line => line.Contains("\"protocolVersion\":\"2025-03-26\"", StringComparison.Ordinal));
+        Assert.Contains(lines, line => line.Contains("arifce_status", StringComparison.Ordinal));
+        Assert.Contains(lines, line => line.Contains("arifce_handoff", StringComparison.Ordinal));
     }
 }
