@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0012",
+  "summary": "V0.2 Phase 15 closed: architecture-boundary adapter passed local 19-test suite, package smoke, and CI run 33063208576 on Windows Ubuntu macOS",
+  "snapshot": {
+    "commit": "e09220f88fd983a267cf6042fbbee0aa24ae9c48",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      "ROADMAP.md",
+      "docs/release/v0.2-phase-15-checklist.md"
+    ],
+    "digest": "9d578ac6776f3677f7df9618960732befedd2f57ad33c2030a8b8de88401afda"
+  },
+  "createdAtUtc": "2026-08-27T10:33:55.9299645+00:00"
+}
