@@ -36,6 +36,14 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 23: design the UI/IDE integration boundary and A2A/multi-worktree contracts; implementation remains separately gated.
 - [x] Phase 24: define the benchmark protocol for retrieval and verification quality; do not claim effectiveness before repeatable runs.
 
+## V0.4 implementation phases
+
+- [ ] Phase 25: define the local-only dashboard and expanded MCP safety contract.
+- [ ] Phase 26: implement a local dashboard for status, tasks, decisions, evidence, findings, and handoffs.
+- [ ] Phase 27: expose narrowly scoped verification and refactor lifecycle tools through MCP with explicit validation.
+- [ ] Phase 28: add deterministic UI/MCP tests and observed cross-platform CI evidence.
+- [ ] Phase 29: complete V0.4 documentation and release readiness; cloud remains deferred.
+
 ## Explicit deferrals
 
 - **External semantic reviewer invocation:** V0.1 defines typed blind-review interfaces but does not pretend to invoke Codex, Claude, or OpenCode reliably. Vendor authentication, process control, cost policy, and capability discovery require dedicated integrations.
