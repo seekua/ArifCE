@@ -8,6 +8,29 @@ ArifCE is a local-first project intelligence and continuity layer for AI-assiste
 
 > The repository owns the context. The agent only borrows it.
 
+## How ArifCE works
+
+```mermaid
+flowchart LR
+    A[Agent starts] --> B[Read protocol and current state]
+    B --> C[Retrieve task-specific context]
+    C --> D[Change the code]
+    D --> E[Record claim and evidence]
+    E --> F{Verification passes?}
+    F -- Yes --> G[Checkpoint and handoff]
+    F -- No --> H[Record finding or failed attempt]
+    H --> C
+    G --> I[Next agent continues]
+```
+
+This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+
+- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
+- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
+- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
+- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
+- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+
 ## Not just memory
 
 ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
