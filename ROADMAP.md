@@ -29,7 +29,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 
 ## V0.3 implementation phases
 
-- [ ] Phase 19: define the local-first MCP transport, tool contract, security boundaries, and compatibility policy.
+- [x] Phase 19: define the local-first MCP transport, tool contract, security boundaries, and compatibility policy.
 - [x] Phase 20: implement the MCP server adapter over existing application services without creating a second source of truth.
 - [x] Phase 21: add deterministic MCP protocol tests, malformed-input handling, capability discovery, and fixture coverage.
 - [x] Phase 22: document MCP setup for coding agents and record observed cross-platform CI evidence.
