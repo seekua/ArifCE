@@ -44,6 +44,14 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 28: add deterministic UI/MCP tests and observed cross-platform CI evidence.
 - [x] Phase 29: complete V0.4 documentation and release readiness; cloud remains deferred.
 
+## V0.5 implementation phases
+
+- [x] Phase 30: define dashboard record projections and IDE local-connection contract.
+- [x] Phase 31: expose project record lists and summary panels in the local dashboard.
+- [x] Phase 32: add an IDE integration manifest that launches the local dashboard/MCP boundaries.
+- [ ] Phase 33: add deterministic API/UI smoke tests and CI evidence.
+- [ ] Phase 34: complete V0.5 documentation and release readiness.
+
 ## Explicit deferrals
 
 - **External semantic reviewer invocation:** V0.1 defines typed blind-review interfaces but does not pretend to invoke Codex, Claude, or OpenCode reliably. Vendor authentication, process control, cost policy, and capability discovery require dedicated integrations.

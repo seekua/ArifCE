@@ -2,7 +2,7 @@ using System.Text.Json;
 using ArifCE.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls(Environment.GetEnvironmentVariable("ARIFCE_DASHBOARD_URL") ?? "http://127.0.0.1:5180");
+builder.WebHost.UseUrls($"http://127.0.0.1:{Environment.GetEnvironmentVariable("ARIFCE_DASHBOARD_PORT") ?? "5180"}");
 var app = builder.Build();
 var locator = new ProjectLocator();
 var canonical = new CanonicalStore();
@@ -19,6 +19,16 @@ app.MapGet("/api/search", async (string q, int? limit) =>
     var hits = await index.SearchAsync(Root(), q, Math.Clamp(limit ?? 20, 1, 50));
     return Results.Json(hits.Select(x => new { path = x.Path, score = x.Score, snippet = x.Snippet }));
 });
+app.MapGet("/api/records", (string? kind, int? limit) =>
+{
+    var selected = string.IsNullOrWhiteSpace(kind) ? CanonicalStore.EntityDirectories : [kind!];
+    if (selected.Any(x => !CanonicalStore.EntityDirectories.Contains(x, StringComparer.OrdinalIgnoreCase))) return Results.BadRequest(new { error = "Unknown record kind" });
+    var max = Math.Clamp(limit ?? 20, 1, 100);
+    var result = selected.SelectMany(directory => Directory.Exists(Path.Combine(Root(), ".arifce", directory))
+        ? Directory.EnumerateFiles(Path.Combine(Root(), ".arifce", directory), "*.json").OrderByDescending(File.GetLastWriteTimeUtc).Take(max).Select(path => new { kind = directory, id = Path.GetFileNameWithoutExtension(path), modifiedUtc = File.GetLastWriteTimeUtc(path) })
+        : []).Take(max).ToArray();
+    return Results.Json(result);
+});
 app.Run();
 
 string Root() => locator.FindRoot(Environment.GetEnvironmentVariable("ARIFCE_PROJECT_ROOT") ?? Environment.CurrentDirectory);
@@ -28,7 +38,7 @@ static class DashboardPage
 public const string Html = """
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ArifCE Dashboard</title>
 <style>body{font:16px system-ui;margin:0;background:#0f172a;color:#e2e8f0}main{max-width:960px;margin:auto;padding:32px}section{background:#1e293b;border-radius:12px;padding:20px;margin:16px 0}pre{white-space:pre-wrap;color:#cbd5e1}input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #475569}button{background:#2563eb;color:white;cursor:pointer}input{width:65%;background:#0f172a;color:white}</style></head>
-<body><main><h1>ArifCE Dashboard</h1><p>Local project intelligence · no cloud connection</p><section><h2>Current status</h2><pre id="status">Loading…</pre></section><section><h2>Search project context</h2><input id="q" placeholder="Search decisions, tasks, evidence…"><button onclick="search()">Search</button><pre id="results"></pre></section></main>
-<script>async function load(){const r=await fetch('/api/status');document.querySelector('#status').textContent=await r.text()}async function search(){const q=document.querySelector('#q').value;if(!q)return;const r=await fetch('/api/search?q='+encodeURIComponent(q));document.querySelector('#results').textContent=JSON.stringify(await r.json(),null,2)}load()</script></body></html>
+<body><main><h1>ArifCE Dashboard</h1><p>Local project intelligence · no cloud connection</p><section><h2>Current status</h2><pre id="status">Loading…</pre></section><section><h2>Recent project records</h2><pre id="records">Loading…</pre></section><section><h2>Search project context</h2><input id="q" placeholder="Search decisions, tasks, evidence…"><button onclick="search()">Search</button><pre id="results"></pre></section></main>
+<script>async function load(){const [s,r]=await Promise.all([fetch('/api/status'),fetch('/api/records?limit=30')]);document.querySelector('#status').textContent=await s.text();document.querySelector('#records').textContent=JSON.stringify(await r.json(),null,2)}async function search(){const q=document.querySelector('#q').value;if(!q)return;const r=await fetch('/api/search?q='+encodeURIComponent(q));document.querySelector('#results').textContent=JSON.stringify(await r.json(),null,2)}load()</script></body></html>
 """;
 }

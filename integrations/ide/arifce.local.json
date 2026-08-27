@@ -1,0 +1,13 @@
+{
+  "name": "ArifCE local integration",
+  "dashboard": {
+    "command": "dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj",
+    "url": "http://127.0.0.1:5180"
+  },
+  "mcp": {
+    "command": "dotnet run --project src/ArifCE.Mcp/ArifCE.Mcp.csproj",
+    "workingDirectory": "${workspaceFolder}"
+  },
+  "network": "loopback-only",
+  "cloud": false
+}
