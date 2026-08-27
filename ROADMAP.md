@@ -39,7 +39,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - **Additional automated evidence kinds:** .NET test/build commands are classified and localized summary counts are stored as structured metrics. Architecture-boundary, public API, and SQLite schema evidence are implemented in V0.2. Future evidence kinds require a new owner-approved scope.
 - **GitHub Actions runtime maintenance:** the successful V0.1 run emitted Node 20 deprecation annotations for `actions/checkout@v4` and `actions/setup-dotnet@v4`. `FINDING-0002` tracks the non-blocking action-major upgrade.
 - **External integrations:** MCP, A2A orchestration, vendor reviewer invocation, cloud services, UI, and IDE integrations remain outside V0.2. They require an owner-approved scope and dedicated security/lifecycle design.
-- **GitHub social preview/avatar:** the repository is public and README branding is shipped, but applying the supplied local SVG to GitHub's Social preview could not be completed from the Codex browser because its file-chooser bridge timed out. GitHub also exposes an account/organization avatar rather than a repository-specific avatar. Revisit with a raster asset and direct GitHub upload when that account-level change is explicitly scheduled.
+- **GitHub account avatar:** repository Social Preview branding is shipped. GitHub does not provide a repository-specific avatar; changing the `seekua` account or organization avatar remains an account-level operation outside the repository release scope.
 
 ## Environment note
 
