@@ -6,7 +6,7 @@ Deliver V0.2 deterministic verification adapters while preserving the published 
 
 ## Status
 
-V0.1 remains published as GitHub Release v0.1.0. TASK-0004 is open for V0.2: deterministic architecture-boundary, public API surface, and SQLite schema compatibility evidence adapters. ADR-0005 records the owner-authorized scope. Phases 15 and 16 are complete with local and cross-platform CI evidence; Phase 17 is next.
+V0.1 remains published as GitHub Release v0.1.0. TASK-0004 is open for V0.2: deterministic architecture-boundary, public API surface, and SQLite schema compatibility evidence adapters. ADR-0005 records the owner-authorized scope. Phases 15, 16, and 17 are complete with local and cross-platform CI evidence; Phase 18 is next.
 
 ## Blockers
 
@@ -14,4 +14,4 @@ No V0.1 release blocker remains. V0.2 must not claim adapter coverage until each
 
 ## Next steps
 
-Implement Phase 17 normalized SQLite schema compatibility evidence with deterministic database baselines and diffs.
+Complete V0.2 documentation, package fixture coverage, and release evidence for all three adapters.
