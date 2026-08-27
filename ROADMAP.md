@@ -27,6 +27,15 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 17: implement normalized SQLite schema baselines and compatibility diffs for selected databases.
 - [x] Phase 18: complete V0.2 documentation, package fixture coverage, and observed Windows/Ubuntu/macOS CI evidence.
 
+## V0.3 implementation phases
+
+- [ ] Phase 19: define the local-first MCP transport, tool contract, security boundaries, and compatibility policy.
+- [ ] Phase 20: implement the MCP server adapter over existing application services without creating a second source of truth.
+- [ ] Phase 21: add deterministic MCP protocol tests, malformed-input handling, capability discovery, and fixture coverage.
+- [ ] Phase 22: document MCP setup for coding agents and record observed cross-platform CI evidence.
+- [ ] Phase 23: design the UI/IDE integration boundary and A2A/multi-worktree contracts; implementation remains separately gated.
+- [ ] Phase 24: define the benchmark protocol for retrieval and verification quality; do not claim effectiveness before repeatable runs.
+
 ## Explicit deferrals
 
 - **External semantic reviewer invocation:** V0.1 defines typed blind-review interfaces but does not pretend to invoke Codex, Claude, or OpenCode reliably. Vendor authentication, process control, cost policy, and capability discovery require dedicated integrations.
