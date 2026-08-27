@@ -1,11 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>arifce-dashboard</ToolCommandName>
+    <PackageId>ArifCE.Dashboard</PackageId>
+    <Version>0.4.0</Version>
+    <Authors>ArifCE Contributors</Authors>
+    <Description>Local-only dashboard for ArifCE project intelligence.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/seekua/ArifCE</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/seekua/ArifCE.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>ArifCE.Dashboard</AssemblyName>
     <RootNamespace>ArifCE.Dashboard</RootNamespace>
   </PropertyGroup>
-  <ItemGroup><ProjectReference Include="../ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" Link="README.md" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" Link="LICENSE" />
+  </ItemGroup>
 </Project>

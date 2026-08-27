@@ -41,7 +41,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 25: define the local-only dashboard and expanded MCP safety contract.
 - [x] Phase 26: implement a local dashboard for status, tasks, decisions, evidence, findings, and handoffs.
 - [x] Phase 27: expose narrowly scoped refactor inspection tools through MCP with explicit validation; shell-backed verification remains deferred for a stronger command policy.
-- [ ] Phase 28: add deterministic UI/MCP tests and observed cross-platform CI evidence.
+- [x] Phase 28: add deterministic UI/MCP tests and observed cross-platform CI evidence.
 - [ ] Phase 29: complete V0.4 documentation and release readiness; cloud remains deferred.
 
 ## Explicit deferrals
