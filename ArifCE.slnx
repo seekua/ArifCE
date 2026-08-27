@@ -3,6 +3,7 @@
     <Project Path="src/ArifCE.Core/ArifCE.Core.csproj" />
     <Project Path="src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" />
     <Project Path="src/ArifCE.Cli/ArifCE.Cli.csproj" />
+    <Project Path="src/ArifCE.Mcp/ArifCE.Mcp.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ArifCE.Tests/ArifCE.Tests.csproj" />
