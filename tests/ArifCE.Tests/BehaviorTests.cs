@@ -84,6 +84,21 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Architecture_boundary_evidence_is_deterministic_and_confined_to_repository_paths()
+    {
+        await Service.InitializeAsync(root, false); var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "Boundary.cs"), "using Forbidden.Layer;\nnamespace Fixture;");
+        var failingClaim = await Service.CreateClaimAsync(root, "No forbidden dependency exists", RiskLevel.Low);
+        var failed = await Service.VerifyArchitectureBoundaryAsync(root, failingClaim.Id, ["Forbidden.Layer"], ["src"]);
+        Assert.Equal(ClaimStatus.Contradicted, failed.Claim.Status); Assert.Equal("ARCHITECTURE_BOUNDARY", failed.Evidence.Kind); Assert.Equal(1, failed.Evidence.ExitCode); Assert.Contains("src/Boundary.cs:1", failed.Evidence.Summary);
+        await File.WriteAllTextAsync(Path.Combine(source, "Boundary.cs"), "namespace Fixture;");
+        var passingClaim = await Service.CreateClaimAsync(root, "No forbidden dependency exists", RiskLevel.Low);
+        var passed = await Service.VerifyArchitectureBoundaryAsync(root, passingClaim.Id, ["Forbidden.Layer"], ["src"]);
+        Assert.Equal(ClaimStatus.Verified, passed.Claim.Status); Assert.Equal(0, passed.Evidence.ExitCode);
+        await Assert.ThrowsAsync<ArgumentException>(() => Service.VerifyArchitectureBoundaryAsync(root, passingClaim.Id, ["Forbidden.Layer"], [".."]));
+    }
+
+    [Fact]
     public async Task Definition_of_done_core_flow_survives_index_deletion()
     {
         await Service.InitializeAsync(root, false);

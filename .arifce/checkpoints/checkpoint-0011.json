@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0011",
+  "summary": "V0.2 Phase 15 architecture-boundary adapter implemented with deterministic tests and packaged CLI coverage",
+  "snapshot": {
+    "commit": "0831c76282f2330554b5e3defd2ffc564375ae56",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      "CHANGELOG.md",
+      "ROADMAP.md",
+      "docs/reference/cli.md",
+      "scripts/package-smoke.ps1",
+      "src/ArifCE.Cli/Program.cs",
+      "src/ArifCE.Infrastructure/ArchitectureBoundaryScanner.cs",
+      "src/ArifCE.Infrastructure/ProjectService.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "f59c9df50c4d6fabb104581dd5244f4e3f1bb28e8908f0fcc126ac806e8c9a1a"
+  },
+  "createdAtUtc": "2026-08-27T10:17:36.2545228+00:00"
+}

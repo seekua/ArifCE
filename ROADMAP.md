@@ -22,7 +22,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 ## V0.2 implementation phases
 
 - [x] Phase 14: define the deterministic verification-adapter contract, safety boundaries, acceptance criteria, and explicit V0.2 non-goals.
-- [ ] Phase 15: implement configured architecture-boundary evidence with deterministic source scanning and actionable findings.
+- [ ] Phase 15: implement configured architecture-boundary evidence with deterministic source scanning, actionable findings, package-fixture coverage, and observed CI evidence.
 - [ ] Phase 16: implement normalized public API surface baselines and compatibility diffs for selected .NET assemblies.
 - [ ] Phase 17: implement normalized SQLite schema baselines and compatibility diffs for selected databases.
 - [ ] Phase 18: complete V0.2 documentation, package fixture coverage, and observed Windows/Ubuntu/macOS CI evidence.
@@ -36,7 +36,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - **Benchmark results:** only the benchmark protocol is defined until repeatable experiments are run; no effectiveness percentages will be claimed.
 - **Manual evidence authoring:** decision, failed-attempt, finding, and review commands persist canonical records. Deterministic command evidence remains available through `verify`; arbitrary manual evidence waits for a provenance and trust policy.
 - **Autonomous refactor coordination:** CLI metadata now covers invariants, inventory, forbidden-reference guards, workstream ownership/path scopes, and Git-snapshot safe points. Creating worktrees, assigning agents, merging, and rollback execution remain explicit post-V0.1 orchestration work.
-- **Additional automated evidence kinds:** .NET test/build commands are classified and localized summary counts are stored as structured metrics. API-diff, architecture-boundary, and database-compatibility adapters are not yet implemented.
+- **Additional automated evidence kinds:** .NET test/build commands are classified and localized summary counts are stored as structured metrics. Architecture-boundary evidence is implemented. API-diff and database-compatibility adapters remain planned for V0.2 Phases 16 and 17.
 - **GitHub Actions runtime maintenance:** the successful V0.1 run emitted Node 20 deprecation annotations for `actions/checkout@v4` and `actions/setup-dotnet@v4`. `FINDING-0002` tracks the non-blocking action-major upgrade.
 - **External integrations:** MCP, A2A orchestration, vendor reviewer invocation, cloud services, UI, and IDE integrations remain outside V0.2. They require an owner-approved scope and dedicated security/lifecycle design.
 

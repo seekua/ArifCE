@@ -137,6 +137,27 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
     }
 
+    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyArchitectureBoundaryAsync(string root, string claimId, IReadOnlyList<string> forbiddenReferences, IReadOnlyList<string> paths, CancellationToken cancellationToken = default)
+    {
+        if (forbiddenReferences.Count == 0) throw new ArgumentException("At least one --forbid value is required.");
+        if (paths.Count == 0) throw new ArgumentException("At least one --path value is required.");
+        var claim = await GetClaimAsync(root, claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
+        var before = await git.CaptureAsync(root, cancellationToken);
+        var scan = await ArchitectureBoundaryScanner.ScanAsync(root, forbiddenReferences, paths, cancellationToken);
+        var evidenceId = canonical.NextId(root, "evidence", "EVIDENCE");
+        var command = $"arifce architecture check {claimId} {string.Join(' ', forbiddenReferences.Select(value => $"--forbid {value}"))} {string.Join(' ', paths.Select(path => $"--path {path}"))}";
+        var summary = scan.Violations.Count == 0
+            ? $"Architecture boundary check passed. {scan.FilesScanned} source file(s) scanned; forbidden references: {string.Join(", ", forbiddenReferences.Order(StringComparer.Ordinal))}."
+            : $"Architecture boundary check failed with {scan.Violations.Count} violation(s) in {scan.FilesScanned} source file(s).\n{string.Join('\n', scan.Violations.Take(20))}";
+        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, "ARCHITECTURE_BOUNDARY", command, scan.Violations.Count == 0 ? 0 : 1, summary, before, DateTimeOffset.UtcNow, new EvidenceMetrics(scan.FilesScanned, scan.FilesScanned - scan.ViolatingFiles, scan.Violations.Count, null));
+        await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
+        var status = scan.Violations.Count == 0 ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
+        var updated = claim with { Status = status, Evidence = claim.Evidence.Concat([evidenceId]).ToArray() };
+        await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken);
+        await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken);
+        return (updated, evidence);
+    }
+
     public async Task<HandoffRecord> HandoffAsync(string root, CancellationToken cancellationToken = default)
     {
         var snapshot = await git.CaptureAsync(root, cancellationToken);

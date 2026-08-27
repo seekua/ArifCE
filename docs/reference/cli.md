@@ -53,9 +53,12 @@ Omitted historical rationale is stored as `Unknown.`. Attempts must reference an
 arifce claim create <statement>
 arifce claim status <claim-id>
 arifce verify <claim-id> --command <deterministic-command>
+arifce architecture check <claim-id> --forbid <reference> --path <source-path>
 ```
 
 Verification executes the user-supplied command in the project root and records command, exit code, output summary, Git snapshot, and structured .NET build/test metrics when recognized. Medium-risk claims become `SUPPORTED`, not automatically `VERIFIED`, after one successful command.
+
+`architecture check` is a V0.2 deterministic evidence adapter. It scans only the explicitly supplied repository-local source paths (`.cs`, project, props, and targets files), excludes derived and raw directories, and records matching forbidden references with file and line numbers. A clean check proves only that the selected paths do not contain the supplied text references.
 
 ```text
 arifce review record <claim-id> --reviewer <agent> --verdict <verdict> --summary <text> [--finding <id> ...]

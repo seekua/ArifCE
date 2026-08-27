@@ -45,6 +45,12 @@ try {
         if ($LASTEXITCODE -ne 0 -or $claimId -notmatch '^CLAIM-\d{4}$') { throw "Claim creation failed: $claimId" }
         $verificationOutput = (& $executable verify $claimId --command 'dotnet --version' | Out-String)
         if ($LASTEXITCODE -ne 0 -or $verificationOutput -notmatch "${claimId}: Supported \(EVIDENCE-\d{4}\)") { throw 'Deterministic claim verification failed.' }
+        New-Item -ItemType Directory -Force -Path (Join-Path $repositoryDirectory 'src') | Out-Null
+        Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\Boundary.cs') -Value 'namespace PackageFixture;'
+        $architectureClaimId = (& $executable claim create 'The packaged CLI verifies an architecture boundary' --risk LOW | Select-Object -Last 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
+        $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $architectureOutput -notmatch "${architectureClaimId}: Verified \(EVIDENCE-\d{4}\)") { throw 'Packaged architecture boundary verification failed.' }
         $findingId = (& $executable finding create 'Package fixture review finding' --description 'Exercise canonical finding linkage' --severity 'LOW' --task $taskId --path 'src/**' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $findingId -notmatch '^FINDING-\d{4}$') { throw "Finding creation failed: $findingId" }
         $reviewId = (& $executable review record $claimId --reviewer 'package-smoke' --verdict 'INCONCLUSIVE' --summary 'Fixture review cannot establish semantic truth' --finding $findingId | Select-Object -Last 1).Trim()
@@ -77,6 +83,7 @@ try {
         $decisionRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/decisions/$($decisionId.ToLowerInvariant()).json") | ConvertFrom-Json
         $attemptRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/attempts/$($attemptId.ToLowerInvariant()).json") | ConvertFrom-Json
         $claimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($claimId.ToLowerInvariant()).json") | ConvertFrom-Json
+        $architectureClaimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($architectureClaimId.ToLowerInvariant()).json") | ConvertFrom-Json
         $findingRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/findings/$($findingId.ToLowerInvariant()).json") | ConvertFrom-Json
         $reviewRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/reviews/$($reviewId.ToLowerInvariant()).json") | ConvertFrom-Json
         $refactorRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/refactors/$($refactorId.ToLowerInvariant()).json") | ConvertFrom-Json
@@ -84,6 +91,7 @@ try {
         if ($decisionRecord.historicalRationale -ne 'Unknown.') { throw 'Decision did not preserve unknown historical rationale.' }
         if ($attemptRecord.taskId -ne $taskId -or $attemptRecord.result -ne 'rejected') { throw 'Canonical failed-attempt state is incomplete.' }
         if ($claimRecord.status -ne 'SUPPORTED' -or $claimRecord.evidence.Count -lt 1) { throw 'Canonical claim/evidence state is incomplete.' }
+        if ($architectureClaimRecord.status -ne 'VERIFIED' -or $architectureClaimRecord.evidence.Count -ne 1) { throw 'Canonical architecture-boundary state is incomplete.' }
         if ($findingRecord.status -ne 'COMPLETED' -or $reviewRecord.claimId -ne $claimId -or $reviewRecord.verdict -ne 'INCONCLUSIVE') { throw 'Canonical finding/review state is incomplete.' }
         if ($refactorRecord.status -ne 'COMPLETED' -or $refactorRecord.inventory.Count -ne 0 -or $refactorRecord.workstreams.Count -ne 1 -or $refactorRecord.safePoints.Count -ne 1) { throw 'Canonical refactor state is incomplete.' }
 
