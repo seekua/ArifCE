@@ -35,7 +35,8 @@ public static class ApiSurfaceAnalyzer
     public static async Task<IReadOnlyList<string>> ReadBaselineAsync(string path, CancellationToken ct = default)
     {
         if (!File.Exists(path)) throw new ArgumentException($"API baseline '{path}' does not exist.");
-        return await JsonSerializer.DeserializeAsync<string[]>(File.OpenRead(path), JsonDefaults.Options, ct) ?? [];
+        await using var stream = File.OpenRead(path);
+        return await JsonSerializer.DeserializeAsync<string[]>(stream, JsonDefaults.Options, ct) ?? [];
     }
 
     private static IEnumerable<string> TypeEntries(Type type)
