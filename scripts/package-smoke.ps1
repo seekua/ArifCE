@@ -51,6 +51,16 @@ try {
         if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
         $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)
         if ($LASTEXITCODE -ne 0 -or $architectureOutput -notmatch "${architectureClaimId}: \w+ \(EVIDENCE-\d{4}\)") { throw 'Packaged architecture boundary verification failed.' }
+        $apiAssembly = (Get-ChildItem -LiteralPath $toolDirectory -Filter 'ArifCE.Infrastructure.dll' -Recurse | Select-Object -First 1).FullName
+        if ([string]::IsNullOrWhiteSpace($apiAssembly)) { throw 'Packaged infrastructure assembly was not found.' }
+        Copy-Item -Force -LiteralPath $apiAssembly -Destination (Join-Path $repositoryDirectory 'ArifCE.Infrastructure.dll')
+        Copy-Item -Force -LiteralPath (Join-Path (Split-Path $apiAssembly) 'ArifCE.Core.dll') -Destination (Join-Path $repositoryDirectory 'ArifCE.Core.dll')
+        & $executable api baseline ArifCE.Infrastructure.dll --baseline api-baseline.json
+        if ($LASTEXITCODE -ne 0) { throw 'Packaged API baseline creation failed.' }
+        $apiClaimId = (& $executable claim create 'The packaged CLI API baseline remains compatible' | Select-Object -Last 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or $apiClaimId -notmatch '^CLAIM-\d{4}$') { throw "API claim creation failed: $apiClaimId" }
+        $apiOutput = (& $executable api compare ArifCE.Infrastructure.dll --baseline api-baseline.json --claim $apiClaimId | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $apiOutput -notmatch "${apiClaimId}: \w+ \(EVIDENCE-\d{4}\)") { throw 'Packaged API compatibility verification failed.' }
         $findingId = (& $executable finding create 'Package fixture review finding' --description 'Exercise canonical finding linkage' --severity 'LOW' --task $taskId --path 'src/**' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $findingId -notmatch '^FINDING-\d{4}$') { throw "Finding creation failed: $findingId" }
         $reviewId = (& $executable review record $claimId --reviewer 'package-smoke' --verdict 'INCONCLUSIVE' --summary 'Fixture review cannot establish semantic truth' --finding $findingId | Select-Object -Last 1).Trim()
@@ -84,6 +94,7 @@ try {
         $attemptRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/attempts/$($attemptId.ToLowerInvariant()).json") | ConvertFrom-Json
         $claimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($claimId.ToLowerInvariant()).json") | ConvertFrom-Json
         $architectureClaimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($architectureClaimId.ToLowerInvariant()).json") | ConvertFrom-Json
+        $apiClaimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($apiClaimId.ToLowerInvariant()).json") | ConvertFrom-Json
         $findingRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/findings/$($findingId.ToLowerInvariant()).json") | ConvertFrom-Json
         $reviewRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/reviews/$($reviewId.ToLowerInvariant()).json") | ConvertFrom-Json
         $refactorRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/refactors/$($refactorId.ToLowerInvariant()).json") | ConvertFrom-Json
@@ -92,6 +103,7 @@ try {
         if ($attemptRecord.taskId -ne $taskId -or $attemptRecord.result -ne 'rejected') { throw 'Canonical failed-attempt state is incomplete.' }
         if ($claimRecord.status -ne 'SUPPORTED' -or $claimRecord.evidence.Count -lt 1) { throw 'Canonical claim/evidence state is incomplete.' }
         if ($architectureClaimRecord.evidence.Count -ne 1) { throw 'Canonical architecture-boundary state is incomplete.' }
+        if ($apiClaimRecord.evidence.Count -ne 1) { throw 'Canonical API evidence state is incomplete.' }
         if ($findingRecord.status -ne 'COMPLETED' -or $reviewRecord.claimId -ne $claimId -or $reviewRecord.verdict -ne 'INCONCLUSIVE') { throw 'Canonical finding/review state is incomplete.' }
         if ($refactorRecord.status -ne 'COMPLETED' -or $refactorRecord.inventory.Count -ne 0 -or $refactorRecord.workstreams.Count -ne 1 -or $refactorRecord.safePoints.Count -ne 1) { throw 'Canonical refactor state is incomplete.' }
 
