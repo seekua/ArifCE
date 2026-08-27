@@ -1,6 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>arifce-mcp</ToolCommandName>
+    <PackageId>ArifCE.Mcp</PackageId>
+    <Version>0.3.0</Version>
+    <Authors>ArifCE Contributors</Authors>
+    <Description>Local-first Model Context Protocol adapter for ArifCE project intelligence.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/seekua/ArifCE</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/seekua/ArifCE.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,5 +20,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" Link="README.md" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" Link="LICENSE" />
   </ItemGroup>
 </Project>
