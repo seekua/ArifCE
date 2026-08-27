@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0006",
+  "taskId": "TASK-0004",
+  "approach": "Validate V0.2 Markdown links with an inline PowerShell checker",
+  "result": "failed",
+  "reason": "PowerShell parsed the path variable followed by a colon as an invalid variable reference; the checker was corrected before use",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-08-27T10:03:27.8542487+00:00"
+}

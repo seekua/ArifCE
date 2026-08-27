@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0010",
+  "summary": "V0.2 Phase 14 complete: deterministic architecture-boundary, API surface, and SQLite schema evidence contract is defined; Phase 15 architecture scanning is next",
+  "snapshot": {
+    "commit": "f6722e891351f79a88eae675ac2b0d2c88b0e8ae",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".arifce/CURRENT.md",
+      ".arifce/attempts/attempt-0006.json",
+      ".arifce/decisions/adr-0005.json",
+      ".arifce/journal/events.jsonl",
+      ".arifce/tasks/task-0004.json",
+      "CHANGELOG.md",
+      "ROADMAP.md",
+      "docs/SPECIFICATION-v0.2.md"
+    ],
+    "digest": "d8e5fa8922811bb1a3d6cf17bd0e9deee4a65d4349457b368e9196a1f65f5830"
+  },
+  "createdAtUtc": "2026-08-27T10:03:51.2734022+00:00"
+}

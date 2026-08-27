@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0005",
+  "title": "Scope V0.2 around deterministic verification adapters",
+  "decision": "Implement architecture-boundary, public API surface, and SQLite schema compatibility evidence adapters before considering external integrations",
+  "historicalRationale": "The owner authorized V0.2 and these are the V0.1 deferrals that improve evidence quality without vendor credentials or cloud authority",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-08-27T10:02:06.5284576+00:00"
+}

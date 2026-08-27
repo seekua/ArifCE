@@ -1,5 +1,7 @@
 # Changelog
 
+- Start V0.2 with an explicit deterministic verification-adapter contract covering architecture, API surface, and SQLite schema compatibility.
+
 - Select Apache-2.0 for the repository and NuGet tool package.
 - Record the successful Windows, Ubuntu, and macOS GitHub Actions run that closes the V0.1 release checklist.
 - Replace placeholder NuGet publication metadata with the V0.1 product identity and repository information.

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0004",
+  "title": "Deliver deterministic verification adapters for V0.2",
+  "description": null,
+  "status": "OPEN",
+  "risk": "MEDIUM",
+  "createdAtUtc": "2026-08-27T10:02:01.0086351+00:00"
+}

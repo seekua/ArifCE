@@ -19,6 +19,14 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 12: getting-started, concepts, architecture, agent, reference, research, and release documentation match implemented behavior and mark deferred boundaries explicitly.
 - [x] Phase 13: build/tests, CLI dogfood, the complete packaged global-tool definition-of-done fixture, Apache-2.0 licensing, and observed Windows/Ubuntu/macOS CI results pass.
 
+## V0.2 implementation phases
+
+- [x] Phase 14: define the deterministic verification-adapter contract, safety boundaries, acceptance criteria, and explicit V0.2 non-goals.
+- [ ] Phase 15: implement configured architecture-boundary evidence with deterministic source scanning and actionable findings.
+- [ ] Phase 16: implement normalized public API surface baselines and compatibility diffs for selected .NET assemblies.
+- [ ] Phase 17: implement normalized SQLite schema baselines and compatibility diffs for selected databases.
+- [ ] Phase 18: complete V0.2 documentation, package fixture coverage, and observed Windows/Ubuntu/macOS CI evidence.
+
 ## Explicit deferrals
 
 - **External semantic reviewer invocation:** V0.1 defines typed blind-review interfaces but does not pretend to invoke Codex, Claude, or OpenCode reliably. Vendor authentication, process control, cost policy, and capability discovery require dedicated integrations.
@@ -30,6 +38,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - **Autonomous refactor coordination:** CLI metadata now covers invariants, inventory, forbidden-reference guards, workstream ownership/path scopes, and Git-snapshot safe points. Creating worktrees, assigning agents, merging, and rollback execution remain explicit post-V0.1 orchestration work.
 - **Additional automated evidence kinds:** .NET test/build commands are classified and localized summary counts are stored as structured metrics. API-diff, architecture-boundary, and database-compatibility adapters are not yet implemented.
 - **GitHub Actions runtime maintenance:** the successful V0.1 run emitted Node 20 deprecation annotations for `actions/checkout@v4` and `actions/setup-dotnet@v4`. `FINDING-0002` tracks the non-blocking action-major upgrade.
+- **External integrations:** MCP, A2A orchestration, vendor reviewer invocation, cloud services, UI, and IDE integrations remain outside V0.2. They require an owner-approved scope and dedicated security/lifecycle design.
 
 ## Environment note
 

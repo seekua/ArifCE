@@ -2,16 +2,16 @@
 
 ## Objective
 
-Maintain the published ArifCE V0.1 baseline without overstating future scope.
+Deliver V0.2 deterministic verification adapters while preserving the published V0.1 baseline.
 
 ## Status
 
-TASK-0001 is complete. Apache-2.0 is selected and included in repository and package metadata. GitHub Actions run 33057315490 passed restore, Release build, 18 behavior tests, secret scan, and the complete packaged-tool fixture on Windows, Ubuntu, and macOS for commit 8f60731. GitHub Release v0.1.0 is published with the verified NuGet global-tool package and SHA-256 checksum.
+V0.1 remains published as GitHub Release v0.1.0. TASK-0004 is open for V0.2: deterministic architecture-boundary, public API surface, and SQLite schema compatibility evidence adapters. ADR-0005 records the owner-authorized scope. Phase 14 is complete; Phase 15 is next.
 
 ## Blockers
 
-No V0.1 release blocker remains. The GitHub Actions Node 20 deprecation warning was eliminated and verified across Windows, Ubuntu, and macOS. Additional deterministic evidence adapters remain future quality work and are not represented as implemented.
+No V0.1 release blocker remains. V0.2 must not claim adapter coverage until each adapter has deterministic tests, package-fixture coverage, and observed cross-platform CI evidence.
 
 ## Next steps
 
-Define V0.2 scope only through a new owner-approved product decision.
+Implement Phase 15 architecture-boundary evidence, then proceed through API and SQLite compatibility adapters.
