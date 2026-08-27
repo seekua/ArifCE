@@ -71,6 +71,8 @@ The core separates domain rules, canonical storage and indexing, Git observation
 
 V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
 
+The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+
 ### 60-second quick start
 
 ```bash
