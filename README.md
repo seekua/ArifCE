@@ -4,6 +4,8 @@
 
 **Agents change. Your project should not forget.**
 
+[![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE)](LICENSE)
+
 ArifCE is a local-first project intelligence and continuity layer for AI-assisted software development. It keeps context, decisions, failed attempts, evidence, refactoring state, and handoff information with the repository so Codex, Claude Code, OpenCode, and future agents can continue the same engineering story.
 
 > The repository owns the context. The agent only borrows it.
@@ -15,6 +17,10 @@ Software teams lose time and confidence when important context lives only in cha
 The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
 
 ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
+
+## Who it is for
+
+ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
 
 ## How ArifCE works
 
@@ -64,6 +70,20 @@ The core separates domain rules, canonical storage and indexing, Git observation
 ## Installation and quick start
 
 V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+
+### 60-second quick start
+
+```bash
+dotnet tool install --global ArifCE.Cli --version 0.2.0
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce checkpoint --summary "Project context initialized"
+arifce handoff
+```
+
+You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
 
 ```bash
 dotnet restore
