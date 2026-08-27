@@ -51,8 +51,8 @@ try {
         if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
         $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)
         if ($LASTEXITCODE -ne 0 -or $architectureOutput -notmatch "${architectureClaimId}: \w+ \(EVIDENCE-\d{4}\)") { throw 'Packaged architecture boundary verification failed.' }
-        $apiAssembly = (Get-ChildItem -LiteralPath $toolDirectory -Filter 'ArifCE.Cli.dll' -Recurse | Select-Object -First 1).FullName
-        if ([string]::IsNullOrWhiteSpace($apiAssembly)) { throw 'Packaged CLI assembly was not found.' }
+        $apiAssembly = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\src\ArifCE.Core\bin\Release\net10.0\ArifCE.Core.dll'))
+        if (-not (Test-Path -LiteralPath $apiAssembly)) { throw 'Built core assembly fixture was not found.' }
         Copy-Item -Force -LiteralPath $apiAssembly -Destination (Join-Path $repositoryDirectory 'ArifCE.Cli.dll')
         & $executable api baseline ArifCE.Cli.dll --baseline api-baseline.json
         if ($LASTEXITCODE -ne 0) { throw 'Packaged API baseline creation failed.' }
