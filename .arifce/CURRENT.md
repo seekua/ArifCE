@@ -2,15 +2,15 @@
 
 ## Objective
 
-Deliver V0.2 deterministic verification adapters while preserving the published V0.1 baseline.
+Monitor the published V0.3.0 local-first MCP release and begin the next owner-approved product objective.
 
 ## Status
 
-V0.1 and V0.2.0 are published GitHub Releases. TASK-0004 delivered deterministic architecture-boundary, public API surface, and SQLite schema compatibility evidence adapters. Phases 15 through 18 are complete with local and cross-platform CI evidence.
+V0.1, V0.2.0, and V0.3.0 are published GitHub Releases. V0.3.0 adds an optional stdio MCP adapter over the existing application services, with deterministic protocol tests, local-first safety boundaries, setup documentation, and cross-platform CI evidence.
 
 ## Blockers
 
-No V0.1 release blocker remains. V0.2 must not claim adapter coverage until each adapter has deterministic tests, package-fixture coverage, and observed cross-platform CI evidence.
+No release blocker remains. Cloud hosting, UI implementation, IDE extensions, external reviewer invocation, and autonomous A2A orchestration remain explicitly deferred.
 
 ## Next steps
 
