@@ -10,4 +10,4 @@ dotnet run --project src/ArifCE.Mcp/ArifCE.Mcp.csproj
 
 Configure a coding agent to launch the same command with the project repository as its working directory. If the agent launches from another directory, set `ARIFCE_PROJECT_ROOT` to the repository path.
 
-The server advertises four initial tools: `arifce_status`, `arifce_search`, `arifce_checkpoint`, and `arifce_handoff`. They operate on the same canonical `.arifce/` files used by the CLI. Command execution, external review invocation, and cloud synchronization are intentionally not exposed.
+The server advertises six initial tools: `arifce_status`, `arifce_search`, `arifce_checkpoint`, `arifce_handoff`, `arifce_refactor_status`, and `arifce_refactor_verify`. They operate on the same canonical `.arifce/` files used by the CLI. Shell command execution, external review invocation, and cloud synchronization are intentionally not exposed.

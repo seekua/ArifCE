@@ -31,6 +31,7 @@ public sealed class McpProtocolTests
         Assert.Contains(lines, line => line.Contains("\"protocolVersion\":\"2025-03-26\"", StringComparison.Ordinal));
         Assert.Contains(lines, line => line.Contains("arifce_status", StringComparison.Ordinal));
         Assert.Contains(lines, line => line.Contains("arifce_handoff", StringComparison.Ordinal));
+        Assert.Contains(lines, line => line.Contains("arifce_refactor_verify", StringComparison.Ordinal));
     }
 
 }
