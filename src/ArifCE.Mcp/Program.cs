@@ -71,6 +71,8 @@ internal sealed class McpServer
             Tool("arifce_search", "Search indexed project intelligence using explainable lexical matching.", new { type = "object", required = new[] { "query" }, properties = new { query = new { type = "string" }, limit = new { type = "integer", minimum = 1, maximum = 50 } } }),
             Tool("arifce_checkpoint", "Record a project checkpoint with an explicit summary.", new { type = "object", required = new[] { "summary" }, properties = new { summary = new { type = "string", minLength = 1 } } }),
             Tool("arifce_handoff", "Create a semantic handoff from the current project state.", new { type = "object", properties = new { } })
+            ,Tool("arifce_refactor_status", "Read a refactor campaign record.", new { type = "object", required = new[] { "id" }, properties = new { id = new { type = "string" } } })
+            ,Tool("arifce_refactor_verify", "Run deterministic guards for a refactor campaign without finishing it.", new { type = "object", required = new[] { "id" }, properties = new { id = new { type = "string" } } })
         }
     };
 
@@ -86,9 +88,23 @@ internal sealed class McpServer
             "arifce_search" => await SearchAsync(root, arguments),
             "arifce_checkpoint" => (await service.CheckpointAsync(root, Required(arguments, "summary"))).Id,
             "arifce_handoff" => (await service.HandoffAsync(root)).Markdown,
+            "arifce_refactor_status" => await RefactorStatusAsync(root, arguments),
+            "arifce_refactor_verify" => await RefactorVerifyAsync(service, root, arguments),
             _ => throw new McpException(-32602, $"Unknown tool: {name}")
         };
         return new { content = new[] { new { type = "text", text } }, isError = false };
+    }
+
+    private async Task<string> RefactorStatusAsync(string root, JsonElement arguments)
+    {
+        var item = await canonical.ReadAsync<ArifCE.Core.RefactorCampaign>(root, "refactors", Required(arguments, "id")) ?? throw new McpException(-32602, "Refactor not found.");
+        return JsonSerializer.Serialize(item);
+    }
+
+    private async Task<string> RefactorVerifyAsync(ProjectService service, string root, JsonElement arguments)
+    {
+        var failures = await service.VerifyRefactorAsync(root, Required(arguments, "id"));
+        return failures.Count == 0 ? "All configured deterministic refactor guards pass." : string.Join(Environment.NewLine, failures);
     }
 
     private async Task<string> SearchAsync(string root, JsonElement arguments)
