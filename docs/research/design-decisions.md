@@ -9,5 +9,6 @@ Key V0.1 decisions are intentionally conservative:
 - Blind review separates inspection from reconciliation to reduce anchoring.
 - Refactor coordination stores workstream metadata but does not orchestrate autonomous agents.
 - Repair is explicit and backup-first; diagnosis is read-only.
+- Cloud is a later commercial phase. V0.x remains local-first and must not require a hosted service, account, or network connection for core project intelligence.
 
 Project-specific decisions are stored under `.arifce/decisions/`. This research document explains product-level choices and does not invent rationale for adopted repositories.
