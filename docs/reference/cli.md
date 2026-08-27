@@ -60,6 +60,8 @@ Verification executes the user-supplied command in the project root and records 
 
 `architecture check` is a V0.2 deterministic evidence adapter. It scans only the explicitly supplied repository-local source paths (`.cs`, project, props, and targets files), excludes derived and raw directories, and records matching forbidden references with file and line numbers. A clean check proves only that the selected paths do not contain the supplied text references.
 
+`api baseline <assembly-path> --baseline <path>` writes a normalized public API baseline for one selected .NET assembly. `api compare <assembly-path> --baseline <path>` reports added and removed public entries and exits non-zero when the selected baseline is not compatible. These commands inspect only the explicitly named assembly and baseline paths.
+
 ```text
 arifce review record <claim-id> --reviewer <agent> --verdict <verdict> --summary <text> [--finding <id> ...]
 arifce review status <review-id>
