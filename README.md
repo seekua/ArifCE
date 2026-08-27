@@ -1,5 +1,7 @@
 # ArifCE
 
+<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+
 **Agents change. Your project should not forget.**
 
 ArifCE is a local-first project intelligence and continuity layer for AI-assisted software development. It keeps context, decisions, failed attempts, evidence, refactoring state, and handoff information with the repository so Codex, Claude Code, OpenCode, and future agents can continue the same engineering story.
