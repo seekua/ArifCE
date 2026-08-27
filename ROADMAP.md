@@ -25,7 +25,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 15: implement configured architecture-boundary evidence with deterministic source scanning, actionable findings, package-fixture coverage, and observed CI evidence.
 - [x] Phase 16: implement normalized public API surface baselines and compatibility diffs for selected .NET assemblies.
 - [x] Phase 17: implement normalized SQLite schema baselines and compatibility diffs for selected databases.
-- [ ] Phase 18: complete V0.2 documentation, package fixture coverage, and observed Windows/Ubuntu/macOS CI evidence.
+- [x] Phase 18: complete V0.2 documentation, package fixture coverage, and observed Windows/Ubuntu/macOS CI evidence.
 
 ## Explicit deferrals
 
