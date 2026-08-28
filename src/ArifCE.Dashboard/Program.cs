@@ -11,7 +11,7 @@ var index = new IndexStore();
 var git = new GitInspector();
 var service = new ProjectService(canonical, journal, index, git);
 
-app.MapGet("/", () => Results.Content(DashboardPage.Html, "text/html; charset=utf-8"));
+app.MapGet("/", () => Results.Content(DashboardPage.Html.Replace("/main/", "/master/"), "text/html; charset=utf-8"));
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/api/status", async () => Results.Text(await service.StatusAsync(Root()), "application/json"));
 app.MapGet("/api/search", async (string q, int? limit) =>
