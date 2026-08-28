@@ -22,6 +22,11 @@ app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
 app.MapGet("/api/workspace", async () => Results.Json(await workspace.ListAsync()));
+app.MapPost("/api/workspace/active", async (WorkspaceSelection selection) =>
+{
+    try { return Results.Json(new { root = await workspace.SetActiveAsync(selection.Root) }); }
+    catch (InvalidOperationException ex) { return Results.BadRequest(new { error = ex.Message }); }
+});
 app.MapGet("/api/overview", () =>
 {
     var root = Root();
@@ -62,6 +67,8 @@ app.MapGet("/api/records", (string? kind, int? limit) =>
     return Results.Json(result);
 });
 app.Run();
+
+record WorkspaceSelection(string Root);
 
 string Root()
 {
