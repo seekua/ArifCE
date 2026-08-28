@@ -64,14 +64,15 @@ internal static class Cli
     private static void Require(string[] args, int length, string usage) { if (args.Length < length) throw new ArgumentException(usage); }
     private static async Task WorkspaceCommand(WorkspaceRegistry registry, string[] args)
     {
-        Require(args, 2, "workspace list | workspace add <name> <root> | workspace remove <root>");
+        Require(args, 2, "workspace list | workspace add <name> <root> | workspace remove <root> | workspace use <root>");
         switch (args[1].ToLowerInvariant())
         {
             case "list": foreach (var project in await registry.ListAsync()) Console.WriteLine($"{project.Name}\t{project.Root}\t{project.LastSeenUtc:O}"); break;
             case "add": Require(args, 4, "workspace add <name> <root>"); var added = await registry.AddAsync(args[2], args[3]); Console.WriteLine($"Registered {added.Name}: {added.Root}"); break;
             case "remove": Require(args, 3, "workspace remove <root>"); await registry.RemoveAsync(args[2]); Console.WriteLine($"Removed {Path.GetFullPath(args[2])}"); break;
+            case "use": Require(args, 3, "workspace use <root>"); Console.WriteLine($"Active project: {await registry.SetActiveAsync(args[2])}"); break;
             default: throw new ArgumentException("Unknown workspace action.");
         }
     }
-    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, checkpoint, handoff, workspace list|add|remove, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
+    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
 }

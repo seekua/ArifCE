@@ -15,6 +15,8 @@ public sealed class WorkspaceRegistryTests
         {
             var registry = new WorkspaceRegistry(registryPath);
             var added = await registry.AddAsync("Demo", projectRoot);
+            Assert.Equal(projectRoot, await registry.SetActiveAsync(projectRoot));
+            Assert.Equal(projectRoot, await registry.GetActiveAsync());
             Assert.Equal("Demo", added.Name);
             Assert.Single(await registry.ListAsync());
             await Assert.ThrowsAsync<InvalidOperationException>(() => registry.AddAsync("Duplicate", projectRoot));

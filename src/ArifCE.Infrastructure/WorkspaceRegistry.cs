@@ -8,6 +8,7 @@ public sealed record WorkspaceProject(string Name, string Root, DateTimeOffset L
 public sealed class WorkspaceRegistry
 {
     private readonly string _path;
+    private string ActivePath => Path.Combine(Path.GetDirectoryName(_path)!, "active-project.txt");
 
     public WorkspaceRegistry(string? path = null)
     {
@@ -40,6 +41,19 @@ public sealed class WorkspaceRegistry
         var projects = (await ListAsync(cancellationToken)).ToList();
         projects.RemoveAll(x => string.Equals(x.Root, normalized, StringComparison.OrdinalIgnoreCase));
         await SaveAsync(projects, cancellationToken);
+    }
+
+    public async Task<string?> GetActiveAsync(CancellationToken cancellationToken = default)
+        => File.Exists(ActivePath) ? (await File.ReadAllTextAsync(ActivePath, cancellationToken)).Trim() : null;
+
+    public async Task<string> SetActiveAsync(string root, CancellationToken cancellationToken = default)
+    {
+        var normalized = NormalizeRoot(root);
+        var projects = await ListAsync(cancellationToken);
+        if (!projects.Any(x => string.Equals(x.Root, normalized, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException("The project root must be registered before it can be active.");
+        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+        await File.WriteAllTextAsync(ActivePath, normalized, cancellationToken);
+        return normalized;
     }
 
     private async Task SaveAsync(List<WorkspaceProject> projects, CancellationToken cancellationToken)
