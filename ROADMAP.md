@@ -55,15 +55,15 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 ## Explicit deferrals
 
 - **External semantic reviewer invocation:** V0.1 defines typed blind-review interfaces but does not pretend to invoke Codex, Claude, or OpenCode reliably. Vendor authentication, process control, cost policy, and capability discovery require dedicated integrations.
-- **MCP server:** deferred until filesystem and CLI contracts are stable. The core does not depend on MCP.
+- **Advanced MCP surface:** the local stdio MCP server is implemented in V0.3. Shell-backed verification and broad mutation tools remain deferred until a stronger command policy exists.
 - **A2A and multi-worktree coordination:** domain metadata remains extensible, but orchestration is outside V0.1.
-- **Vector search, cloud service, UI, IDE extension, and autonomous swarms:** explicit V0.1 non-goals.
+- **Vector search, cloud service, full IDE extension, and autonomous swarms:** explicit future-phase scope. A local dashboard and IDE connection manifest are implemented; a full IDE-native experience is not yet shipped.
 - **Benchmark results:** only the benchmark protocol is defined until repeatable experiments are run; no effectiveness percentages will be claimed.
 - **Manual evidence authoring:** decision, failed-attempt, finding, and review commands persist canonical records. Deterministic command evidence remains available through `verify`; arbitrary manual evidence waits for a provenance and trust policy.
 - **Autonomous refactor coordination:** CLI metadata now covers invariants, inventory, forbidden-reference guards, workstream ownership/path scopes, and Git-snapshot safe points. Creating worktrees, assigning agents, merging, and rollback execution remain explicit post-V0.1 orchestration work.
 - **Additional automated evidence kinds:** .NET test/build commands are classified and localized summary counts are stored as structured metrics. Architecture-boundary, public API, and SQLite schema evidence are implemented in V0.2. Future evidence kinds require a new owner-approved scope.
 - **GitHub Actions runtime maintenance:** the successful V0.1 run emitted Node 20 deprecation annotations for `actions/checkout@v4` and `actions/setup-dotnet@v4`. `FINDING-0002` tracks the non-blocking action-major upgrade.
-- **External integrations:** MCP, A2A orchestration, vendor reviewer invocation, cloud services, UI, and IDE integrations remain outside V0.2. They require an owner-approved scope and dedicated security/lifecycle design.
+- **External integrations:** A2A orchestration, vendor reviewer invocation, cloud services, and full IDE integrations remain outside V0.5. They require an owner-approved scope and dedicated security/lifecycle design.
 - **GitHub account avatar:** repository Social Preview branding is shipped. GitHub does not provide a repository-specific avatar; changing the `seekua` account or organization avatar remains an account-level operation outside the repository release scope.
 
 ## Environment note
