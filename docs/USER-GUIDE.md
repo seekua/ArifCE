@@ -125,6 +125,20 @@ arifce rebuild
 
 The optional MCP server exposes local `status`, `search`, `checkpoint`, `handoff`, and safe refactor inspection tools over stdio. The dashboard exposes status, search, and non-sensitive record summaries over loopback. See [MCP setup](getting-started/mcp.md) and [IDE manifest](../integrations/ide/arifce.local.json).
 
+### Dashboard decision views
+
+The local dashboard is a decision-oriented read model over canonical `.arifce/` records:
+
+- **Agent activity** shows recent journal events with actor, event type, entity, and timestamp.
+- **Decision brief** highlights the latest decision plus open task and finding counts.
+- **Claims & evidence** shows claim status, supporting evidence count, and open findings.
+- **Work board** lists open tasks and their risk classification.
+- **Findings & risk** lists unresolved findings and severity.
+- **Latest handoff** shows the most recent continuity summary.
+- **Repository memory explorer** filters safe projections by record type.
+
+SQLite is a disposable derived FTS5 index used for search and retrieval; it is not the source of truth. The dashboard intentionally renders safe projections instead of raw transcripts or credentials.
+
 ## Documentation rule
 
 Every change to a command, record schema, API endpoint, MCP tool, package version, or user-visible behavior must update this guide and the closest reference page in the same change. Run affected examples or explain the exception in the release checklist. Never document a deferred capability as shipped.
