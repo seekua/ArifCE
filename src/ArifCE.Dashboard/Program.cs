@@ -12,6 +12,7 @@ var git = new GitInspector();
 var service = new ProjectService(canonical, journal, index, git);
 
 app.MapGet("/", () => Results.Content(DashboardPage.Html, "text/html; charset=utf-8"));
+app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/api/status", async () => Results.Text(await service.StatusAsync(Root()), "application/json"));
 app.MapGet("/api/search", async (string q, int? limit) =>
 {
@@ -37,8 +38,8 @@ static class DashboardPage
 {
 public const string Html = """
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ArifCE Dashboard</title>
-<style>body{font:16px system-ui;margin:0;background:#0f172a;color:#e2e8f0}main{max-width:960px;margin:auto;padding:32px}section{background:#1e293b;border-radius:12px;padding:20px;margin:16px 0}pre{white-space:pre-wrap;color:#cbd5e1}input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #475569}button{background:#2563eb;color:white;cursor:pointer}input{width:65%;background:#0f172a;color:white}</style></head>
-<body><main><h1>ArifCE Dashboard</h1><p>Local project intelligence · no cloud connection</p><section><h2>Current status</h2><pre id="status">Loading…</pre></section><section><h2>Recent project records</h2><pre id="records">Loading…</pre></section><section><h2>Search project context</h2><input id="q" placeholder="Search decisions, tasks, evidence…"><button onclick="search()">Search</button><pre id="results"></pre></section></main>
+<link rel="stylesheet" href="/assets/tabler.min.css"><style>body{background:#0f172a;color:#e2e8f0}pre{white-space:pre-wrap;color:#cbd5e1}input{background:#0f172a;color:white}</style></head>
+<body><main class="container-xl py-4"><div class="page-header mb-4"><div><h1 class="page-title">ArifCE Dashboard</h1><p class="text-secondary">Local project intelligence · no cloud connection</p></div></div><div class="row row-deck row-cards"><div class="col-12"><section class="card"><div class="card-header"><h2 class="card-title">Current status</h2></div><div class="card-body"><pre id="status">Loading…</pre></div></section></div><div class="col-12"><section class="card"><div class="card-header"><h2 class="card-title">Recent project records</h2></div><div class="card-body"><pre id="records">Loading…</pre></div></section></div><div class="col-12"><section class="card"><div class="card-header"><h2 class="card-title">Search project context</h2></div><div class="card-body"><div class="input-group"><input class="form-control" id="q" placeholder="Search decisions, tasks, evidence…"><button class="btn btn-primary" onclick="search()">Search</button></div><pre id="results" class="mt-3"></pre></div></section></div></div></main>
 <script>async function load(){const [s,r]=await Promise.all([fetch('/api/status'),fetch('/api/records?limit=30')]);document.querySelector('#status').textContent=await s.text();document.querySelector('#records').textContent=JSON.stringify(await r.json(),null,2)}async function search(){const q=document.querySelector('#q').value;if(!q)return;const r=await fetch('/api/search?q='+encodeURIComponent(q));document.querySelector('#results').textContent=JSON.stringify(await r.json(),null,2)}load()</script></body></html>
 """;
 }

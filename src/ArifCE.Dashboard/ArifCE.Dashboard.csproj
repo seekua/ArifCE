@@ -21,6 +21,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../ArifCE.Infrastructure/ArifCE.Infrastructure.csproj" />
+    <None Include="../../assets/tabler/tabler.min.css" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="/assets/tabler" />
     <None Include="../../README.md" Pack="true" PackagePath="/" Link="README.md" />
     <None Include="../../LICENSE" Pack="true" PackagePath="/" Link="LICENSE" />
   </ItemGroup>
