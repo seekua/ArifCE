@@ -16,7 +16,7 @@ var index = new IndexStore();
 var git = new GitInspector();
 var service = new ProjectService(canonical, journal, index, git);
 
-app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", "<script>fetch('/api/overview').then(r=>r.json()).then(o=>{const el=document.querySelector('#activity');if(el)el.innerHTML=o.events.map(e=>'<tr><td class=\\\"text-secondary small\\\">'+new Date(e.occurredAtUtc).toLocaleString()+'</td><td><span class=\\\"badge bg-blue-lt\\\">'+e.actor+'</span></td><td>'+e.type+'</td><td><code>'+e.entityId+'</code></td></tr>').join('')}).catch(()=>{});</script></body>"), "text/html; charset=utf-8"));
+app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", DashboardPageV2.ExtraScript + "</body>"), "text/html; charset=utf-8"));
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));

@@ -1,5 +1,8 @@
 static class DashboardPageV2
 {
+    public const string ExtraScript = """
+<script>fetch('/api/overview').then(r=>r.json()).then(o=>{const a=document.querySelector('#activity');if(a)a.innerHTML=o.events.map(e=>'<tr><td class="text-secondary small">'+new Date(e.occurredAtUtc).toLocaleString()+'</td><td><span class="badge bg-blue-lt">'+e.actor+'</span></td><td>'+e.type+'</td><td><code>'+e.entityId+'</code></td></tr>').join('');const card=document.createElement('div');card.className='col-12';card.innerHTML='<div class="card"><div class="card-header"><h2 class="card-title">Claims & evidence</h2><div class="text-secondary small">Verification freshness and support</div></div><div class="table-responsive"><table class="table table-vcenter"><thead><tr><th>Claim</th><th>Status</th><th>Evidence</th><th>Findings</th></tr></thead><tbody>'+o.claims.map(c=>'<tr><td><strong>'+c.id+'</strong><div class="text-secondary small">'+c.statement+'</div></td><td><span class="badge bg-green-lt">'+(c.status||'UNKNOWN')+'</span></td><td>'+o.evidence.filter(e=>e.claimId===c.id).length+' record(s)</td><td>'+o.findings.filter(f=>f.status==='OPEN').length+' open</td></tr>').join('')+'</tbody></table></div></div>';document.querySelector('#records')?.before(card)}).catch(()=>{});</script>
+""";
     public const string Html = """
 <!doctype html>
 <html lang="en">
