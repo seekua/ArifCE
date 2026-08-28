@@ -6,18 +6,12 @@ static class DashboardPageV2
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ArifCE Dashboard</title><link rel="stylesheet" href="/assets/tabler.min.css">
-  <style>body{background:#f4f6fa}.brand-logo{height:32px;width:auto}.hero{background:linear-gradient(135deg,#182d57,#2563ad);color:#fff}.hero .text-secondary{color:#dceaff!important}.metric{font-size:1.7rem;font-weight:700}pre{white-space:pre-wrap;max-height:330px;overflow:auto;background:#f8fafc;padding:1rem;border-radius:var(--tblr-border-radius)}</style>
+  <style>body{background:#f4f6fa}.brand-logo{height:32px;width:auto}.hero{background:linear-gradient(135deg,#182d57,#2563ad);color:#fff}.hero p.lead,.hero .text-white-50,.hero .text-uppercase{color:#f4f8ff!important;opacity:.98}.metric{font-size:1.7rem;font-weight:700}pre{white-space:pre-wrap;max-height:330px;overflow:auto;background:#f8fafc;padding:1rem;border-radius:var(--tblr-border-radius)}</style>
 </head>
 <body>
 <div class="page">
-  <header class="navbar navbar-expand-md d-print-none">
-    <div class="container-xl">
-      <div class="navbar-brand navbar-brand-autodark"><a href="#overview" class="d-flex align-items-center"><img src="/assets/ArifCE.svg" class="brand-logo" alt="ArifCE"></a></div>
-      <div class="navbar-nav flex-row order-md-last"><a class="nav-link" href="https://github.com/seekua/ArifCE" target="_blank" rel="noreferrer">GitHub ↗</a></div>
-    </div>
-  </header>
   <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="light">
-      <div class="container-fluid"><div class="collapse navbar-collapse show"><ul class="navbar-nav pt-lg-3">
+      <div class="container-fluid"><div class="navbar-brand navbar-brand-autodark mb-3"><a href="#overview" class="d-flex align-items-center"><img src="/assets/ArifCE.svg" class="brand-logo" alt="ArifCE"></a></div><div class="collapse navbar-collapse show"><ul class="navbar-nav pt-lg-3">
         <li class="nav-item"><a class="nav-link active" href="#overview"><span class="nav-link-title">Overview</span></a></li>
         <li class="nav-item"><a class="nav-link" href="#context"><span class="nav-link-title">Project context</span></a></li>
         <li class="nav-item"><a class="nav-link" href="#records"><span class="nav-link-title">Records</span></a></li>
@@ -25,6 +19,7 @@ static class DashboardPageV2
         <li class="nav-item mt-4"><div class="nav-link disabled"><span class="nav-link-title">Learn ArifCE</span></div></li>
         <li class="nav-item"><a class="nav-link" href="https://github.com/seekua/ArifCE/tree/master/docs" target="_blank" rel="noreferrer"><span class="nav-link-title">Documentation ↗</span></a></li>
         <li class="nav-item"><a class="nav-link" href="https://github.com/seekua/ArifCE/blob/master/docs/getting-started/quick-start.md" target="_blank" rel="noreferrer"><span class="nav-link-title">Quick start ↗</span></a></li>
+        <li class="nav-item mt-4"><a class="nav-link" href="https://github.com/seekua/ArifCE" target="_blank" rel="noreferrer"><span class="nav-link-title">GitHub ↗</span></a></li>
       </ul></div></div>
   </aside>
   <div class="page-wrapper"><div class="page-body"><div class="container-xl py-4" id="overview">
