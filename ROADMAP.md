@@ -58,6 +58,15 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 36: implement acceptance records, CLI lifecycle, tests, and documentation.
 - [x] Phase 37: package and publish V0.6.0 with checksum and release evidence.
 
+## V0.7 planned phases
+
+- [ ] Phase 38: complete and review full human translations for each localized README while preserving canonical commands, links, diagrams, badges, security language, and explicit deferrals.
+- [ ] Phase 39: add a reviewed-language gate so CI can distinguish canonical scope parity from human translation review status.
+- [ ] Phase 40: improve dashboard decision-maker summaries with agent attribution, latest action, evidence freshness, and project-level filters.
+- [ ] Phase 41: define the local project switcher and multi-project workspace contract without introducing cloud synchronization.
+
+V0.7 starts with documentation integrity. No language is marked reviewed until its complete canonical content has been translated and checked by a human.
+
 ## Explicit deferrals
 
 - **Acceptance lifecycle:** implemented as a separate canonical record in the current release; future policy engines may add configurable approver roles and multi-stage approval without changing the claim model.
