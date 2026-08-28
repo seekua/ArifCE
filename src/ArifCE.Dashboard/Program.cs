@@ -4,6 +4,11 @@ using ArifCE.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls($"http://127.0.0.1:{Environment.GetEnvironmentVariable("ARIFCE_DASHBOARD_PORT") ?? "5180"}");
 var app = builder.Build();
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+    await next();
+});
 var locator = new ProjectLocator();
 var canonical = new CanonicalStore();
 var journal = new JournalStore();
