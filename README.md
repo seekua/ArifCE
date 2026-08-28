@@ -37,6 +37,17 @@ flowchart LR
     G --> I[Next agent continues]
 ```
 
+## Explore the project
+
+Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+
+```powershell
+$env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
+dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
+```
+
+Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [ArifCE documentation hub](docs/README.md).
+
 This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
 
 - Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
