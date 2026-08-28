@@ -48,6 +48,7 @@ public sealed class WorkspaceRegistryTests
         {
             var registry = new WorkspaceRegistry(Path.Combine(root.FullName, "workspace.json"));
             await Assert.ThrowsAsync<ArgumentException>(() => registry.AddAsync(" ", root.FullName));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => registry.SetActiveAsync(root.FullName));
             await registry.RemoveAsync(Path.Combine(root.FullName, "not-registered"));
             Assert.Empty(await registry.ListAsync());
         }
