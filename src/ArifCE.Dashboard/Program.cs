@@ -68,8 +68,6 @@ app.MapGet("/api/records", (string? kind, int? limit) =>
 });
 app.Run();
 
-record WorkspaceSelection(string Root);
-
 string Root()
 {
     var configured = Environment.GetEnvironmentVariable("ARIFCE_PROJECT_ROOT");
@@ -77,6 +75,8 @@ string Root()
     var active = workspace.GetActiveAsync().GetAwaiter().GetResult();
     return locator.FindRoot(active ?? Environment.CurrentDirectory);
 }
+
+record WorkspaceSelection(string Root);
 
 static class DashboardPage
 {
