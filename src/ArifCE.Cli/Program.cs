@@ -11,7 +11,9 @@ internal static class Cli
         {
             if (args.Length == 0 || args[0] is "-h" or "--help" or "help") { Help(); return 0; }
             var locator = new ProjectLocator(); var canonical = new CanonicalStore(); var journal = new JournalStore(); var index = new IndexStore(); var git = new GitInspector(); var service = new ProjectService(canonical, journal, index, git);
-            var root = locator.FindRoot(Environment.CurrentDirectory); var command = args[0].ToLowerInvariant();
+            var command = args[0].ToLowerInvariant();
+            if (command == "workspace") { await WorkspaceCommand(new WorkspaceRegistry(), args); return 0; }
+            var root = locator.FindRoot(Environment.CurrentDirectory);
             switch (command)
             {
                 case "init": case "adopt": Console.WriteLine($"Created {string.Join(Environment.NewLine + "Created ", await service.InitializeAsync(root, command == "adopt"))}"); break;
@@ -60,5 +62,16 @@ internal static class Cli
     private static string? Option(string[] args, string name) { var i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
     private static string[] Options(string[] args, string name) => args.Select((value, index) => (value, index)).Where(x => x.value == name && x.index + 1 < args.Length).Select(x => args[x.index + 1]).ToArray();
     private static void Require(string[] args, int length, string usage) { if (args.Length < length) throw new ArgumentException(usage); }
-    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, checkpoint, handoff, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
+    private static async Task WorkspaceCommand(WorkspaceRegistry registry, string[] args)
+    {
+        Require(args, 2, "workspace list | workspace add <name> <root> | workspace remove <root>");
+        switch (args[1].ToLowerInvariant())
+        {
+            case "list": foreach (var project in await registry.ListAsync()) Console.WriteLine($"{project.Name}\t{project.Root}\t{project.LastSeenUtc:O}"); break;
+            case "add": Require(args, 4, "workspace add <name> <root>"); var added = await registry.AddAsync(args[2], args[3]); Console.WriteLine($"Registered {added.Name}: {added.Root}"); break;
+            case "remove": Require(args, 3, "workspace remove <root>"); await registry.RemoveAsync(args[2]); Console.WriteLine($"Removed {Path.GetFullPath(args[2])}"); break;
+            default: throw new ArgumentException("Unknown workspace action.");
+        }
+    }
+    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, checkpoint, handoff, workspace list|add|remove, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
 }
