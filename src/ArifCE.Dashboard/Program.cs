@@ -16,7 +16,7 @@ var index = new IndexStore();
 var git = new GitInspector();
 var service = new ProjectService(canonical, journal, index, git);
 
-app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", DashboardPageV2.ExtraScript + DashboardPageV2.WorkScript + "</body>"), "text/html; charset=utf-8"));
+app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", DashboardPageV2.ExtraScript + DashboardPageV2.WorkScript + DashboardPageV2.HandoffScript + "</body>"), "text/html; charset=utf-8"));
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
@@ -29,7 +29,9 @@ app.MapGet("/api/overview", () =>
             using var doc = JsonDocument.Parse(File.ReadAllText(file));
             var value = doc.RootElement;
             string Get(string name) => value.TryGetProperty(name, out var p) ? p.ToString() : "";
-            return (object)new { id = Get("id"), title = Get("title"), status = Get("status"), agent = Get("agent"), createdAtUtc = Get("createdAtUtc"), summary = Get("summary"), statement = Get("statement") };
+            var summary = Get("summary");
+            if (string.IsNullOrWhiteSpace(summary) && value.TryGetProperty("markdown", out var markdown)) summary = markdown.ToString().Replace("\r", "").Replace("\n", " ").Trim();
+            return (object)new { id = Get("id"), title = Get("title"), status = Get("status"), agent = Get("agent"), createdAtUtc = Get("createdAtUtc"), summary, statement = Get("statement"), claimId = Get("claimId") };
         }).ToArray() : [];
     var journalPath = Path.Combine(root, ".arifce", "journal", "events.jsonl");
     object[] Events() => File.Exists(journalPath) ? File.ReadLines(journalPath).Reverse().Take(20).Select(line =>
