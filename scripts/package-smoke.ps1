@@ -15,7 +15,7 @@ try {
     dotnet pack (Join-Path $PSScriptRoot '..\src\ArifCE.Cli\ArifCE.Cli.csproj') -c $Configuration --no-restore -o $packageDirectory
     if ($LASTEXITCODE -ne 0) { throw 'dotnet pack failed.' }
 
-    dotnet tool install --tool-path $toolDirectory --add-source $packageDirectory --ignore-failed-sources ArifCE.Cli --version 0.2.0
+    dotnet tool install --tool-path $toolDirectory --add-source $packageDirectory --ignore-failed-sources ArifCE.Cli --version 0.6.0
     if ($LASTEXITCODE -ne 0) { throw 'Tool installation failed.' }
 
     git -C $repositoryDirectory init | Out-Null

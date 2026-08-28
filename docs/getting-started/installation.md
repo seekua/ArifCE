@@ -1,6 +1,6 @@
 # Installation
 
-ArifCE V0.2.0 requires the .NET 10 SDK and Git. The published NuGet tool is available from the GitHub release.
+ArifCE V0.6.0 requires the .NET 10 SDK and Git. The published NuGet tool is available from the GitHub release.
 
 ## Run from source
 
@@ -14,7 +14,7 @@ dotnet run --project src/ArifCE.Cli -- help
 
 ```bash
 dotnet pack src/ArifCE.Cli/ArifCE.Cli.csproj --configuration Release --output ./artifacts/packages
-dotnet tool install --global ArifCE.Cli --version 0.2.0
+dotnet tool install --global ArifCE.Cli --version 0.6.0
 arifce help
 ```
 
