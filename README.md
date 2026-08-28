@@ -73,6 +73,8 @@ V0.2.0 is published as a cross-platform .NET global tool. See [installation](doc
 
 The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
 
+For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+
 ### 60-second quick start
 
 ```bash
