@@ -28,15 +28,15 @@ ArifCE; yapay zekâ destekli mühendislik ekipleri, coding agent kullanan geliş
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[Ajan başlar] --> B[Protokolü ve mevcut durumu oku]
+    B --> C[Göreve özel bağlamı al]
+    C --> D[Kodu değiştir]
+    D --> E[İddia ve kanıt kaydet]
+    E --> F{Doğrulama başarılı mı?}
+    F -- Evet --> G[Kontrol noktası ve devir]
+    F -- Hayır --> H[Bulguyu veya başarısız denemeyi kaydet]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[Sonraki ajan devam eder]
 ```
 
 ## Projeyi keşfedin
