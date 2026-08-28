@@ -1,6 +1,8 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+$canonical = Get-Content (Join-Path $root 'README.md') -Raw
 $required = @('ArifCE.svg','mermaid','dotnet tool install','arifce init','ROADMAP.md','SECURITY.md','CONTRIBUTING.md','Apache')
+$required += [regex]::Matches($canonical, '(?m)^#{1,6}\s+.+$') | ForEach-Object { $_.Value.Trim() }
 $files = Get-ChildItem (Join-Path $root 'README.*.md')
 $failed = @()
 foreach ($file in $files) {
