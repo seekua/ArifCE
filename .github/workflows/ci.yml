@@ -30,6 +30,9 @@ jobs:
       - name: Secret scan
         shell: pwsh
         run: ./scripts/secret-scan.ps1
+      - name: README locale parity
+        shell: pwsh
+        run: ./scripts/check-readme-locales.ps1
       - name: Package smoke test
         shell: pwsh
         run: ./scripts/package-smoke.ps1 -Configuration Release

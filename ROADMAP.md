@@ -73,6 +73,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - **GitHub Actions runtime maintenance:** the successful V0.1 run emitted Node 20 deprecation annotations for `actions/checkout@v4` and `actions/setup-dotnet@v4`. `FINDING-0002` tracks the non-blocking action-major upgrade.
 - **External integrations:** A2A orchestration, vendor reviewer invocation, cloud services, and full IDE integrations remain outside V0.5. They require an owner-approved scope and dedicated security/lifecycle design.
 - **GitHub account avatar:** repository Social Preview branding is shipped. GitHub does not provide a repository-specific avatar; changing the `seekua` account or organization avatar remains an account-level operation outside the repository release scope.
+- **Localized README parity:** all 21 language files now retain the complete canonical README reference and pass CI marker checks. Full human-quality translation of every canonical paragraph remains a follow-up because automated translation would risk altering commands, links, and safety language; the English canonical file remains authoritative until each language is reviewed.
 
 ## Environment note
 
