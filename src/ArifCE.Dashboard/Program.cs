@@ -20,6 +20,19 @@ app.MapGet("/", () => Results.Content(DashboardPageV2.Html, "text/html; charset=
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
+app.MapGet("/api/overview", () =>
+{
+    var root = Root();
+    object[] Read(string kind) => Directory.Exists(Path.Combine(root, ".arifce", kind))
+        ? Directory.EnumerateFiles(Path.Combine(root, ".arifce", kind), "*.json").OrderByDescending(File.GetLastWriteTimeUtc).Take(8).Select(file =>
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(file));
+            var value = doc.RootElement;
+            string Get(string name) => value.TryGetProperty(name, out var p) ? p.ToString() : "";
+            return (object)new { id = Get("id"), title = Get("title"), status = Get("status"), agent = Get("agent"), createdAtUtc = Get("createdAtUtc"), summary = Get("summary"), statement = Get("statement") };
+        }).ToArray() : [];
+    return Results.Json(new { decisions = Read("decisions"), tasks = Read("tasks"), claims = Read("claims"), findings = Read("findings"), handoffs = Read("handoffs"), reviews = Read("reviews"), attempts = Read("attempts") });
+});
 app.MapGet("/api/search", async (string q, int? limit) =>
 {
     if (string.IsNullOrWhiteSpace(q)) return Results.BadRequest(new { error = "q is required" });
