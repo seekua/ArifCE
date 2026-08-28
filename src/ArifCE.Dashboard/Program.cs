@@ -39,7 +39,7 @@ app.MapGet("/api/overview", () =>
         var actor = e.TryGetProperty("data", out var data) && data.TryGetProperty("agent", out var agent) ? agent.ToString() : "repository";
         return (object)new { type = Get("type"), entityId = Get("entityId"), occurredAtUtc = Get("occurredAtUtc"), actor };
     }).ToArray() : [];
-    return Results.Json(new { decisions = Read("decisions"), tasks = Read("tasks"), claims = Read("claims"), findings = Read("findings"), handoffs = Read("handoffs"), reviews = Read("reviews"), attempts = Read("attempts"), events = Events() });
+    return Results.Json(new { decisions = Read("decisions"), tasks = Read("tasks"), claims = Read("claims"), evidence = Read("evidence"), findings = Read("findings"), handoffs = Read("handoffs"), reviews = Read("reviews"), attempts = Read("attempts"), events = Events() });
 });
 app.MapGet("/api/search", async (string q, int? limit) =>
 {
