@@ -63,7 +63,13 @@ app.MapGet("/api/records", (string? kind, int? limit) =>
 });
 app.Run();
 
-string Root() => locator.FindRoot(Environment.GetEnvironmentVariable("ARIFCE_PROJECT_ROOT") ?? Environment.CurrentDirectory);
+string Root()
+{
+    var configured = Environment.GetEnvironmentVariable("ARIFCE_PROJECT_ROOT");
+    if (!string.IsNullOrWhiteSpace(configured)) return locator.FindRoot(configured);
+    var active = workspace.GetActiveAsync().GetAwaiter().GetResult();
+    return locator.FindRoot(active ?? Environment.CurrentDirectory);
+}
 
 static class DashboardPage
 {
