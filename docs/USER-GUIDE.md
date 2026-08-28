@@ -18,7 +18,7 @@ dotnet tool install --global ArifCE.Dashboard --version 0.5.0
 arifce-dashboard
 ```
 
-The dashboard binds to `http://127.0.0.1:5180` and never requires cloud access.
+The dashboard binds to `http://127.0.0.1:5180`, uses the locally bundled Tabler UI styles, and never requires cloud access.
 
 ## Start a project
 
