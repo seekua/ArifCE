@@ -16,7 +16,7 @@ var index = new IndexStore();
 var git = new GitInspector();
 var service = new ProjectService(canonical, journal, index, git);
 
-app.MapGet("/", () => Results.Content(DashboardPageV2.Html, "text/html; charset=utf-8"));
+app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", "<script>fetch('/api/overview').then(r=>r.json()).then(o=>{const el=document.querySelector('#activity');if(el)el.innerHTML=o.events.map(e=>'<tr><td class=\\\"text-secondary small\\\">'+new Date(e.occurredAtUtc).toLocaleString()+'</td><td><span class=\\\"badge bg-blue-lt\\\">'+e.actor+'</span></td><td>'+e.type+'</td><td><code>'+e.entityId+'</code></td></tr>').join('')}).catch(()=>{});</script></body>"), "text/html; charset=utf-8"));
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
@@ -31,7 +31,15 @@ app.MapGet("/api/overview", () =>
             string Get(string name) => value.TryGetProperty(name, out var p) ? p.ToString() : "";
             return (object)new { id = Get("id"), title = Get("title"), status = Get("status"), agent = Get("agent"), createdAtUtc = Get("createdAtUtc"), summary = Get("summary"), statement = Get("statement") };
         }).ToArray() : [];
-    return Results.Json(new { decisions = Read("decisions"), tasks = Read("tasks"), claims = Read("claims"), findings = Read("findings"), handoffs = Read("handoffs"), reviews = Read("reviews"), attempts = Read("attempts") });
+    var journalPath = Path.Combine(root, ".arifce", "journal", "events.jsonl");
+    object[] Events() => File.Exists(journalPath) ? File.ReadLines(journalPath).Reverse().Take(20).Select(line =>
+    {
+        using var doc = JsonDocument.Parse(line); var e = doc.RootElement;
+        string Get(string name) => e.TryGetProperty(name, out var p) ? p.ToString() : "";
+        var actor = e.TryGetProperty("data", out var data) && data.TryGetProperty("agent", out var agent) ? agent.ToString() : "repository";
+        return (object)new { type = Get("type"), entityId = Get("entityId"), occurredAtUtc = Get("occurredAtUtc"), actor };
+    }).ToArray() : [];
+    return Results.Json(new { decisions = Read("decisions"), tasks = Read("tasks"), claims = Read("claims"), findings = Read("findings"), handoffs = Read("handoffs"), reviews = Read("reviews"), attempts = Read("attempts"), events = Events() });
 });
 app.MapGet("/api/search", async (string q, int? limit) =>
 {
