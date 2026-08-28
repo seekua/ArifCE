@@ -65,6 +65,10 @@ Verification executes the user-supplied command in the project root and records 
 ```text
 arifce review record <claim-id> --reviewer <agent> --verdict <verdict> --summary <text> [--finding <id> ...]
 arifce review status <review-id>
+
+arifce acceptance create <claim-id> --actor <name> --rationale <text>
+arifce acceptance status <acceptance-id>
+arifce acceptance revoke <acceptance-id>
 ```
 
 Review verdicts are `AGREE`, `PARTIALLY_AGREE`, `DISAGREE`, or `INCONCLUSIVE`. Positive agreement does not promote a claim. A disagreement can move an eligible claim to `DISPUTED`.

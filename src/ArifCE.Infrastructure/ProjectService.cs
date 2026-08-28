@@ -122,6 +122,40 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
 
     public Task<ClaimRecord?> GetClaimAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<ClaimRecord>(root, "claims", id, cancellationToken);
 
+    public async Task<AcceptanceRecord> CreateAcceptanceAsync(string root, string claimId, string actor, string rationale, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(actor)) throw new ArgumentException("Acceptance actor is required.");
+        if (string.IsNullOrWhiteSpace(rationale)) throw new ArgumentException("Acceptance rationale is required.");
+        var claim = await GetClaimAsync(root, claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
+        if (claim.Status is ClaimStatus.Contradicted or ClaimStatus.Stale or ClaimStatus.Unverified) throw new InvalidOperationException($"Claim {claimId} must have current supporting evidence before acceptance.");
+        var current = await git.CaptureAsync(root, cancellationToken);
+        var evidence = new List<string>();
+        foreach (var evidenceId in claim.Evidence)
+        {
+            var item = await canonical.ReadAsync<EvidenceRecord>(root, "evidence", evidenceId, cancellationToken) ?? throw new InvalidOperationException($"Evidence {evidenceId} was not found.");
+            if (EvidenceEvaluator.Evaluate(item.Snapshot, current) != EvidenceFreshness.Current) throw new InvalidOperationException($"Evidence {evidenceId} is stale.");
+            evidence.Add(evidenceId);
+        }
+        var findings = Path.Combine(root, ".arifce", "findings");
+        if (Directory.Exists(findings)) foreach (var path in Directory.EnumerateFiles(findings, "*.json"))
+        {
+            var finding = JsonSerializer.Deserialize<FindingRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options);
+            if (finding is { Status: WorkStatus.Open, Severity: RiskLevel.High or RiskLevel.Critical }) throw new InvalidOperationException("Open high or critical findings block acceptance.");
+        }
+        var id = canonical.NextId(root, "acceptances", "ACCEPTANCE");
+        var record = new AcceptanceRecord(1, id, claimId, actor, AcceptanceStatus.Accepted, rationale, current, evidence, DateTimeOffset.UtcNow);
+        await canonical.WriteAsync(root, "acceptances", id, record, cancellationToken); await RecordAsync(root, "acceptance.accepted", id, record, cancellationToken); return record;
+    }
+
+    public Task<AcceptanceRecord?> GetAcceptanceAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<AcceptanceRecord>(root, "acceptances", id, cancellationToken);
+
+    public async Task<AcceptanceRecord> RevokeAcceptanceAsync(string root, string id, CancellationToken cancellationToken = default)
+    {
+        var record = await GetAcceptanceAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Acceptance {id} was not found.");
+        var updated = record with { Status = AcceptanceStatus.Revoked, RevokedAtUtc = DateTimeOffset.UtcNow };
+        await canonical.WriteAsync(root, "acceptances", id, updated, cancellationToken); await RecordAsync(root, "acceptance.revoked", id, updated, cancellationToken); return updated;
+    }
+
     public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyAsync(string root, string claimId, string commandText, CancellationToken cancellationToken = default)
     {
         var claim = await canonical.ReadAsync<ClaimRecord>(root, "claims", claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");

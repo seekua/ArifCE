@@ -6,12 +6,14 @@ public enum WorkStatus { Open, InProgress, Blocked, Completed, Abandoned }
 public enum RiskLevel { Low, Medium, High, Critical }
 public enum ReviewPhase { IndependentInspection, Reconciliation }
 public enum ReviewVerdict { Agree, PartiallyAgree, Disagree, Inconclusive }
+public enum AcceptanceStatus { Pending, Accepted, Rejected, Revoked }
 
 public sealed record GitSnapshot(string? Commit, string? Branch, bool IsDirty, IReadOnlyList<string> ChangedFiles, string Digest);
 public sealed record TaskRecord(int SchemaVersion, string Id, string Title, string? Description, WorkStatus Status, RiskLevel Risk, DateTimeOffset CreatedAtUtc);
 public sealed record DecisionRecord(int SchemaVersion, string Id, string Title, string Decision, string HistoricalRationale, string Status, string Provenance, string? SupersededBy, DateTimeOffset CreatedAtUtc);
 public sealed record AttemptRecord(int SchemaVersion, string Id, string TaskId, string Approach, string Result, string Reason, IReadOnlyList<string> EvidenceIds, DateTimeOffset CreatedAtUtc);
 public sealed record ClaimRecord(int SchemaVersion, string Id, string Statement, ClaimStatus Status, RiskLevel Risk, GitSnapshot Snapshot, IReadOnlyList<string> Evidence, DateTimeOffset CreatedAtUtc);
+public sealed record AcceptanceRecord(int SchemaVersion, string Id, string ClaimId, string Actor, AcceptanceStatus Status, string Rationale, GitSnapshot Snapshot, IReadOnlyList<string> EvidenceIds, DateTimeOffset CreatedAtUtc, DateTimeOffset? RevokedAtUtc = null);
 public sealed record EvidenceMetrics(int? Total, int? Passed, int? Failed, int? Skipped, int? Warnings = null, int? Errors = null);
 public sealed record EvidenceRecord(int SchemaVersion, string Id, string ClaimId, string Kind, string? Command, int? ExitCode, string Summary, GitSnapshot Snapshot, DateTimeOffset CreatedAtUtc, EvidenceMetrics? Metrics = null);
 public sealed record CheckpointRecord(int SchemaVersion, string Id, string Summary, GitSnapshot Snapshot, DateTimeOffset CreatedAtUtc);

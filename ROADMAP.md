@@ -54,6 +54,8 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 
 ## Explicit deferrals
 
+- **Acceptance lifecycle:** implemented as a separate canonical record in the current release; future policy engines may add configurable approver roles and multi-stage approval without changing the claim model.
+
 - **External semantic reviewer invocation:** V0.1 defines typed blind-review interfaces but does not pretend to invoke Codex, Claude, or OpenCode reliably. Vendor authentication, process control, cost policy, and capability discovery require dedicated integrations.
 - **Advanced MCP surface:** the local stdio MCP server is implemented in V0.3. Shell-backed verification and broad mutation tools remain deferred until a stronger command policy exists.
 - **A2A and multi-worktree coordination:** domain metadata remains extensible, but orchestration is outside V0.1.

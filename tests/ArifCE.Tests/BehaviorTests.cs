@@ -75,6 +75,20 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Acceptance_is_separate_and_requires_current_evidence()
+    {
+        await Service.InitializeAsync(root, false);
+        var claim = await Service.CreateClaimAsync(root, "Deterministic command passes", RiskLevel.Low);
+        var verified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        var acceptance = await Service.CreateAcceptanceAsync(root, claim.Id, "product-owner", "Acceptance criteria reviewed");
+        Assert.Equal(AcceptanceStatus.Accepted, acceptance.Status);
+        Assert.Equal(claim.Id, acceptance.ClaimId);
+        var revoked = await Service.RevokeAcceptanceAsync(root, acceptance.Id);
+        Assert.Equal(AcceptanceStatus.Revoked, revoked.Status);
+        Assert.Equal(ClaimStatus.Verified, verified.Claim.Status);
+    }
+
+    [Fact]
     public void Command_evidence_parser_extracts_localized_test_and_build_metrics()
     {
         var tests = CommandEvidenceParser.Parse("dotnet test", "Başarısız: 1, Başarılı: 7, Atlanan: 2, Toplam: 10");

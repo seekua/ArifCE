@@ -74,6 +74,18 @@ arifce review record CLAIM-0001 --reviewer "agent-a" --verdict INCONCLUSIVE --su
 
 Verification records command, exit code, bounded output, metrics, and Git snapshot. Evidence can become stale after repository changes. A review is evidence, not automatic truth.
 
+## Acceptance
+
+Acceptance is separate from claim verification. A claim must have current evidence, must not be contradicted or stale, and must not be blocked by an open high or critical finding.
+
+```bash
+arifce acceptance create CLAIM-0001 --actor "product-owner" --rationale "Acceptance criteria and current evidence reviewed"
+arifce acceptance status ACCEPTANCE-0001
+arifce acceptance revoke ACCEPTANCE-0001
+```
+
+Acceptance records preserve the actor, rationale, Git snapshot, and evidence IDs. They can be revoked without rewriting the original claim or evidence.
+
 ## Compatibility checks
 
 ```bash

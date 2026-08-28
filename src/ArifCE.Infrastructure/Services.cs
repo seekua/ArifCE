@@ -125,7 +125,7 @@ public sealed class JournalStore
 
 public sealed class CanonicalStore
 {
-    public static readonly string[] EntityDirectories = ["decisions", "tasks", "attempts", "checkpoints", "claims", "evidence", "reviews", "findings", "refactors", "handoffs", "runs", "threads"];
+    public static readonly string[] EntityDirectories = ["decisions", "tasks", "attempts", "checkpoints", "claims", "acceptances", "evidence", "reviews", "findings", "refactors", "handoffs", "runs", "threads"];
 
     public async Task WriteAsync<T>(string root, string directory, string id, T value, CancellationToken cancellationToken = default)
     {
