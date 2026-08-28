@@ -18,6 +18,7 @@ public sealed class WorkspaceRegistryTests
             Assert.Equal("Demo", added.Name);
             Assert.Single(await registry.ListAsync());
             await Assert.ThrowsAsync<InvalidOperationException>(() => registry.AddAsync("Duplicate", projectRoot));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => registry.AddAsync("Duplicate normalized", projectRoot + Path.DirectorySeparatorChar));
             await registry.RemoveAsync(projectRoot);
             Assert.Empty(await registry.ListAsync());
             Assert.True(Directory.Exists(projectRoot));
@@ -33,6 +34,20 @@ public sealed class WorkspaceRegistryTests
         {
             var registry = new WorkspaceRegistry(Path.Combine(root.FullName, "workspace.json"));
             await Assert.ThrowsAsync<DirectoryNotFoundException>(() => registry.AddAsync("Missing", Path.Combine(root.FullName, "missing")));
+        }
+        finally { root.Delete(true); }
+    }
+
+    [Fact]
+    public async Task AddRejectsBlankNameAndRemoveMissingRootIsSafe()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-workspace-");
+        try
+        {
+            var registry = new WorkspaceRegistry(Path.Combine(root.FullName, "workspace.json"));
+            await Assert.ThrowsAsync<ArgumentException>(() => registry.AddAsync(" ", root.FullName));
+            await registry.RemoveAsync(Path.Combine(root.FullName, "not-registered"));
+            Assert.Empty(await registry.ListAsync());
         }
         finally { root.Delete(true); }
     }
