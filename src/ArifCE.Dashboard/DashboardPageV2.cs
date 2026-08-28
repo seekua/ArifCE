@@ -6,12 +6,12 @@ static class DashboardPageV2
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ArifCE Dashboard</title><link rel="stylesheet" href="/assets/tabler.min.css">
-  <style>body{background:#f4f6fa}.brand-logo{height:32px;width:auto}.hero{background:linear-gradient(135deg,#182d57,#2563ad);color:#fff}.hero p.lead,.hero .text-white-50,.hero .text-uppercase{color:#f4f8ff!important;opacity:.98}.metric{font-size:1.7rem;font-weight:700}pre{white-space:pre-wrap;max-height:330px;overflow:auto;background:#f8fafc;padding:1rem;border-radius:var(--tblr-border-radius)}</style>
+  <style>body{background:#f4f6fa}.brand-logo{height:48px;width:auto}.hero{background:linear-gradient(135deg,#182d57,#2563ad);color:#fff}.hero p.lead,.hero .text-white-50,.hero .text-uppercase{color:#f4f8ff!important;opacity:.98}.metric{font-size:1.7rem;font-weight:700}pre{white-space:pre-wrap;max-height:330px;overflow:auto;background:#f8fafc;padding:1rem;border-radius:var(--tblr-border-radius)}.navbar-vertical .navbar-brand{margin-bottom:.75rem!important}.navbar-vertical .navbar-nav{padding-top:0!important}</style>
 </head>
 <body>
 <div class="page">
   <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="light">
-      <div class="container-fluid"><div class="navbar-brand navbar-brand-autodark mb-3"><a href="#overview" class="d-flex align-items-center"><img src="/assets/ArifCE.svg" class="brand-logo" alt="ArifCE"></a></div><div class="collapse navbar-collapse show"><ul class="navbar-nav pt-lg-3">
+      <div class="container-fluid"><div class="navbar-brand navbar-brand-autodark"><a href="#overview" class="d-flex align-items-center"><img src="/assets/ArifCE.svg" class="brand-logo" alt="ArifCE"></a></div><div class="collapse navbar-collapse show"><ul class="navbar-nav">
         <li class="nav-item"><a class="nav-link active" href="#overview"><span class="nav-link-title">Overview</span></a></li>
         <li class="nav-item"><a class="nav-link" href="#context"><span class="nav-link-title">Project context</span></a></li>
         <li class="nav-item"><a class="nav-link" href="#records"><span class="nav-link-title">Records</span></a></li>
