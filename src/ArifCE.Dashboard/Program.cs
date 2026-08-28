@@ -16,7 +16,7 @@ var index = new IndexStore();
 var git = new GitInspector();
 var service = new ProjectService(canonical, journal, index, git);
 
-app.MapGet("/", () => Results.Content(DashboardPage.Html.Replace("/main/", "/master/").Replace("<button class=\"btn btn-icon me-2 d-none d-lg-inline-flex\" id=\"sidebarToggle\" title=\"Toggle navigation\" aria-label=\"Toggle navigation\">☰</button>", "").Replace("<body><header", "<body><div class=\"page\"><header").Replace("</header>\n<div class=\"page\"><aside", "</header><aside"), "text/html; charset=utf-8"));
+app.MapGet("/", () => Results.Content(DashboardPageV2.Html, "text/html; charset=utf-8"));
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
