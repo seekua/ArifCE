@@ -14,6 +14,18 @@ arifce rebuild
 
 `init` is non-destructive and idempotent. `adopt` inspects an existing repository without inventing historical rationale. `doctor` is read-only unless `--repair` is supplied. Repair creates a timestamped journal backup, removes corrupt lines, atomically writes valid events, and rebuilds the derived index.
 
+## Local workspace registry
+
+The workspace registry is optional and local-only. It stores project names and absolute roots, never project records or secrets:
+
+```text
+arifce workspace list
+arifce workspace add <name> <root>
+arifce workspace remove <root>
+```
+
+Adding a missing root or a duplicate root fails. Removing an entry never deletes the project directory or its `.arifce/` data.
+
 ## Retrieval
 
 ```text

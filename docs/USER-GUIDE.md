@@ -20,6 +20,18 @@ arifce-dashboard
 
 The dashboard binds to `http://127.0.0.1:5180`, uses the locally bundled Tabler UI styles, and never requires cloud access.
 
+## Register local projects
+
+When working with more than one repository, keep a local index of project roots:
+
+```bash
+arifce workspace add storefront C:\Projects\storefront
+arifce workspace list
+arifce workspace remove C:\Projects\storefront
+```
+
+The registry is only a convenience index. Each repository keeps its own `.arifce/` memory and SQLite index; removing a registry entry does not remove project files.
+
 ## Start a project
 
 ```bash
