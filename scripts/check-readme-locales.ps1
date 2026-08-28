@@ -3,13 +3,16 @@ $root = Split-Path -Parent $PSScriptRoot
 $canonical = Get-Content (Join-Path $root 'README.md') -Raw
 $translationStatus = Get-Content (Join-Path $root 'docs/TRANSLATION-STATUS.md') -Raw
 $required = @('ArifCE.svg','mermaid','dotnet tool install','arifce init','ROADMAP.md','SECURITY.md','CONTRIBUTING.md','Apache')
-$required += [regex]::Matches($canonical, '(?m)^#{1,6}\s+.+$') | ForEach-Object { $_.Value.Trim() }
+$canonicalHeadingCount = [regex]::Matches($canonical, '(?m)^#{1,6}\s+.+$').Count
 $files = Get-ChildItem (Join-Path $root 'README.*.md')
 $failed = @()
 foreach ($file in $files) {
   $text = Get-Content $file.FullName -Raw
   if ($text.Length -lt ($canonical.Length * 0.85)) {
     $failed += "$($file.Name): content is shorter than the canonical README (less than 85 percent of canonical length)"
+  }
+  if ([regex]::Matches($text, '(?m)^#{1,6}\s+.+$').Count -lt $canonicalHeadingCount) {
+    $failed += "$($file.Name): fewer Markdown headings than the canonical README"
   }
   foreach ($token in $required) { if ($text -notmatch [regex]::Escape($token)) { $failed += "$($file.Name): missing $token" } }
 }

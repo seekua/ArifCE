@@ -25,19 +25,19 @@ ArifCE, yapay zekâ destekli yazılım geliştirme için yerel öncelikli proje 
 
 > The repository owns the context. The agent only borrows it.
 
-## Why ArifCE exists
+## ArifCE neden var
 
-Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
+Önemli bağlam yalnızca sohbet geçmişinde, kişisel bellekte veya sonraki katkıcının inceleyemediği bir araçta kaldığında yazılım ekipleri zaman ve güven kaybeder. ArifCE, mühendislik sürekliliğini projenin kendisinin bir parçası haline getirmek için vardır.
 
-The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
+Amaç ajanların daha emin konuşmasını sağlamak değildir. Amaç her katkıcının ekibin neyi başarmaya çalıştığını, bir kararın neden alındığını, gerçekte neyin doğrulandığını ve hangi belirsizliklerin kaldığını anlamasına yardımcı olmaktır. Bu hikâye depoda kaldığında ekipler izlenebilirlikten, sahiplikten veya güvenden vazgeçmeden daha hızlı ilerleyebilir.
 
-ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
+ArifCE sürekliliği ortak bir mühendislik pratiğine dönüştürür: sonraki görev için odaklanmış bağlam, önemli iddialar için açık kanıt ve iş tamamlanmadığında dürüst devir.
 
-## Who it is for
+## Kimler için
 
-ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
+ArifCE; yapay zekâ destekli mühendislik ekipleri, coding agent kullanan geliştiriciler ve proje bağlamının tek bir kişiden, sohbetten veya oturumdan daha uzun yaşamasını isteyen bakımcılar içindir. Birden fazla katkıcının aynı depoyu paylaştığı ve kararlar, doğrulamalar ile tamamlanmamış işler için net bir kayda ihtiyaç duyduğu durumlarda özellikle yararlıdır.
 
-## How ArifCE works
+## ArifCE nasıl çalışır
 
 ```mermaid
 flowchart LR
@@ -52,32 +52,32 @@ flowchart LR
     G --> I[Next agent continues]
 ```
 
-## Explore the project
+## Projeyi keşfedin
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+Proje sağlığını, son kayıtları ve aranabilir bağlamı görsel olarak incelemek için yerel dashboard’u çalıştırın:
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [ArifCE documentation hub](docs/README.md).
+Ardından <http://127.0.0.1:5180/> adresini açın. Ürün el kitabının tamamı için [ArifCE dokümantasyon merkezine](docs/README.md) bakın.
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+Bu iş akışı proje bilgisini depoda tutar ve ilerlemeyi incelenebilir kılar. Başlıca avantajları:
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
-- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+- Daha hızlı katılım: sonraki ajan uzun bir dökümü yeniden kurmak yerine odaklanmış mevcut durumu okur.
+- Daha güvenli değişiklikler: iddialar belirlenebilir kanıta bağlanır ve Git durumu değiştiğinde eskir.
+- Daha iyi süreklilik: kararlar, başarısız denemeler, kontrol noktaları ve devirler ajan veya oturum değişikliklerinden etkilenmez.
+- Kontrollü yeniden düzenleme: değişmezler, envanter, korumalar ve güvenli noktalar tamamlanmamış işi görünür kılar.
+- Yerel öncelik: canonical dosyalar bulut hizmeti veya sağlayıcıya özel çalışma zamanı olmadan kullanılabilir.
 
-## Not just memory
+## Yalnızca hafıza değil
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+ArifCE görevin ne olduğunu, neyin ve neden değiştiğini, ajanın neyi tamamladığını iddia ettiğini, bu iddiayı hangi kanıtın desteklediğini, inceleyenin ne bulduğunu, nelerin tamamlanmadığını ve sonraki ajanın ne bilmesi gerektiğini izler. Ajan ifadeleri gerçeği değil iddiayı temsil eder; belirlenebilir derleme, test, Git ve arama kanıtları tercih edilir.
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+Teknik doğrulama ile ürün kabulü ayrıdır: kabul kayıtları bir iddiayı kimin onayladığını ve bu kararı hangi güncel kanıtın desteklediğini belirtir.
 
-## V0.1 workflow
+## V0.1 akışı
 
 ```text
 arifce init
@@ -89,21 +89,21 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+Canonical Markdown, YAML, JSON ve JSONL dosyaları `.arifce/` altında bulunur. SQLite silinebilir türetilmiş bir indekstir; `.arifce/index/` silinip `arifce rebuild` çalıştırıldığında proje zekâsı korunmalıdır.
 
-## Architecture
+## Mimari
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Çekirdek; alan kurallarını, canonical depolama ve indekslemeyi, Git gözlemini, alımı, doğrulamayı, yeniden düzenlemeyi, güvenliği ve CLI’yi birbirinden ayırır. Sağlayıcı talimat dosyaları küçük adaptörlerdir; canonical hafıza deposuna dönüşemezler. [Mimari özete](docs/architecture/overview.md), [alan modeline](docs/architecture/domain-model.md) ve [V0.1 belirtimine](docs/SPECIFICATION-v0.1.md) bakın.
 
-## Installation and quick start
+## Kurulum ve hızlı başlangıç
 
 V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+İsteğe bağlı yerel MCP adaptörü [MCP kurulumu](docs/getting-started/mcp.md) sayfasında açıklanır.
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+Tam kurulum ve özellik turu için [Kullanıcı Rehberi](docs/USER-GUIDE.md) ile [Dokümantasyon Politikası](docs/DOCUMENTATION-POLICY.md) sayfalarına bakın.
 
-### 60-second quick start
+### 60 saniyelik hızlı başlangıç
 
 ```bash
 dotnet tool install --global ArifCE.Cli --version 0.2.0
@@ -115,7 +115,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+Artık depo-yerel proje durumunuz, göreviniz, kontrol noktanız ve sonraki katkıcı için anlamsal devriniz hazırdır.
 
 ```bash
 dotnet restore
@@ -124,21 +124,21 @@ dotnet test
 dotnet run --project src/ArifCE.Cli -- init
 ```
 
-Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
+`init` komutunu yeni bir Git deposunda, `adopt` komutunu mevcut bir depoda çalıştırın. İkisi de zarar vermez ve tekrar çalıştırılabilir. `adopt` gözlenen yapıyı kaydeder ve bilinmeyen geçmiş gerekçesini unknown olarak etiketler.
 
-## Continuity, verification, and refactors
+## Süreklilik, doğrulama ve yeniden düzenleme
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- Yeni bir ajan `AGENTS.md`, `.arifce/PROTOCOL.md` ve `.arifce/CURRENT.md` dosyalarını okur; geçmişi topluca yüklemek yerine göreve özel bağlam ister.
+- İddialar depo kapsamındaki kanıta bağlanır. İlgili depo durumu değiştiğinde kanıt eskir.
+- Yeniden düzenleme kampanyaları değişmezleri, envanteri, korumaları, ilerlemeyi ve kontrol noktalarını izler. Engelleyici korumalar tamamlanmayı önler.
+- Devirler döküm dökmek yerine mevcut mühendislik durumunu özetler.
 
-## Security and limitations
+## Güvenlik ve sınırlamalar
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+Ham dökümler güvenilmezdir; hiçbir zaman topluca yüklenmez veya çalıştırılmaz. İçe aktarma yolları yaygın sırları maskeler; kimlik bilgileri ve makine kimlik doğrulama verileri `.arifce/` içine konmaz. V0.1 doğruluk, token tasarrufu veya daha iyi inceleme kalitesi garantisi vermez. Bulut hizmeti, UI, vektör veritabanı, otonom sürü veya üretim ortamında ajanlar arası çağrı yoktur.
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+ [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) ve [CONTRIBUTING.md](CONTRIBUTING.md) dosyalarına bakın. Uygulanan komut sözdizimi [CLI referansında](docs/reference/cli.md) belgelenmiştir.
 
-## License
+## Lisans
 
 ArifCE [Apache License 2.0](LICENSE) ile lisanslanmıştır.
