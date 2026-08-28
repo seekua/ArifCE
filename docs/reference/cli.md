@@ -26,6 +26,8 @@ arifce workspace remove <root>
 
 Adding a missing root or a duplicate root fails. Removing an entry never deletes the project directory or its `.arifce/` data.
 
+`workspace use <root>` selects a registered project for the local dashboard. The dashboard still honors `ARIFCE_PROJECT_ROOT` when explicitly set.
+
 ## Retrieval
 
 ```text

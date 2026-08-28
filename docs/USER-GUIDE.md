@@ -32,6 +32,14 @@ arifce workspace remove C:\Projects\storefront
 
 The registry is only a convenience index. Each repository keeps its own `.arifce/` memory and SQLite index; removing a registry entry does not remove project files.
 
+Select the project used by the local dashboard with:
+
+```bash
+arifce workspace use C:\Projects\storefront
+```
+
+The dashboard resolves its root in this order: `ARIFCE_PROJECT_ROOT` environment variable, the locally selected workspace project, then the current directory. An explicit environment variable always wins.
+
 ## Start a project
 
 ```bash
