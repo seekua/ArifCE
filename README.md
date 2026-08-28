@@ -49,6 +49,8 @@ This workflow keeps project knowledge in the repository and makes progress inspe
 
 ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
 
+Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+
 ## V0.1 workflow
 
 ```text
