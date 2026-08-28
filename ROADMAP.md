@@ -49,8 +49,8 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 30: define dashboard record projections and IDE local-connection contract.
 - [x] Phase 31: expose project record lists and summary panels in the local dashboard.
 - [x] Phase 32: add an IDE integration manifest that launches the local dashboard/MCP boundaries.
-- [ ] Phase 33: add deterministic API/UI smoke tests and CI evidence.
-- [ ] Phase 34: complete V0.5 documentation and release readiness.
+- [x] Phase 33: add deterministic API/UI smoke tests and CI evidence.
+- [x] Phase 34: complete V0.5 documentation and release readiness.
 
 ## Explicit deferrals
 

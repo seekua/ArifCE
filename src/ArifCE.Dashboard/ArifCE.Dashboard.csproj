@@ -5,7 +5,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>arifce-dashboard</ToolCommandName>
     <PackageId>ArifCE.Dashboard</PackageId>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <Authors>ArifCE Contributors</Authors>
     <Description>Local-only dashboard for ArifCE project intelligence.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

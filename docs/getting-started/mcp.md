@@ -13,7 +13,7 @@ Configure a coding agent to launch the same command with the project repository 
 V0.4 also provides the optional local dashboard tool:
 
 ```bash
-dotnet tool install --global ArifCE.Dashboard --version 0.4.0
+dotnet tool install --global ArifCE.Dashboard --version 0.5.0
 arifce-dashboard
 ```
 
