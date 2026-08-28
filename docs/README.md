@@ -26,6 +26,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Domain model](architecture/domain-model.md)
 - [Verification pipeline](architecture/verification-pipeline.md)
 - [Storage](architecture/storage.md)
+- [Local project workspace](architecture/local-project-workspace.md)
 - [Context retrieval](architecture/context-retrieval.md)
 - [Agent adapters](architecture/agent-adapters.md)
 - [MCP integration](getting-started/mcp.md)
@@ -43,4 +44,3 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 ## Product principles
 
 ArifCE is local-first, evidence-oriented, and explicit about uncertainty. The repository is the source of truth; the dashboard is a read-only cockpit for understanding that truth. Every user-visible change must update the relevant guide and reference page in the same change.
-
