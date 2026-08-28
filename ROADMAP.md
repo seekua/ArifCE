@@ -83,6 +83,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - **External integrations:** A2A orchestration, vendor reviewer invocation, cloud services, and full IDE integrations remain outside V0.5. They require an owner-approved scope and dedicated security/lifecycle design.
 - **GitHub account avatar:** repository Social Preview branding is shipped. GitHub does not provide a repository-specific avatar; changing the `seekua` account or organization avatar remains an account-level operation outside the repository release scope.
 - **Localized README parity:** all 21 language files now retain the complete canonical README reference and pass CI marker checks. Full human-quality translation of every canonical paragraph remains a follow-up because automated translation would risk altering commands, links, and safety language; the English canonical file remains authoritative until each language is reviewed.
+- **DeepL translation pass:** `scripts/translate-readme-locales.ps1` batches paragraph-level DeepL web requests and protects executable Markdown. The public endpoint currently rate-limits automated batches; Bengali, Bosnian, and Thai are not exposed as DeepL web targets, so those translations remain explicitly deferred until an approved provider or credentials are available.
 
 ## Environment note
 

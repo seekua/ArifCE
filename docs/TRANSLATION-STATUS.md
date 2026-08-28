@@ -26,4 +26,8 @@ The English `README.md` is canonical. Every localized README currently retains t
 | `README.zh-CN.md` | Complete canonical reference | Pending |
 | `README.zh-TW.md` | Complete canonical reference | Pending |
 
+The repository includes `scripts/translate-readme-locales.ps1`, which performs paragraph-level DeepL web translation in batches while protecting commands, URLs, HTML, and Markdown links. The public endpoint currently rate-limits automated requests; the script retries and leaves the existing file unchanged when a batch cannot be translated.
+
+DeepL's public web endpoint does not expose Bengali (`README.bn.md`), Bosnian (`README.bs.md`), or Thai (`README.th.md`) targets. These three files therefore remain canonical-reference files until a provider supporting those languages is explicitly selected. No language is marked `Reviewed` until its complete translation is verified in CI.
+
 Human translation work must preserve executable commands, relative links, badges, Mermaid syntax, security language, and explicit deferrals. Each reviewed language should be marked `Reviewed` here and verified in CI.
