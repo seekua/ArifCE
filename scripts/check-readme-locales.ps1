@@ -7,6 +7,9 @@ $files = Get-ChildItem (Join-Path $root 'README.*.md')
 $failed = @()
 foreach ($file in $files) {
   $text = Get-Content $file.FullName -Raw
+  if ($text.Length -lt ($canonical.Length * 0.85)) {
+    $failed += "$($file.Name): content is shorter than the canonical README (less than 85 percent of canonical length)"
+  }
   foreach ($token in $required) { if ($text -notmatch [regex]::Escape($token)) { $failed += "$($file.Name): missing $token" } }
 }
 if ($failed.Count -gt 0) {
