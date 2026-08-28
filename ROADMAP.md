@@ -52,6 +52,12 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 - [x] Phase 33: add deterministic API/UI smoke tests and CI evidence.
 - [x] Phase 34: complete V0.5 documentation and release readiness.
 
+## V0.6 implementation phases
+
+- [x] Phase 35: define separate claim acceptance semantics and safety gates.
+- [x] Phase 36: implement acceptance records, CLI lifecycle, tests, and documentation.
+- [x] Phase 37: package and publish V0.6.0 with checksum and release evidence.
+
 ## Explicit deferrals
 
 - **Acceptance lifecycle:** implemented as a separate canonical record in the current release; future policy engines may add configurable approver roles and multi-stage approval without changing the claim model.

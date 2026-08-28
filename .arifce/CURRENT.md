@@ -2,11 +2,11 @@
 
 ## Objective
 
-Monitor the published V0.3.0 local-first MCP release and begin the next owner-approved product objective.
+Monitor the published V0.6.0 acceptance lifecycle release and begin the next owner-approved product objective.
 
 ## Status
 
-V0.1, V0.2.0, and V0.3.0 are published GitHub Releases. V0.3.0 adds an optional stdio MCP adapter over the existing application services, with deterministic protocol tests, local-first safety boundaries, setup documentation, and cross-platform CI evidence.
+V0.1 through V0.6.0 are published GitHub Releases. V0.6.0 adds a separate, auditable claim acceptance lifecycle over current evidence and blocking-finding safety gates.
 
 ## Blockers
 
