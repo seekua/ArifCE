@@ -141,6 +141,10 @@ arifce rebuild
 
 `doctor` is read-only by default. Repair backs up the journal, removes corrupt lines, and rebuilds the derived index.
 
+## Local LLM providers
+
+Configure local provider profiles with `arifce llm provider add`, test them with `arifce llm provider test`, and run a task with `arifce llm run`. Enabled profiles are tried in order with fallback; each successful run stores provider, model, token usage, cost estimate, and Git snapshot as canonical evidence. See [LLM provider reference](reference/LLM-PROVIDERS.md). Reviewer execution requires explicit local approval.
+
 ## MCP and dashboard
 
 The optional MCP server exposes local `status`, `search`, `checkpoint`, `handoff`, and safe refactor inspection tools over stdio. The dashboard exposes status, search, and non-sensitive record summaries over loopback. See [MCP setup](getting-started/mcp.md) and [IDE manifest](../integrations/ide/arifce.local.json).
