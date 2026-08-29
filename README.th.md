@@ -9,7 +9,7 @@ ArifCE is a local-first project intelligence and continuity layer for AI-assiste
 
 > The repository owns the context. The agent only borrows it.
 
-## Why ArifCE exists
+## เหตุผลที่มี ArifCE
 
 Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
 
@@ -17,26 +17,26 @@ The goal is not to make agents sound more certain. The goal is to help every con
 
 ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
 
-## Who it is for
+## เหมาะสำหรับใคร
 
 ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
 
-## How ArifCE works
+## ArifCE ทำงานอย่างไร
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[เอเจนต์เริ่มต้น] --> B[อ่านโปรโตคอลและสถานะปัจจุบัน]
+    B --> C[ดึงบริบทเฉพาะงาน]
+    C --> D[เปลี่ยนโค้ด]
+    D --> E[บันทึกข้ออ้างและหลักฐาน]
+    E --> F{ผ่านการตรวจสอบหรือไม่}
+    F -- Yes --> G[จุดตรวจและส่งต่องาน]
+    F -- No --> H[บันทึกผลหรือความพยายามที่ล้มเหลว]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[เอเจนต์ถัดไปดำเนินการต่อ]
 ```
 
-## Explore the project
+## สำรวจโครงการ
 
 Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
 
@@ -55,7 +55,7 @@ This workflow keeps project knowledge in the repository and makes progress inspe
 - Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
 - Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
 
-## Not just memory
+## ไม่ใช่แค่ความจำ
 
 ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
 
@@ -75,7 +75,7 @@ arifce handoff
 
 Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
 
-## Architecture
+## สถาปัตยกรรม
 
 The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
 
@@ -117,13 +117,15 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 - Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
 - Handoffs summarize current engineering state rather than dumping transcripts.
 
-## Security and limitations
+## ความปลอดภัยและข้อจำกัด
 
 Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
 
 See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
 
-## License
+## ใบอนุญาต
 
 ArifCE is licensed under the [Apache License 2.0](LICENSE).
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+
+
