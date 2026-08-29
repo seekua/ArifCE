@@ -14,7 +14,6 @@ O repositório é dono do contexto. O agente apenas o toma emprestado.
 
 ArifCE é uma camada local de inteligência e continuidade do projeto para desenvolvimento de software assistido por IA. Mantém contexto, decisões, tentativas malsucedidas, evidências, estado de refatoração e informações de transição no repositório para que Codex, Claude Code, OpenCode e futuros agentes continuem a mesma história de engenharia.
 
-> O repositório é dono do contexto. O agente apenas o toma emprestado.
 
 ## Por que o ArifCE existe
 

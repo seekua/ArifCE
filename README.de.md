@@ -14,7 +14,6 @@ Das Repository besitzt den Kontext. Der Agent leiht ihn nur.
 
 ArifCE ist eine lokale Projektintelligenz- und Kontinuitätsschicht für KI-gestützte Softwareentwicklung. Sie bewahrt Kontext, Entscheidungen, fehlgeschlagene Versuche, Belege, Refactoring-Zustand und Übergabeinformationen im Repository, damit Codex, Claude Code, OpenCode und zukünftige Agenten dieselbe Engineering-Geschichte fortsetzen können.
 
-> Das Repository besitzt den Kontext. Der Agent leiht ihn nur aus.
 
 ## Warum es ArifCE gibt
 

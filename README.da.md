@@ -14,7 +14,6 @@ Repositoriet ejer konteksten. Agenten låner den kun.
 
 ArifCE er et lokalt projektintelligens- og kontinuitetslag til AI-assisteret softwareudvikling. Det gemmer kontekst, beslutninger, mislykkede forsøg, beviser, refaktoreringstilstand og overdragelsesoplysninger i repositoriet, så Codex, Claude Code, OpenCode og fremtidige agenter kan fortsætte den samme tekniske historie.
 
-> Repositoriet ejer konteksten. Agenten låner den kun.
 
 ## Hvorfor ArifCE findes
 

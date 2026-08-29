@@ -14,7 +14,6 @@ Repozytorium posiada kontekst. Agent tylko go wypożycza.
 
 ArifCE to lokalna warstwa inteligencji i ciągłości projektu dla programowania wspomaganego przez AI. Przechowuje kontekst, decyzje, nieudane próby, dowody, stan refaktoryzacji i informacje o przekazaniu w repozytorium, aby Codex, Claude Code, OpenCode i przyszli agenci mogli kontynuować tę samą historię inżynierską.
 
-> Repozytorium jest właścicielem kontekstu. Agent tylko z niego korzysta.
 
 ## Dlaczego istnieje ArifCE
 

@@ -14,7 +14,6 @@ Bağlamın sahibi repodur. Ajan yalnızca onu ödünç alır.
 
 ArifCE, yapay zekâ destekli yazılım geliştirme için yerel öncelikli proje zekâsı ve süreklilik katmanıdır. Bağlamı, kararları, başarısız denemeleri, kanıtları, yeniden düzenleme durumunu ve devir bilgilerini depoda tutarak Codex, Claude Code, OpenCode ve gelecekteki ajanların aynı mühendislik hikâyesine devam etmesini sağlar.
 
-> Bağlamın sahibi repodur. Ajan yalnızca onu ödünç alır.
 
 ## ArifCE neden var
 

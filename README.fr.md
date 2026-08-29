@@ -14,7 +14,6 @@ Le dépôt possède le contexte. L’agent ne fait que l’emprunter.
 
 ArifCE est une couche locale d’intelligence et de continuité du projet pour le développement logiciel assisté par IA. Elle conserve le contexte, les décisions, les tentatives échouées, les preuves, l’état du refactoring et les informations de passation dans le dépôt, afin que Codex, Claude Code, OpenCode et les futurs agents poursuivent la même histoire d’ingénierie.
 
-> Le dépôt possède le contexte. L’agent ne fait que l’emprunter.
 
 ## Pourquoi ArifCE existe
 

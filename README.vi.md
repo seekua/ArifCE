@@ -14,7 +14,6 @@ Repository sở hữu ngữ cảnh. Agent chỉ mượn nó.
 
 ArifCE là lớp trí tuệ và liên tục dự án ưu tiên cục bộ cho phát triển phần mềm có AI hỗ trợ. Công cụ lưu giữ ngữ cảnh, quyết định, lần thử thất bại, bằng chứng, trạng thái tái cấu trúc và thông tin bàn giao trong kho mã để Codex, Claude Code, OpenCode và các tác nhân tương lai tiếp tục cùng một câu chuyện kỹ thuật.
 
-> Kho mã sở hữu ngữ cảnh. Tác nhân chỉ mượn nó.
 
 ## Vì sao ArifCE tồn tại
 
