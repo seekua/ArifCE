@@ -13,71 +13,71 @@ arifce init
 arifce status
 ```
 
-## Complete product reference
+## 完全な製品リファレンス
 
-The translated introduction above is followed by the complete canonical product reference. This keeps every command, link, badge, safety note, and limitation available while the full human translation is completed.
+上の翻訳された紹介に続いて、完全な正規製品リファレンスを掲載しています。人による完全な翻訳が完了するまで、すべてのコマンド、リンク、バッジ、安全上の注意、制限を利用できます。
 
-**Agents change. Your project should not forget.**
+**エージェントは変わっても、プロジェクトは忘れません。**
 
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
-ArifCE is a local-first project intelligence and continuity layer for AI-assisted software development. It keeps context, decisions, failed attempts, evidence, refactoring state, and handoff information with the repository so Codex, Claude Code, OpenCode, and future agents can continue the same engineering story.
+ArifCE は AI 支援ソフトウェア開発のためのローカル優先のプロジェクト知能・継続性レイヤーです。コンテキスト、決定、失敗した試行、証拠、リファクタリング状態、引き継ぎ情報をリポジトリに保持し、Codex、Claude Code、OpenCode、将来のエージェントが同じ開発の物語を続けられるようにします。
 
-> The repository owns the context. The agent only borrows it.
+> コンテキストを所有するのはリポジトリです。エージェントはそれを借りるだけです。
 
-## Why ArifCE exists
+## ArifCE が存在する理由
 
-Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
+重要なコンテキストがチャット履歴や個人の記憶、次の貢献者が確認できないツールにしか存在しないと、ソフトウェアチームは時間と信頼を失います。ArifCE は開発の継続性をプロジェクトそのものの一部にします。
 
-The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
+目的はエージェントをより確信ありげに聞こえさせることではありません。チームの目標、決定の理由、実際に検証されたこと、残る不確実性をすべての貢献者が理解できるようにすることです。その物語がリポジトリに残れば、追跡可能性、責任、信頼を失わずにチームはより速く進めます。
 
-ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
+ArifCE は継続性を共有された開発の実践に変えます。次のタスクに集中したコンテキスト、重要な主張を裏付ける明示的な証拠、作業が未完了のときの正直な引き継ぎを提供します。
 
-## Who it is for
+## 対象ユーザー
 
-ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
+ArifCE は AI 支援の開発チーム、コーディングエージェントを使う開発者、そして一人の担当者・チャット・セッションを越えてプロジェクトのコンテキストを残したいメンテナー向けです。複数の貢献者がリポジトリを共有し、決定、検証、未完了作業の明確な記録を必要とする場合に特に役立ちます。
 
-## How ArifCE works
+## ArifCE の仕組み
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[エージェント開始] --> B[プロトコルと現在の状態を読む]
+    B --> C[タスク固有のコンテキストを取得]
+    C --> D[コードを変更]
+    D --> E[主張と証拠を記録]
+    E --> F{検証に合格？}
+    F -- はい --> G[チェックポイントと引き継ぎ]
+    F -- いいえ --> H[発見または失敗した試行を記録]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[次のエージェントが継続]
 ```
 
-## Explore the project
+## プロジェクトを探索する
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+ローカルダッシュボードを起動すると、プロジェクトの健全性、最近の記録、検索可能なコンテキストを視覚的に確認できます。
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [ArifCE documentation hub](docs/README.md).
+次に <http://127.0.0.1:5180/> を開きます。完全な製品ハンドブックは [ArifCE ドキュメントハブ](docs/README.md) を参照してください。
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+このワークフローはプロジェクトの知識をリポジトリに保持し、進捗を確認可能にします。実用上の利点は次のとおりです。
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
-- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+- 導入が速い: 次のエージェントは長い記録を再構成せず、整理された現在の状態を読み取れます。
+- より安全な変更: 主張は決定的な証拠にリンクされ、Git の状態が変わると古くなります。
+- 継続性の向上: 決定、失敗した試行、チェックポイント、引き継ぎは変更後も残ります。
+- 制御されたリファクタリング: 不変条件、インベントリ、ガード、安全なポイントにより未完了の作業を可視化します。
+- ローカル優先の運用: 正規ファイルはクラウドサービスなしで利用できます。
 
-## Not just memory
+## 単なる記憶ではない
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+ArifCE はタスクの内容、変更点と理由、エージェントが完了したと主張する内容、その主張を支える証拠、レビュアーの発見、未完了の事項、次のエージェントが知るべきことを追跡します。エージェントの発言は事実ではなく主張です。決定的なビルド、テスト、Git、検索の証拠を優先します。
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+技術的な検証と製品の受け入れは別です。受け入れ記録には、誰が主張を承認したか、どの現在の証拠がその判断を支えたかが記録されます。
 
-## V0.1 workflow
+## V0.1 ワークフロー
 
 ```text
 arifce init
@@ -89,19 +89,19 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+正規の Markdown、YAML、JSON、JSONL は `.arifce/` にあります。SQLite は破棄可能な派生インデックスです。.arifce/index/` を削除して `arifce rebuild` を実行しても、プロジェクト知能は保持されなければなりません。
 
-## Architecture
+## アーキテクチャ
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+コアはドメインルール、正規ストレージとインデックス、Git の監視、取得、検証、リファクタリング、セキュリティ、CLI を分離します。ベンダーの指示ファイルは小さなアダプターであり、正規のメモリーストアにはなりません。[アーキテクチャ概要](docs/architecture/overview.md)、[ドメインモデル](docs/architecture/domain-model.md)、[V0.1 仕様](docs/SPECIFICATION-v0.1.md)を参照してください。
 
-## Installation and quick start
+## インストールとクイックスタート
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 はクロスプラットフォームの .NET グローバルツールとして公開されています。[インストール](docs/getting-started/installation.md)と[クイックスタート](docs/getting-started/quick-start.md)を参照してください。ソースから実行する場合:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+オプションのローカル MCP アダプターについては [MCP セットアップ](docs/getting-started/mcp.md) に記載しています。
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+インストールと機能の完全な手順は、[ユーザーガイド](docs/USER-GUIDE.md)と[ドキュメントポリシー](docs/DOCUMENTATION-POLICY.md)を参照してください。
 
 ### 60-second quick start
 
@@ -115,7 +115,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+これで、リポジトリに紐づくプロジェクト状態、タスク、チェックポイント、次の貢献者に渡せる意味のある引き継ぎが揃いました。
 
 ```bash
 dotnet restore
@@ -126,20 +126,19 @@ dotnet run --project src/ArifCE.Cli -- init
 
 Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
 
-## Continuity, verification, and refactors
+## 継続性、検証、リファクタリング
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- 新しいエージェントは `AGENTS.md`、`.arifce/PROTOCOL.md`、`.arifce/CURRENT.md` を読み、履歴を一括読み込みせずタスク固有のコンテキストを要求します。
+- 主張はリポジトリ範囲の証拠にリンクされます。関連する状態が変わると証拠は古くなります。
+- リファクタリング作業では不変条件、インベントリ、ガード、進捗、チェックポイントを追跡します。ブロッキングガードは完了を防ぎます。
+- 引き継ぎはトランスクリプトをそのまま渡さず、現在の開発状態を要約します。
 
-## Security and limitations
+## セキュリティと制限
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+生のトランスクリプトは信頼できないため、一括読み込みや実行は行いません。インポート経路では一般的な秘密情報を伏せ字にします。認証情報やマシン認証データを `.arifce/` に置かないでください。V0.1 は正確性、トークン削減、レビュー品質の向上を保証しません。クラウドサービス、UI、ベクトルデータベース、自律スウォーム、本番環境のエージェント間呼び出しもありません。
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+詳しくは [ROADMAP.md](ROADMAP.md)、[SECURITY.md](SECURITY.md)、[CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。実装済みコマンドの正確な構文は [CLI リファレンス](docs/reference/cli.md) に記載しています。
 
-## License
+## ライセンス
 
-ArifCE is licensed under the [Apache License 2.0](LICENSE).
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+ArifCE は [Apache License 2.0](LICENSE) の下でライセンスされています。
