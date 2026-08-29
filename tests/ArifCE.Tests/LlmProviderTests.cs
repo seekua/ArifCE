@@ -99,6 +99,24 @@ public sealed class LlmProviderTests
         Assert.EndsWith("reviewed", turns[^1].Output);
     }
 
+    [Fact]
+    public async Task Reviewer_workflow_requires_explicit_approval()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-review-");
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(root.FullName, ".git"));
+            var provider = new StubProvider("local", false);
+            var orchestrator = new LlmOrchestrator(new LlmRouter(new[] { (provider.Provider, provider.Profile) }), new CanonicalStore(), new JournalStore(), new GitInspector());
+            var workflow = new LlmReviewerWorkflow(orchestrator, new CanonicalStore());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => workflow.RunAsync(root.FullName, "CLAIM-0001", "reviewer", "rationale", "prompt", false));
+            var result = await workflow.RunAsync(root.FullName, "CLAIM-0001", "reviewer", "rationale", "prompt", true);
+            Assert.Equal("reviewer", result.Approval.Reviewer);
+            Assert.Single(Directory.EnumerateFiles(Path.Combine(root.FullName, ".arifce", "reviews"), "*.json"));
+        }
+        finally { root.Delete(true); }
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }
