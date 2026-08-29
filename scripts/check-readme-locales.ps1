@@ -45,6 +45,15 @@ foreach ($file in $files) {
   if ([regex]::Matches($text, '(?m)^\[English\]\(README\.md\)').Count -ne 1) {
     $failed += "$($file.Name): expected exactly one language selector"
   }
+  foreach ($match in [regex]::Matches($text, '\]\(([^)]+)\)')) {
+    $target = $match.Groups[1].Value
+    if ($target -notmatch '^(https?://|#|mailto:)') {
+      $targetPath = Join-Path $file.DirectoryName ($target -replace '#.*$','')
+      if (-not (Test-Path -LiteralPath $targetPath)) {
+        $failed += "$($file.Name): broken local link $target"
+      }
+    }
+  }
   foreach ($token in $required) { if ($text -notmatch [regex]::Escape($token)) { $failed += "$($file.Name): missing $token" } }
 }
 $listed = [regex]::Matches($translationStatus, '`(README\.[^`]+\.md)`') | ForEach-Object { $_.Groups[1].Value }
