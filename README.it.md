@@ -49,10 +49,10 @@ Apri quindi <http://127.0.0.1:5180/>. Per il manuale completo del prodotto, cons
 
 Questo flusso mantiene la conoscenza del progetto nel repository e rende il progresso ispezionabile. I vantaggi pratici sono:
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
+- Avvio più rapido: l’agente successivo legge uno stato attuale mirato invece di ricostruire una lunga trascrizione.
+- Modifiche più sicure: le affermazioni sono collegate a prove deterministiche e diventano obsolete quando cambia lo stato Git.
+- Continuità migliore: decisioni, tentativi falliti, checkpoint e passaggi di consegne sopravvivono ai cambiamenti di agente o sessione.
+- Refactoring controllati: invarianti, inventario, protezioni e punti sicuri rendono visibile il lavoro incompleto.
 - Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
 
 ## Non solo memoria

@@ -49,10 +49,10 @@ Ouvrez ensuite <http://127.0.0.1:5180/>. Pour le guide produit complet, consulte
 
 Ce flux de travail conserve les connaissances du projet dans le dépôt et rend les progrès vérifiables. Ses avantages pratiques sont les suivants :
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
+- Intégration plus rapide : l’agent suivant lit un état actuel ciblé au lieu de reconstituer une longue transcription.
+- Changements plus sûrs : les affirmations sont liées à des preuves déterministes et deviennent obsolètes lorsque l’état Git change.
+- Meilleure continuité : décisions, tentatives échouées, points de contrôle et passations survivent aux changements d’agent ou de session.
+- Refactorisations contrôlées : invariants, inventaire, garde-fous et points sûrs rendent visible le travail incomplet.
 - Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
 
 ## Plus qu’une mémoire
@@ -112,9 +112,9 @@ Exécutez `init` dans un nouveau dépôt Git ou `adopt` dans un dépôt existant
 
 ## Continuité, vérification et refactorings
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
+- Un nouvel agent lit `AGENTS.md`, `.arifce/PROTOCOL.md` et `.arifce/CURRENT.md`, puis demande le contexte de la tâche au lieu de charger tout l’historique.
+- Les affirmations renvoient à des preuves limitées au dépôt. Ces preuves deviennent obsolètes lorsque l’état concerné du dépôt change.
+- Les campagnes de refactorisation suivent invariants, inventaire, garde-fous, progression et points de contrôle. Les garde-fous bloquants empêchent la clôture.
 - Handoffs summarize current engineering state rather than dumping transcripts.
 
 ## Sécurité et limitations
