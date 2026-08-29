@@ -77,7 +77,7 @@ Markdown, YAML, JSON e JSONL canonici risiedono in `.arifce/`. SQLite è un indi
 
 ## Architettura
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Il nucleo separa le dominio, l’archiviazione e l’indicizzazione canoniche, l’osservazione di Git, il recupero, la verifica, il refactoring, la sicurezza e la CLI. I file di istruzioni dei fornitori sono piccoli adattatori e non diventano mai l’archivio di memoria canonico. Consulta la [panoramica dell’architettura](docs/architecture/overview.md), il [modello di dominio](docs/architecture/domain-model.md) e la [specifica V0.1](docs/SPECIFICATION-v0.1.md).
 
 ## Installazione e avvio rapido
 

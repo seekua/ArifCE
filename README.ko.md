@@ -77,7 +77,7 @@ arifce handoff
 
 ## 아키텍처
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+핵심은 도메인 규칙, 표준 저장소와 인덱싱, Git 관찰, 검색, 검증, 리팩터링, 보안 및 CLI를 분리합니다. 공급업체 지침 파일은 작은 어댑터이며 표준 메모리 저장소가 되지 않습니다. [아키텍처 개요](docs/architecture/overview.md), [도메인 모델](docs/architecture/domain-model.md), [V0.1 사양](docs/SPECIFICATION-v0.1.md)을 참조하세요.
 
 ## 설치 및 빠른 시작
 

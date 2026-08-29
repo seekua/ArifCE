@@ -77,7 +77,7 @@ arifce handoff
 
 ## Αρχιτεκτονική
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Ο πυρήνας διαχωρίζει τους κανόνες τομέα, την κανονική αποθήκευση και ευρετηρίαση, την παρατήρηση του Git, την ανάκτηση, την επαλήθευση, την αναδόμηση, την ασφάλεια και το CLI. Τα αρχεία οδηγιών προμηθευτών είναι μικροί προσαρμογείς και δεν γίνονται ποτέ η κανονική αποθήκη μνήμης. Δείτε την [επισκόπηση αρχιτεκτονικής](docs/architecture/overview.md), το [μοντέλο τομέα](docs/architecture/domain-model.md) και την [προδιαγραφή V0.1](docs/SPECIFICATION-v0.1.md).
 
 ## Εγκατάσταση και γρήγορη εκκίνηση
 

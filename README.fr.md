@@ -47,7 +47,7 @@ dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 
 Ouvrez ensuite <http://127.0.0.1:5180/>. Pour le guide produit complet, consultez le [centre de documentation ArifCE](docs/README.md).
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+Ce flux de travail conserve les connaissances du projet dans le dépôt et rend les progrès vérifiables. Ses avantages pratiques sont les suivants :
 
 - Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
 - Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
@@ -59,7 +59,7 @@ This workflow keeps project knowledge in the repository and makes progress inspe
 
 ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+La vérification technique et l’acceptation du produit sont distinctes : les enregistrements d’acceptation indiquent qui a approuvé une affirmation et quelles preuves actuelles ont justifié cette décision.
 
 ## Flux de travail V0.1
 
@@ -73,19 +73,19 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+Les fichiers Markdown, YAML, JSON et JSONL canoniques se trouvent sous `.arifce/`. SQLite est un index dérivé supprimable : supprimer `.arifce/index/` puis exécuter `arifce rebuild` doit préserver l’intelligence du projet.
 
 ## Architecture
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Le cœur sépare les règles métier, le stockage et l’indexation canoniques, l’observation de Git, la récupération, la vérification, la refactorisation, la sécurité et le CLI. Les fichiers d’instructions des fournisseurs sont de petits adaptateurs ; ils ne deviennent jamais le stockage mémoire canonique. Consultez la [vue d’ensemble de l’architecture](docs/architecture/overview.md), le [modèle de domaine](docs/architecture/domain-model.md) et la [spécification V0.1](docs/SPECIFICATION-v0.1.md).
 
 ## Installation et démarrage rapide
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 est publié comme outil global .NET multiplateforme. Consultez l’[installation](docs/getting-started/installation.md) et le [démarrage rapide](docs/getting-started/quick-start.md). Depuis les sources :
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+L’adaptateur MCP local facultatif est décrit dans la [configuration MCP](docs/getting-started/mcp.md).
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+Pour une installation complète et une présentation des fonctionnalités, consultez le [guide utilisateur](docs/USER-GUIDE.md) et la [politique de documentation](docs/DOCUMENTATION-POLICY.md).
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+Vous disposez maintenant d’un état de projet local au dépôt, d’une tâche, d’un point de contrôle et d’une passation sémantique prêts pour le prochain contributeur.
 
 ```bash
 dotnet restore
@@ -119,9 +119,9 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 
 ## Sécurité et limitations
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+Les transcriptions brutes ne sont pas fiables et ne sont jamais chargées en masse ni exécutées. Les chemins d’import masquent les secrets courants ; les identifiants et données d’authentification machine ne doivent pas se trouver dans `.arifce/`. V0.1 ne garantit ni l’exactitude, ni l’économie de jetons, ni une meilleure qualité de revue. Il ne fournit aucun service cloud, aucune interface, aucune base vectorielle, aucun essaim autonome ni appel inter-agent en production.
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+Consultez [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) et [CONTRIBUTING.md](CONTRIBUTING.md). La syntaxe exacte des commandes implémentées figure dans la [référence CLI](docs/reference/cli.md).
 
 ## Licence
 

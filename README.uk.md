@@ -77,13 +77,13 @@ arifce handoff
 
 ## Архітектура
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Ядро розділяє правила предметної області, канонічне зберігання й індексацію, спостереження за Git, отримання, перевірку, рефакторинг, безпеку та CLI. Файли інструкцій постачальників є малими адаптерами й ніколи не стають канонічним сховищем пам’яті. Дивіться [огляд архітектури](docs/architecture/overview.md), [модель предметної області](docs/architecture/domain-model.md) і [специфікацію V0.1](docs/SPECIFICATION-v0.1.md).
 
 ## Встановлення та швидкий старт
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 опубліковано як кросплатформний глобальний інструмент .NET. Дивіться [встановлення](docs/getting-started/installation.md) і [швидкий старт](docs/getting-started/quick-start.md). Із вихідного коду:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+Необов’язковий локальний адаптер MCP описано в [налаштуванні MCP](docs/getting-started/mcp.md).
 
 For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
 
