@@ -73,9 +73,21 @@ app.MapGet("/api/overview", () =>
         var actor = e.TryGetProperty("data", out var data) && data.TryGetProperty("agent", out var agent) ? agent.ToString() : "repository";
         return (object)new { type = Get("type"), entityId = Get("entityId"), occurredAtUtc = Get("occurredAtUtc"), actor };
     }).ToArray() : [];
+    object[] LlmActivity() => File.Exists(journalPath) ? File.ReadLines(journalPath).Reverse().Select(line =>
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(line); var e = doc.RootElement;
+            if (!e.TryGetProperty("type", out var type) || type.GetString() != "llm.completed") return null;
+            var data = e.TryGetProperty("data", out var d) ? d : default;
+            string Get(string name) => data.ValueKind == JsonValueKind.Object && data.TryGetProperty(name, out var p) ? p.ToString() : "";
+            return (object?)new { provider = Get("provider"), model = Get("model"), tokens = Get("tokens"), estimatedCost = Get("estimatedCost"), evidenceId = e.TryGetProperty("entityId", out var id) ? id.ToString() : "", occurredAtUtc = e.TryGetProperty("occurredAtUtc", out var at) ? at.ToString() : "" };
+        }
+        catch (JsonException) { return null; }
+    }).Where(x => x is not null).Cast<object>().Take(30).ToArray() : [];
     var evidence = Read("evidence");
     var llm = evidence.Where(x => ((dynamic)x).summary?.ToString()?.StartsWith("Provider ", StringComparison.OrdinalIgnoreCase) == true).ToArray();
-    return Results.Json(new { decisions = Read("decisions"), tasks = Read("tasks"), claims = Read("claims"), evidence, llm, findings = Read("findings"), handoffs = Read("handoffs"), reviews = Read("reviews"), attempts = Read("attempts"), events = Events() });
+    return Results.Json(new { decisions = Read("decisions"), tasks = Read("tasks"), claims = Read("claims"), evidence, llm, llmActivity = LlmActivity(), findings = Read("findings"), handoffs = Read("handoffs"), reviews = Read("reviews"), attempts = Read("attempts"), events = Events() });
 });
 app.MapGet("/api/search", async (string q, int? limit) =>
 {
