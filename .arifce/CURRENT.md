@@ -14,7 +14,7 @@ No release blocker remains. Cloud hosting, UI implementation, IDE extensions, ex
 
 ## Next steps
 
-Phase 40 is implemented in the local dashboard: decision-maker summaries show latest agent/action, evidence freshness, and record/status/agent filters. Remote CI passed for commit `f44437e`.
+Phase 40 is implemented in the local dashboard: decision-maker summaries show latest agent/action, evidence freshness, and record/status/agent filters. Journal-backed agent attribution and malformed JSONL tolerance were hardened by the expert review; remote CI passed for commit `a0ffac5`.
 
 Phase 41 is complete: local multi-project workspace active switching now clears stale selections on removal, and isolation tests cover independent registered roots.
 
