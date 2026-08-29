@@ -108,7 +108,7 @@ dotnet test
 dotnet run --project src/ArifCE.Cli -- init
 ```
 
-Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
+Kjør `init` i et nytt Git-repositorium eller `adopt` i et eksisterende. Begge er ikke-destruktive og idempotente. `adopt` registrerer observert struktur og merker ukjente historiske begrunnelser som ukjente.
 
 ## Kontinuitet, verifisering og refaktorering
 
