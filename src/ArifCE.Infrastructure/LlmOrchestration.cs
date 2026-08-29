@@ -25,7 +25,8 @@ public sealed class LlmOrchestrator
 
     public async Task<LlmExecutionResult> ExecuteAsync(string root, LlmRequest request, string claimId, CancellationToken cancellationToken = default)
     {
-        var route = await _router.CompleteAsync(request, cancellationToken);
+        var preferred = _taskRouter?.Select(request.Task);
+        var route = await _router.CompleteAsync(request, preferred, cancellationToken);
         var snapshot = await _git.CaptureAsync(root, cancellationToken);
         var evidenceId = _canonical.NextId(root, "evidence", "EVIDENCE");
         var summary = $"Provider {route.Response.ProviderId} / model {route.Response.Model}: {route.Response.Text.Replace("\r", " ").Replace("\n", " ").Trim()}";

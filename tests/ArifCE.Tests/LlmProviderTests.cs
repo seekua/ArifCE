@@ -68,6 +68,15 @@ public sealed class LlmProviderTests
         finally { root.Delete(true); }
     }
 
+    [Fact]
+    public void Local_policy_blocks_unapproved_provider_and_cost()
+    {
+        var engine = new LocalPolicyEngine(new[] { new ApprovalPolicy("default", "safe", true, 10, new[] { "local" }) });
+        Assert.False(engine.Evaluate("cloud", 0, true).Allowed);
+        Assert.False(engine.Evaluate("local", 0.11m, true).Allowed);
+        Assert.True(engine.Evaluate("local", 0.01m, true).Allowed);
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }

@@ -14,10 +14,11 @@ public sealed class LlmRouter
         _providers = list.Select(x => x.Provider).ToArray();
         _profiles = list.ToDictionary(x => x.Provider.ProviderId, x => x.Profile, StringComparer.OrdinalIgnoreCase);
     }
-    public async Task<LlmRouteResult> CompleteAsync(LlmRequest request, CancellationToken cancellationToken = default)
+    public async Task<LlmRouteResult> CompleteAsync(LlmRequest request, string? preferredProviderId = null, CancellationToken cancellationToken = default)
     {
         var attempts = new List<string>(); Exception? last = null;
-        foreach (var provider in _providers)
+        var ordered = string.IsNullOrWhiteSpace(preferredProviderId) ? _providers : _providers.OrderByDescending(x => string.Equals(x.ProviderId, preferredProviderId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        foreach (var provider in ordered)
         {
             attempts.Add(provider.ProviderId);
             try
