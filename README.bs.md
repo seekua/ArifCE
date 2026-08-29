@@ -47,7 +47,7 @@ dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 
 Zatim otvorite <http://127.0.0.1:5180/>. Kompletan priručnik proizvoda nalazi se u [ArifCE centru dokumentacije](docs/README.md).
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+Ovaj tok rada čuva znanje o projektu u repozitoriju i čini napredak provjerljivim. Praktične prednosti su:
 
 - Brže uključivanje: sljedeći agent čita fokusirano trenutno stanje umjesto da obnavlja dugu transkripciju.
 - Sigurnije promjene: tvrdnje su povezane s determinističkim dokazima i zastarijevaju promjenom Git stanja.
@@ -83,9 +83,9 @@ Jezgro odvaja pravila domena, kanonsko skladištenje i indeksiranje, posmatranje
 
 V0.2.0 je objavljen kao višeplatformski .NET globalni alat. Pogledajte [instalaciju](docs/getting-started/installation.md) i [brzi početak](docs/getting-started/quick-start.md). Iz izvornog koda:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+Opcionalni lokalni MCP adapter opisan je u [MCP podešavanju](docs/getting-started/mcp.md).
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+Za potpunu instalaciju i pregled funkcija pogledajte [korisnički vodič](docs/USER-GUIDE.md) i [politiku dokumentacije](docs/DOCUMENTATION-POLICY.md).
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+Sada imate stanje projekta u repozitoriju, zadatak, kontrolnu tačku i semantičku primopredaju spremnu za sljedećeg saradnika.
 
 ```bash
 dotnet restore
@@ -121,7 +121,7 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 
 Sirovi transkripti nisu pouzdani i nikada se ne učitavaju niti izvršavaju skupno. Uvozni putevi uklanjaju uobičajene tajne; vjerodajnice i podaci za autentifikaciju mašine ne pripadaju u `.arifce/`. V0.1 ne garantuje ispravnost, uštedu tokena ni bolji kvalitet pregleda; nema cloud uslugu, UI, vektorsku bazu, autonomni roj ni produkcijske pozive između agenata.
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+Pogledajte [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) i [CONTRIBUTING.md](CONTRIBUTING.md). Tačna sintaksa implementiranih komandi dokumentovana je u [CLI referenci](docs/reference/cli.md).
 
 ## Licenca
 

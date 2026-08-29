@@ -47,7 +47,7 @@ dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 
 จากนั้นเปิด <http://127.0.0.1:5180/> ดูคู่มือผลิตภัณฑ์ฉบับเต็มที่ [ศูนย์เอกสาร ArifCE](docs/README.md)
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+เวิร์กโฟลว์นี้เก็บความรู้ของโครงการไว้ในรีโพซิทอรีและทำให้ตรวจสอบความคืบหน้าได้ ประโยชน์เชิงปฏิบัติคือ:
 
 - เริ่มงานได้เร็วขึ้น: เอเจนต์ถัดไปอ่านสถานะปัจจุบันที่สรุปไว้แทนการสร้างบันทึกยาวใหม่
 - เปลี่ยนแปลงปลอดภัยขึ้น: ข้ออ้างเชื่อมกับหลักฐานที่แน่นอน และจะล้าสมัยเมื่อสถานะ Git เปลี่ยน
@@ -83,9 +83,9 @@ arifce handoff
 
 V0.2.0 เผยแพร่เป็นเครื่องมือ .NET แบบข้ามแพลตฟอร์ม ดู[การติดตั้ง](docs/getting-started/installation.md)และ[เริ่มต้นอย่างรวดเร็ว](docs/getting-started/quick-start.md) จากซอร์สโค้ด:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+อะแดปเตอร์ MCP ในเครื่องแบบเลือกใช้ได้อธิบายไว้ใน [การตั้งค่า MCP](docs/getting-started/mcp.md)
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+สำหรับการติดตั้งและคำแนะนำฟีเจอร์ทั้งหมด ดูที่ [คู่มือผู้ใช้](docs/USER-GUIDE.md) และ [นโยบายเอกสาร](docs/DOCUMENTATION-POLICY.md)
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+ตอนนี้คุณมีสถานะโครงการในรีโพซิทอรี งานหนึ่งรายการ จุดตรวจ และการส่งต่องานเชิงความหมายที่พร้อมสำหรับผู้มีส่วนร่วมคนถัดไปแล้ว
 
 ```bash
 dotnet restore
@@ -121,7 +121,7 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 
 บันทึกดิบไม่น่าเชื่อถือและจะไม่โหลดหรือเรียกใช้แบบรวม ไฟล์นำเข้าจะปกปิดความลับทั่วไป ข้อมูลรับรองและการยืนยันตัวตนของเครื่องไม่ควรอยู่ใน `.arifce/` V0.1 ไม่รับประกันความถูกต้อง การประหยัดโทเค็น หรือคุณภาพรีวิวที่ดีขึ้น และไม่มีคลาวด์ UI ฐานข้อมูลเวกเตอร์ ฝูงอัตโนมัติ หรือการเรียกเอเจนต์ระหว่างกันใน production
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+ดู [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) และ [CONTRIBUTING.md](CONTRIBUTING.md) ไวยากรณ์คำสั่งที่ใช้งานจริงมีบันทึกไว้ใน [ข้อมูลอ้างอิง CLI](docs/reference/cli.md)
 
 ## ใบอนุญาต
 

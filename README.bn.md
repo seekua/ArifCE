@@ -47,7 +47,7 @@ dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 
 এরপর <http://127.0.0.1:5180/> খুলুন। সম্পূর্ণ পণ্য নির্দেশিকার জন্য [ArifCE ডকুমেন্টেশন হাব](docs/README.md) দেখুন।
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+এই কর্মপ্রবাহ প্রকল্পের জ্ঞান রিপোজিটরিতে রাখে এবং অগ্রগতি পরিদর্শনযোগ্য করে। এর ব্যবহারিক সুবিধাগুলো হলো:
 
 - দ্রুত শুরু: পরবর্তী এজেন্ট দীর্ঘ ট্রান্সক্রিপ্ট পুনর্গঠন না করে কেন্দ্রীভূত বর্তমান অবস্থা পড়ে।
 - নিরাপদ পরিবর্তন: দাবিগুলো নির্ধারিত প্রমাণের সঙ্গে যুক্ত এবং Git অবস্থা বদলালে পুরোনো হয়ে যায়।
@@ -83,9 +83,9 @@ arifce handoff
 
 V0.2.0 একটি ক্রস-প্ল্যাটফর্ম .NET গ্লোবাল টুল হিসেবে প্রকাশিত। [ইনস্টলেশন](docs/getting-started/installation.md) ও [দ্রুত শুরু](docs/getting-started/quick-start.md) দেখুন। সোর্স থেকে:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+ঐচ্ছিক স্থানীয় MCP অ্যাডাপ্টারটি [MCP সেটআপ](docs/getting-started/mcp.md)-এ নথিবদ্ধ।
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+সম্পূর্ণ ইনস্টলেশন ও বৈশিষ্ট্য পরিচিতির জন্য [ব্যবহারকারী নির্দেশিকা](docs/USER-GUIDE.md) এবং [ডকুমেন্টেশন নীতি](docs/DOCUMENTATION-POLICY.md) দেখুন।
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+এখন আপনার কাছে রিপোজিটরি-স্থানীয় প্রকল্প অবস্থা, একটি কাজ, একটি চেকপয়েন্ট এবং পরবর্তী অবদানকারীর জন্য প্রস্তুত একটি অর্থবহ হস্তান্তর রয়েছে।
 
 ```bash
 dotnet restore
@@ -121,7 +121,7 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 
 কাঁচা ট্রান্সক্রিপ্ট অবিশ্বস্ত; এগুলো কখনও একসঙ্গে লোড বা চালানো হয় না। ইমপোর্ট পাথ সাধারণ গোপনীয়তা গোপন করে; শংসাপত্র ও মেশিন প্রমাণীকরণ তথ্য `.arifce/`-এ রাখা যাবে না। V0.1 সঠিকতা, টোকেন সাশ্রয় বা উন্নত রিভিউ মানের নিশ্চয়তা দেয় না এবং এতে ক্লাউড, UI, ভেক্টর ডেটাবেস, স্বয়ংক্রিয় swarm বা উৎপাদন এজেন্ট-কল নেই।
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+[ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) এবং [CONTRIBUTING.md](CONTRIBUTING.md) দেখুন। বাস্তবায়িত কমান্ডের সঠিক সিনট্যাক্স [CLI রেফারেন্স](docs/reference/cli.md)-এ নথিবদ্ধ।
 
 ## লাইসেন্স
 

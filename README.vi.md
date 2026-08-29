@@ -38,28 +38,28 @@ flowchart LR
 
 ## Khám phá dự án
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+Chạy dashboard cục bộ để xem tổng quan trực quan về tình trạng dự án, các bản ghi gần đây và ngữ cảnh có thể tìm kiếm:
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [ArifCE documentation hub](docs/README.md).
+Sau đó mở <http://127.0.0.1:5180/>. Để xem sổ tay sản phẩm đầy đủ, hãy truy cập [trung tâm tài liệu ArifCE](docs/README.md).
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+Quy trình này lưu giữ kiến thức dự án trong repository và giúp kiểm tra tiến độ. Các lợi ích thực tế gồm:
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
-- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+- Bắt đầu nhanh hơn: agent tiếp theo đọc trạng thái hiện tại đã được tập trung thay vì dựng lại một bản ghi dài.
+- Thay đổi an toàn hơn: các tuyên bố liên kết với bằng chứng xác định và trở nên lỗi thời khi trạng thái Git thay đổi.
+- Tính liên tục tốt hơn: quyết định, lần thử thất bại, checkpoint và bàn giao vẫn tồn tại khi đổi agent hoặc phiên làm việc.
+- Refactor có kiểm soát: bất biến, kiểm kê, guard và điểm an toàn làm lộ rõ phần việc chưa hoàn tất.
+- Vận hành local-first: các tệp chuẩn vẫn dùng được mà không cần dịch vụ đám mây hay runtime riêng của nhà cung cấp.
 
 ## Không chỉ là bộ nhớ
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+ArifCE theo dõi nhiệm vụ, những gì đã thay đổi và lý do, điều agent tuyên bố đã hoàn thành, bằng chứng hỗ trợ, phát hiện của người đánh giá, phần còn dang dở và thông tin agent tiếp theo cần biết. Phát biểu của agent là tuyên bố chứ không phải sự thật; nên ưu tiên bằng chứng xác định từ build, test, Git và tìm kiếm.
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+Xác minh kỹ thuật và nghiệm thu sản phẩm là hai việc riêng: bản ghi nghiệm thu cho biết ai phê duyệt tuyên bố và bằng chứng hiện tại nào hỗ trợ quyết định đó.
 
 ## Quy trình V0.1
 
@@ -73,19 +73,19 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+Markdown, YAML, JSON và JSONL chuẩn nằm trong `.arifce/`. SQLite là chỉ mục dẫn xuất có thể xóa: xóa `.arifce/index/` rồi chạy `arifce rebuild` vẫn phải giữ nguyên tri thức dự án.
 
 ## Kiến trúc
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Lõi hệ thống tách biệt quy tắc miền, lưu trữ và lập chỉ mục chuẩn, quan sát Git, truy xuất, xác minh, refactor, bảo mật và CLI. Tệp hướng dẫn của nhà cung cấp chỉ là các adapter nhỏ, không bao giờ trở thành kho bộ nhớ chuẩn. Xem [tổng quan kiến trúc](docs/architecture/overview.md), [mô hình miền](docs/architecture/domain-model.md) và [đặc tả V0.1](docs/SPECIFICATION-v0.1.md).
 
 ## Cài đặt và bắt đầu nhanh
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 được phát hành dưới dạng công cụ .NET toàn cục đa nền tảng. Xem [cài đặt](docs/getting-started/installation.md) và [bắt đầu nhanh](docs/getting-started/quick-start.md). Từ mã nguồn:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+Adapter MCP cục bộ tùy chọn được mô tả trong [thiết lập MCP](docs/getting-started/mcp.md).
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+Để xem hướng dẫn cài đặt và toàn bộ tính năng, hãy đọc [Hướng dẫn người dùng](docs/USER-GUIDE.md) và [Chính sách tài liệu](docs/DOCUMENTATION-POLICY.md).
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+Giờ đây bạn có trạng thái dự án cục bộ trong repository, một nhiệm vụ, một checkpoint và một bàn giao ngữ nghĩa sẵn sàng cho người đóng góp tiếp theo.
 
 ```bash
 dotnet restore
@@ -108,20 +108,20 @@ dotnet test
 dotnet run --project src/ArifCE.Cli -- init
 ```
 
-Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
+Chạy `init` trong repository Git mới hoặc `adopt` trong repository hiện có. Cả hai đều không phá hủy dữ liệu và có tính lặp an toàn. `adopt` ghi lại cấu trúc quan sát được và đánh dấu lý do lịch sử chưa biết là chưa biết.
 
 ## Tính liên tục, xác minh và tái cấu trúc
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- Agent mới đọc `AGENTS.md`, `.arifce/PROTOCOL.md` và `.arifce/CURRENT.md`, sau đó yêu cầu ngữ cảnh theo nhiệm vụ thay vì tải hàng loạt lịch sử.
+- Tuyên bố liên kết với bằng chứng trong repository. Bằng chứng trở nên lỗi thời khi trạng thái repository liên quan thay đổi.
+- Chiến dịch refactor theo dõi bất biến, kiểm kê, guard, tiến độ và checkpoint. Guard chặn sẽ ngăn hoàn tất.
+- Bàn giao tóm tắt trạng thái kỹ thuật hiện tại thay vì đổ toàn bộ transcript.
 
 ## Bảo mật và giới hạn
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+Transcript thô không đáng tin cậy và không bao giờ được tải hàng loạt hoặc thực thi. Đường dẫn import che giấu các bí mật phổ biến; thông tin xác thực và dữ liệu xác thực máy không thuộc `.arifce/`. V0.1 không đảm bảo tính đúng đắn, tiết kiệm token hay chất lượng review tốt hơn. Phiên bản này không có dịch vụ đám mây, UI, cơ sở dữ liệu vector, swarm tự trị hay lời gọi agent chéo trong production.
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+Xem [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) và [CONTRIBUTING.md](CONTRIBUTING.md). Cú pháp lệnh được triển khai chính xác được ghi trong [tài liệu tham khảo CLI](docs/reference/cli.md).
 
 ## Giấy phép
 
