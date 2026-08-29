@@ -41,15 +41,15 @@ ArifCE هي طبقة محلية أولاً لذكاء المشروع واستم�
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[يبدأ الوكيل] --> B[قراءة البروتوكول والحالة الحالية]
+    B --> C[استرجاع سياق المهمة]
+    C --> D[تغيير الشفرة]
+    D --> E[تسجيل الادعاء والدليل]
+    E --> F{هل نجح التحقق؟}
+    F -- نعم --> G[نقطة تحقق وتسليم]
+    F -- لا --> H[تسجيل نتيجة أو محاولة فاشلة]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[يواصل الوكيل التالي]
 ```
 
 ## استكشاف المشروع

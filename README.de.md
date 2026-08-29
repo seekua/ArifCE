@@ -43,15 +43,15 @@ ArifCE richtet sich an KI-gestützte Engineering-Teams, Entwickler, die mit Codi
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[Agent startet] --> B[Protokoll und aktuellen Status lesen]
+    B --> C[Aufgabenspezifischen Kontext abrufen]
+    C --> D[Code ändern]
+    D --> E[Behauptung und Beleg erfassen]
+    E --> F{Verifizierung erfolgreich?}
+    F -- Ja --> G[Checkpoint und Übergabe]
+    F -- Nein --> H[Ergebnis oder Fehlversuch erfassen]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[Nächster Agent setzt fort]
 ```
 
 ## Projekt erkunden
