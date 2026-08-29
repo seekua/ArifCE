@@ -85,7 +85,7 @@ V0.2.0 опубліковано як кросплатформний глобал
 
 Необов’язковий локальний адаптер MCP описано в [налаштуванні MCP](docs/getting-started/mcp.md).
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+Повний опис встановлення та функцій дивіться в [посібнику користувача](docs/USER-GUIDE.md) і [політиці документації](docs/DOCUMENTATION-POLICY.md).
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+Тепер у вас є локальний стан проєкту в репозиторії, завдання, контрольна точка та семантична передача для наступного учасника.
 
 ```bash
 dotnet restore
@@ -119,9 +119,9 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 
 ## Безпека та обмеження
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+Необроблені транскрипти ненадійні й ніколи не завантажуються масово та не виконуються. Шляхи імпорту приховують поширені секрети; облікові дані й дані автентифікації машини не повинні міститися в `.arifce/`. V0.1 не гарантує правильність, економію токенів або кращу якість перевірки. У ньому немає хмарного сервісу, UI, векторної бази даних, автономного рою чи виробничих міжагентних викликів.
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+Дивіться [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) і [CONTRIBUTING.md](CONTRIBUTING.md). Точний синтаксис реалізованих команд наведено в [довіднику CLI](docs/reference/cli.md).
 
 ## Ліцензія
 

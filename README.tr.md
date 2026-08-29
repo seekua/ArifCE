@@ -73,7 +73,7 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON ve JSONL dosyaları `.arifce/` altında bulunur. SQLite silinebilir türetilmiş bir indekstir; `.arifce/index/` silinip `arifce rebuild` çalıştırıldığında proje zekâsı korunmalıdır.
+Kanonik Markdown, YAML, JSON ve JSONL dosyaları `.arifce/` altında bulunur. SQLite silinebilir türetilmiş bir indekstir; `.arifce/index/` silinip `arifce rebuild` çalıştırıldığında proje zekâsı korunmalıdır.
 
 ## Mimari
 
@@ -81,7 +81,7 @@ Canonical Markdown, YAML, JSON ve JSONL dosyaları `.arifce/` altında bulunur. 
 
 ## Kurulum ve hızlı başlangıç
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 platformlar arası bir .NET global aracı olarak yayımlandı. [Kurulum](docs/getting-started/installation.md) ve [hızlı başlangıç](docs/getting-started/quick-start.md) belgelerine bakın. Kaynak koddan:
 
 İsteğe bağlı yerel MCP adaptörü [MCP kurulumu](docs/getting-started/mcp.md) sayfasında açıklanır.
 

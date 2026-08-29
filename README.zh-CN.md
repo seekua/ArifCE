@@ -77,7 +77,7 @@ arifce handoff
 
 ## 架构
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+核心将领域规则、规范存储与索引、Git 观察、检索、验证、重构、安全和 CLI 分离。供应商指令文件只是小型适配器，绝不会成为规范记忆存储。请参阅[架构概览](docs/architecture/overview.md)、[领域模型](docs/architecture/domain-model.md)和 [V0.1 规范](docs/SPECIFICATION-v0.1.md)。
 
 ## 安装和快速开始
 
