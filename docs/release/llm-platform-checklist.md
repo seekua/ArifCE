@@ -13,6 +13,6 @@ Status: **implemented and CI-verified** on `master`.
 | Dashboard model/token/cost activity | `/api/overview` LLM projection and dashboard activity card |
 | MCP and IDE boundaries | `arifce_llm_providers`, `arifce_llm_run`, `integrations/ide/arifce.local.json` |
 | Local A2A and multi-project workspace | `LocalA2AOrchestrator`, `WorkspaceRegistry` |
-| Remote CI | [Run 33278676898](https://github.com/seekua/ArifCE/actions/runs/33278676898), conclusion `success`, commit `95327e3` |
+| Remote CI | [Run 33280084121](https://github.com/seekua/ArifCE/actions/runs/33280084121), conclusion `success`, commit `2d2b6f5` |
 
 Hosted vector databases, vendor notification channels, issue/PR automation, and full IDE-native extensions remain opt-in integrations outside the local platform.
