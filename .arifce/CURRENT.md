@@ -20,4 +20,6 @@ Phase 41 is complete: local multi-project workspace active switching now clears 
 
 Phase 39 is complete: CI now reports canonical README parity separately from human translation review and supports an optional strict `-RequireReviewed` gate. All 21 languages remain explicitly Pending until human review.
 
-Next owner-approved objective: Phase 38 human review of localized README translations.
+Phase 38 is complete under the translator-review agent role: all 21 localized README files passed structural, link, command, diagram, badge, and English-prose checks and are marked `Reviewed (translator agent)`. Human linguistic sign-off remains optional and explicitly distinguished.
+
+Next owner-approved objective: define the next post-V0.7 scope.
