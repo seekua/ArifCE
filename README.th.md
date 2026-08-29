@@ -119,7 +119,7 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 
 ## ความปลอดภัยและข้อจำกัด
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+บันทึกดิบไม่น่าเชื่อถือและจะไม่โหลดหรือเรียกใช้แบบรวม ไฟล์นำเข้าจะปกปิดความลับทั่วไป ข้อมูลรับรองและการยืนยันตัวตนของเครื่องไม่ควรอยู่ใน `.arifce/` V0.1 ไม่รับประกันความถูกต้อง การประหยัดโทเค็น หรือคุณภาพรีวิวที่ดีขึ้น และไม่มีคลาวด์ UI ฐานข้อมูลเวกเตอร์ ฝูงอัตโนมัติ หรือการเรียกเอเจนต์ระหว่างกันใน production
 
 See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
 
@@ -127,6 +127,7 @@ See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](
 
 ArifCE is licensed under the [Apache License 2.0](LICENSE).
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+
 
 
 
