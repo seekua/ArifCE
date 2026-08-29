@@ -23,7 +23,7 @@ The English `README.md` is canonical. Every localized README currently retains t
 | `README.tr.md` | Complete canonical reference | Pending |
 | `README.uk.md` | Full Ukrainian draft (commands/links/diagram preserved) | Pending |
 | `README.vi.md` | Complete canonical reference | Pending |
-| `README.zh-CN.md` | Complete canonical reference | Pending |
+| `README.zh-CN.md` | Full Simplified Chinese draft (commands/links/diagram preserved) | Pending |
 | `README.zh-TW.md` | Complete canonical reference | Pending |
 
 The repository includes `scripts/translate-readme-locales.ps1`, which performs paragraph-level DeepL web translation in batches while protecting commands, URLs, HTML, and Markdown links. The public endpoint currently rate-limits automated requests; the script retries and leaves the existing file unchanged when a batch cannot be translated.

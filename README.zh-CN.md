@@ -5,63 +5,63 @@
 
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
-ArifCE is a local-first project intelligence and continuity layer for AI-assisted software development. It keeps context, decisions, failed attempts, evidence, refactoring state, and handoff information with the repository so Codex, Claude Code, OpenCode, and future agents can continue the same engineering story.
+ArifCE 是面向 AI 辅助软件开发的本地优先项目智能与连续性层。它将上下文、决策、失败尝试、证据、重构状态和交接信息保存在仓库中，让 Codex、Claude Code、OpenCode 及未来的代理继续同一段工程历程。
 
-> The repository owns the context. The agent only borrows it.
+> 仓库拥有上下文，代理只是借用它。
 
-## Why ArifCE exists
+## ArifCE 为什么存在
 
-Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
+当重要上下文只存在于聊天记录、个人记忆或下一位贡献者无法检查的工具中时，软件团队会损失时间和信心。ArifCE 让工程连续性成为项目本身的一部分。
 
-The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
+目标不是让代理听起来更确定，而是帮助每位贡献者理解团队要实现什么、为何做出决定、哪些内容已经验证以及哪里仍存在不确定性。当这段历程留在仓库中，团队无需放弃可追溯性、责任或信任即可更快前进。
 
-ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
+ArifCE 将连续性变成共同的工程实践：为下一项任务提供聚焦上下文，为重要声明提供明确证据，并在工作未完成时进行诚实交接。
 
-## Who it is for
+## 适用对象
 
-ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
+ArifCE 面向 AI 辅助工程团队、使用编码代理的开发者，以及希望项目上下文超越个人、聊天或会话而持续存在的维护者。当多人共享仓库并需要清晰记录决策、验证和未完成工作时尤其有用。
 
-## How ArifCE works
+## ArifCE 如何工作
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[代理开始] --> B[读取协议和当前状态]
+    B --> C[获取任务上下文]
+    C --> D[修改代码]
+    D --> E[记录声明和证据]
+    E --> F{验证通过？}
+    F -- 是 --> G[检查点和交接]
+    F -- 否 --> H[记录发现或失败尝试]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[下一位代理继续]
 ```
 
-## Explore the project
+## 探索项目
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+运行本地仪表板，以可视化查看项目健康状况、最近记录和可搜索上下文：
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [ArifCE documentation hub](docs/README.md).
+然后打开 <http://127.0.0.1:5180/>。完整产品手册请参阅 [ArifCE 文档中心](docs/README.md)。
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+此工作流将项目知识保留在仓库中，使进度可检查。实际优势包括：
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
-- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+- 更快上手：下一位代理读取聚焦的当前状态，而无需重建长篇记录。
+- 更安全的变更：声明链接到确定性证据，Git 状态变化后会标记为过期。
+- 更好的连续性：决策、失败尝试、检查点和交接可跨代理或会话变更保留。
+- 受控重构：不变量、清单、防护和安全点让未完成工作清晰可见。
+- 本地优先运行：规范文件无需云服务或供应商专用运行时即可使用。
 
-## Not just memory
+## 不只是记忆
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+ArifCE 跟踪任务内容、变更及原因、代理声称完成的事项、支持该声明的证据、审阅者的发现、未完成事项以及下一位代理需要了解的内容。代理陈述是声明而非事实；优先使用确定性的构建、测试、Git 和搜索证据。
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+技术验证与产品验收相互独立：验收记录会标明谁批准了声明，以及哪些当前证据支持该决定。
 
-## V0.1 workflow
+## V0.1 工作流
 
 ```text
 arifce init
@@ -73,19 +73,19 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+规范的 Markdown、YAML、JSON 和 JSONL 位于 `.arifce/` 下。SQLite 是可丢弃的派生索引：删除 `.arifce/index/` 并运行 `arifce rebuild` 必须保留项目智能。
 
-## Architecture
+## 架构
 
 The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
 
-## Installation and quick start
+## 安装和快速开始
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 已作为跨平台 .NET 全局工具发布。请参阅[安装](docs/getting-started/installation.md)和[快速开始](docs/getting-started/quick-start.md)。从源代码运行：
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+可选的本地 MCP 适配器请参阅 [MCP 设置](docs/getting-started/mcp.md)。
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+完整的安装和功能说明请参阅[用户指南](docs/USER-GUIDE.md)和[文档政策](docs/DOCUMENTATION-POLICY.md)。
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+现在你拥有仓库本地项目状态、任务、检查点以及可交给下一位贡献者的语义交接。
 
 ```bash
 dotnet restore
@@ -110,20 +110,19 @@ dotnet run --project src/ArifCE.Cli -- init
 
 Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
 
-## Continuity, verification, and refactors
+## 连续性、验证和重构
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- 新代理读取 `AGENTS.md`、`.arifce/PROTOCOL.md` 和 `.arifce/CURRENT.md`，然后请求任务上下文，而不是批量加载历史。
+- 声明链接到仓库范围内的证据；相关状态变化后证据会过期。
+- 重构活动跟踪不变量、清单、防护、进度和检查点；阻断性防护会阻止完成。
+- 交接总结当前工程状态，而不是倾倒记录。
 
-## Security and limitations
+## 安全与限制
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+原始记录不受信任，绝不会批量加载或执行。导入路径会隐藏常见机密；凭据和机器认证数据不得放入 `.arifce/`。V0.1 不保证正确性、节省令牌或提高审阅质量，也不提供云服务、UI、向量数据库、自主群体或生产环境代理间调用。
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+请参阅 [ROADMAP.md](ROADMAP.md)、[SECURITY.md](SECURITY.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。已实现命令的准确语法记录在 [CLI 参考](docs/reference/cli.md) 中。
 
-## License
+## 许可证
 
-ArifCE is licensed under the [Apache License 2.0](LICENSE).
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+ArifCE 依据 [Apache License 2.0](LICENSE) 授权。
