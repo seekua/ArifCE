@@ -16,4 +16,6 @@ No release blocker remains. Cloud hosting, UI implementation, IDE extensions, ex
 
 Phase 40 is implemented in the local dashboard: decision-maker summaries show latest agent/action, evidence freshness, and record/status/agent filters. Remote CI passed for commit `f44437e`.
 
-Next owner-approved objective: Phase 41 local multi-project workspace active switching and isolation tests.
+Phase 41 is complete: local multi-project workspace active switching now clears stale selections on removal, and isolation tests cover independent registered roots.
+
+Next owner-approved objective: define the next post-V0.7 scope.
