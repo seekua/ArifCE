@@ -110,12 +110,12 @@ dotnet run --project src/ArifCE.Cli -- init
 
 เรียกใช้ `init` ในรีโพซิทอรี Git ใหม่ หรือ `adopt` ในรีโพซิทอรีที่มีอยู่ ทั้งสองคำสั่งไม่ทำลายข้อมูลและทำซ้ำได้อย่างปลอดภัย `adopt` จะบันทึกโครงสร้างที่พบและระบุเหตุผลทางประวัติศาสตร์ที่ไม่ทราบว่าไม่ทราบ
 
-## Continuity, verification, and refactors
+## ความต่อเนื่อง การตรวจสอบ และการรีแฟกเตอร์
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- เอเจนต์ใหม่อ่าน `AGENTS.md`, `.arifce/PROTOCOL.md` และ `.arifce/CURRENT.md` แล้วขอบริบทเฉพาะงานแทนการโหลดประวัติทั้งหมด
+- ข้ออ้างเชื่อมโยงกับหลักฐานในรีโพซิทอรี และหลักฐานจะล้าสมัยเมื่อสถานะที่เกี่ยวข้องเปลี่ยน
+- แคมเปญรีแฟกเตอร์ติดตามอินวาเรียนต์ รายการ การป้องกัน ความคืบหน้า และจุดตรวจ การป้องกันแบบบล็อกจะหยุดการเสร็จสิ้น
+- การส่งต่องานสรุปสถานะวิศวกรรมปัจจุบันแทนการเททรานสคริปต์ทั้งหมด
 
 ## ความปลอดภัยและข้อจำกัด
 

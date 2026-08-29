@@ -110,12 +110,12 @@ dotnet run --project src/ArifCE.Cli -- init
 
 নতুন Git রিপোজিটরিতে `init` অথবা বিদ্যমানটিতে `adopt` চালান। উভয়ই ধ্বংসাত্মক নয় এবং একই ফল দেয়। `adopt` দেখা কাঠামো নথিবদ্ধ করে এবং অজানা ঐতিহাসিক কারণকে অজানা হিসেবে চিহ্নিত করে।
 
-## Continuity, verification, and refactors
+## ধারাবাহিকতা, যাচাই ও রিফ্যাক্টরিং
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- নতুন এজেন্ট `AGENTS.md`, `.arifce/PROTOCOL.md` ও `.arifce/CURRENT.md` পড়ে এবং ইতিহাস একসঙ্গে না তুলে কাজভিত্তিক প্রেক্ষাপট চায়।
+- দাবিগুলো রিপোজিটরি-নির্দিষ্ট প্রমাণের সঙ্গে যুক্ত; সংশ্লিষ্ট অবস্থা বদলালে প্রমাণ পুরোনো হয়।
+- রিফ্যাক্টর প্রচারণা ইনভেরিয়েন্ট, তালিকা, গার্ড, অগ্রগতি ও চেকপয়েন্ট অনুসরণ করে; বাধাদানকারী গার্ড সমাপ্তি ঠেকায়।
+- হস্তান্তর ট্রান্সক্রিপ্ট ঢেলে না দিয়ে বর্তমান প্রকৌশল অবস্থা সংক্ষেপ করে।
 
 ## নিরাপত্তা ও সীমাবদ্ধতা
 

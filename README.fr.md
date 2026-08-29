@@ -115,7 +115,7 @@ Exécutez `init` dans un nouveau dépôt Git ou `adopt` dans un dépôt existant
 - Un nouvel agent lit `AGENTS.md`, `.arifce/PROTOCOL.md` et `.arifce/CURRENT.md`, puis demande le contexte de la tâche au lieu de charger tout l’historique.
 - Les affirmations renvoient à des preuves limitées au dépôt. Ces preuves deviennent obsolètes lorsque l’état concerné du dépôt change.
 - Les campagnes de refactorisation suivent invariants, inventaire, garde-fous, progression et points de contrôle. Les garde-fous bloquants empêchent la clôture.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- Les passations résument l’état technique actuel au lieu de déverser les transcriptions.
 
 ## Sécurité et limitations
 

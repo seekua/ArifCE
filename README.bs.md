@@ -110,12 +110,12 @@ dotnet run --project src/ArifCE.Cli -- init
 
 Pokrenite `init` u novom Git repozitoriju ili `adopt` u postojećem. Obje naredbe su nedestruktivne i idempotentne. `adopt` bilježi uočenu strukturu i nepoznate istorijske razloge označava kao nepoznate.
 
-## Continuity, verification, and refactors
+## Kontinuitet, verifikacija i refaktorisanje
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- Novi agent čita `AGENTS.md`, `.arifce/PROTOCOL.md` i `.arifce/CURRENT.md`, zatim traži kontekst zadatka umjesto masovnog učitavanja istorije.
+- Tvrdnje upućuju na dokaze iz repozitorija; dokazi zastarijevaju kada se relevantno stanje promijeni.
+- Kampanje refaktorisanja prate invarijante, inventar, zaštite, napredak i kontrolne tačke; blokirajuće zaštite sprečavaju završetak.
+- Primopredaje sažimaju trenutno tehničko stanje umjesto izlivanja transkripata.
 
 ## Sigurnost i ograničenja
 

@@ -49,10 +49,10 @@ dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 
 Цей процес зберігає знання проєкту в репозиторії та робить прогрес доступним для перевірки. Практичні переваги:
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
+- Швидший старт: наступний агент читає зосереджений поточний стан, а не відновлює довгий транскрипт.
+- Безпечніші зміни: твердження пов’язані з детермінованими доказами й застарівають після зміни стану Git.
+- Краща безперервність: рішення, невдалі спроби, контрольні точки та передачі переживають зміну агента чи сесії.
+- Керований рефакторинг: інваріанти, інвентар, захисти й безпечні точки роблять незавершену роботу видимою.
 - Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
 
 ## Не просто пам’ять
@@ -108,14 +108,14 @@ dotnet test
 dotnet run --project src/ArifCE.Cli -- init
 ```
 
-Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
+Запустіть `init` у новому Git-репозиторії або `adopt` в існуючому. Обидві команди безпечні та ідемпотентні. `adopt` записує спостережену структуру й позначає невідомі історичні причини як невідомі.
 
 ## Безперервність, перевірка та рефакторинг
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- Новий агент читає `AGENTS.md`, `.arifce/PROTOCOL.md` і `.arifce/CURRENT.md`, а потім запитує контекст завдання замість масового завантаження історії.
+- Твердження посилаються на докази в репозиторії; докази застарівають після зміни відповідного стану.
+- Кампанії рефакторингу відстежують інваріанти, інвентар, захисти, прогрес і контрольні точки; блокувальні захисти не дають завершити роботу.
+- Передачі підсумовують поточний інженерний стан, а не дублюють транскрипти.
 
 ## Безпека та обмеження
 
