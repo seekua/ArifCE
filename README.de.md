@@ -133,4 +133,3 @@ Siehe [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) und [CONTRIBUTING.md]
 ## Lizenz
 
 ArifCE steht unter der [Apache-Lizenz 2.0](LICENSE).
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>

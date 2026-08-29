@@ -133,4 +133,3 @@ dotnet run --project src/ArifCE.Cli -- init
 ## Ліцензія
 
 ArifCE поширюється за [ліцензією Apache 2.0](LICENSE).
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>

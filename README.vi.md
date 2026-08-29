@@ -133,4 +133,3 @@ Xem [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) và [CONTRIBUTING.md](C
 ## Giấy phép
 
 ArifCE được cấp phép theo [Apache License 2.0](LICENSE).
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
