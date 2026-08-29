@@ -6,7 +6,13 @@
   },
   "mcp": {
     "command": "dotnet run --project src/ArifCE.Mcp/ArifCE.Mcp.csproj",
-    "workingDirectory": "${workspaceFolder}"
+    "workingDirectory": "${workspaceFolder}",
+    "tools": ["arifce_status", "arifce_search", "arifce_llm_providers", "arifce_llm_run"]
+  },
+  "llm": {
+    "settings": "%LOCALAPPDATA%/ArifCE/llm-providers.json",
+    "approvalRequired": true,
+    "secrets": "environment-or-stdin"
   },
   "network": "loopback-only",
   "cloud": false

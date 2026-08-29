@@ -2,6 +2,8 @@
 
 ArifCE 0.3 includes an optional stdio MCP server. It is local-only: no cloud account, network access, or vendor credential is required.
 
+The server also exposes `arifce_llm_providers` and `arifce_llm_run`. The latter requires an explicit `approved: true` argument and records the successful provider/model/token/cost result as canonical evidence. API keys are never returned by `arifce_llm_providers`.
+
 Build and start it from the repository root:
 
 ```bash
