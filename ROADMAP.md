@@ -61,7 +61,7 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 ## V0.7 planned phases
 
 - [ ] Phase 38: complete and review full human translations for each localized README while preserving canonical commands, links, diagrams, badges, security language, and explicit deferrals.
-- [ ] Phase 39: add a reviewed-language gate so CI can distinguish canonical scope parity from human translation review status.
+- [x] Phase 39: add a reviewed-language gate so CI can distinguish canonical scope parity from human translation review status. The default CI check reports pending languages without falsely marking them reviewed; `-RequireReviewed` is available for a release gate.
 - [x] Phase 40: improve dashboard decision-maker summaries with agent attribution, latest action, evidence freshness, and project-level filters.
 - [x] Phase 41: implement the local project switcher and multi-project workspace contract without introducing cloud synchronization. Registry storage, CLI list/add/remove/use commands, read-only dashboard API, workspace display, active switching, and isolation tests are complete.
 

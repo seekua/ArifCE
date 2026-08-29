@@ -33,6 +33,9 @@ jobs:
       - name: README locale parity
         shell: pwsh
         run: ./scripts/check-readme-locales.ps1
+      - name: README human review status
+        shell: pwsh
+        run: ./scripts/check-readme-review-status.ps1
       - name: Package smoke test
         shell: pwsh
         run: ./scripts/package-smoke.ps1 -Configuration Release
