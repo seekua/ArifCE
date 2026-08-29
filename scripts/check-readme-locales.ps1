@@ -5,6 +5,9 @@ $translationStatus = Get-Content (Join-Path $root 'docs/TRANSLATION-STATUS.md') 
 $required = @('ArifCE.svg','mermaid','dotnet tool install','arifce init','ROADMAP.md','SECURITY.md','CONTRIBUTING.md','Apache')
 $languageSelector = ($canonical -split "`r?`n" | Where-Object { $_ -match '^\[English\]\(README\.md\)' } | Select-Object -First 1).Trim()
 $canonicalHeadingCount = [regex]::Matches($canonical, '(?m)^#{1,6}\s+.+$').Count
+$canonicalFenceCount = [regex]::Matches($canonical, '(?m)^```').Count
+$canonicalMermaidCount = [regex]::Matches($canonical, '(?m)^```mermaid').Count
+$canonicalBadgeCount = [regex]::Matches($canonical, 'https://img.shields.io').Count
 $files = Get-ChildItem (Join-Path $root 'README.*.md')
 $failed = @()
 foreach ($file in $files) {
@@ -17,6 +20,15 @@ foreach ($file in $files) {
   }
   if ([regex]::Matches($text, '(?m)^#{1,6}\s+.+$').Count -lt $canonicalHeadingCount) {
     $failed += "$($file.Name): fewer Markdown headings than the canonical README"
+  }
+  if ([regex]::Matches($text, '(?m)^```').Count -ne $canonicalFenceCount) {
+    $failed += "$($file.Name): code-fence count differs from the canonical README"
+  }
+  if ([regex]::Matches($text, '(?m)^```mermaid').Count -ne $canonicalMermaidCount) {
+    $failed += "$($file.Name): Mermaid diagram count differs from the canonical README"
+  }
+  if ([regex]::Matches($text, 'https://img.shields.io').Count -ne $canonicalBadgeCount) {
+    $failed += "$($file.Name): badge count differs from the canonical README"
   }
   if ($text -notmatch '(?m)^\*\*[^*]+\*\*\s*$') {
     $failed += "$($file.Name): missing translated slogan"
