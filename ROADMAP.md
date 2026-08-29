@@ -69,6 +69,8 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 ## Explicit deferrals
 
+- **Local LLM provider foundation:** OpenAI, Anthropic, Gemini, OpenRouter, Ollama, and LM Studio adapters, local profile storage, fallback routing, connection tests, token/cost accounting, task preference routing, and canonical response evidence are implemented. User approval policy and benchmark primitives are implemented; dashboard model/cost projections, embedding selection, expanded MCP tools, and A2A orchestration remain the next integration phases.
+
 - **Acceptance lifecycle:** implemented as a separate canonical record in the current release; future policy engines may add configurable approver roles and multi-stage approval without changing the claim model.
 
 - **External semantic reviewer invocation:** V0.1 defines typed blind-review interfaces but does not pretend to invoke Codex, Claude, or OpenCode reliably. Vendor authentication, process control, cost policy, and capability discovery require dedicated integrations.
