@@ -77,8 +77,18 @@ internal static class Cli
     }
     private static async Task LlmCommand(string root, string[] args)
     {
-        Require(args, 2, "llm provider list|add|remove|test | llm run <task> <prompt> [--claim <id>]");
+        Require(args, 2, "llm provider list|add|remove|test | llm context <task> [--budget N] | llm run <task> <prompt> [--claim <id>]");
         var store = new LocalLlmSettingsStore();
+        if (args[1].Equals("context", StringComparison.OrdinalIgnoreCase))
+        {
+            Require(args, 3, "llm context <task> [--budget N]");
+            var marker = Array.IndexOf(args, "--budget");
+            var budget = marker >= 0 && marker + 1 < args.Length && int.TryParse(args[marker + 1], out var parsed) ? parsed : 4000;
+            var task = string.Join(' ', args.Skip(2).Take(marker >= 0 ? marker - 2 : args.Length - 2));
+            var context = await new LlmContextComposer(new IndexStore()).ComposeAsync(root, task, budget);
+            Console.WriteLine($"Context budget: {budget}\nEstimated tokens: {context.EstimatedTokens}\nSources: {string.Join(", ", context.Sources)}\n\n{context.Content}");
+            return;
+        }
         if (args[1].Equals("provider", StringComparison.OrdinalIgnoreCase))
         {
             Require(args, 3, "llm provider list|add|remove|test");
@@ -109,5 +119,5 @@ internal static class Cli
         var execution = await orchestrator.ExecuteAsync(root, new LlmRequest(args[2], prompt), Option(args, "--claim") ?? "CLAIM-UNASSIGNED");
         Console.WriteLine($"{execution.Route.Response.Text}\n\nProvider: {execution.Route.Response.ProviderId}\nModel: {execution.Route.Response.Model}\nTokens: {execution.Route.Response.Usage.TotalTokens}\nEstimated cost: {execution.Route.EstimatedCost:0.########}\nEvidence: {execution.Evidence.Id}");
     }
-    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm run, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
+    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
 }
