@@ -5,63 +5,63 @@
 
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
-ArifCE is a local-first project intelligence and continuity layer for AI-assisted software development. It keeps context, decisions, failed attempts, evidence, refactoring state, and handoff information with the repository so Codex, Claude Code, OpenCode, and future agents can continue the same engineering story.
+ArifCE é uma camada local de inteligência e continuidade do projeto para desenvolvimento de software assistido por IA. Mantém contexto, decisões, tentativas malsucedidas, evidências, estado de refatoração e informações de transição no repositório para que Codex, Claude Code, OpenCode e futuros agentes continuem a mesma história de engenharia.
 
-> The repository owns the context. The agent only borrows it.
+> O repositório é dono do contexto. O agente apenas o toma emprestado.
 
-## Why ArifCE exists
+## Por que o ArifCE existe
 
-Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
+Equipes de software perdem tempo e confiança quando o contexto importante vive apenas no histórico de chat, na memória individual ou em uma ferramenta que o próximo colaborador não pode inspecionar. O ArifCE torna a continuidade da engenharia parte do próprio projeto.
 
-The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
+O objetivo não é fazer os agentes parecerem mais certos. É ajudar cada colaborador a entender o que a equipe tenta realizar, por que uma decisão foi tomada, o que foi realmente verificado e onde permanece a incerteza. Quando essa história fica no repositório, as equipes avançam mais rápido sem abrir mão de rastreabilidade, responsabilidade ou confiança.
 
-ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
+O ArifCE transforma a continuidade em uma prática de engenharia compartilhada: contexto focado para a próxima tarefa, evidências explícitas para afirmações importantes e transições honestas quando o trabalho está incompleto.
 
-## Who it is for
+## Para quem é
 
-ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
+O ArifCE é para equipes de engenharia assistidas por IA, desenvolvedores que trabalham com agentes de código e mantenedores que precisam que o contexto do projeto sobreviva a uma pessoa, conversa ou sessão. É especialmente útil quando vários colaboradores compartilham um repositório e precisam de um registro claro de decisões, verificações e trabalho inacabado.
 
-## How ArifCE works
+## Como o ArifCE funciona
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[Agente inicia] --> B[Ler protocolo e estado atual]
+    B --> C[Recuperar contexto da tarefa]
+    C --> D[Alterar o código]
+    D --> E[Registrar afirmação e evidência]
+    E --> F{Verificação aprovada?}
+    F -- Sim --> G[Ponto de controle e transição]
+    F -- Não --> H[Registrar descoberta ou tentativa malsucedida]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[Próximo agente continua]
 ```
 
-## Explore the project
+## Explore o projeto
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+Execute o painel local para obter uma visão visual da saúde do projeto, dos registros recentes e do contexto pesquisável:
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [ArifCE documentation hub](docs/README.md).
+Depois abra <http://127.0.0.1:5180/>. Para o manual completo do produto, consulte o [hub de documentação do ArifCE](docs/README.md).
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+Esse fluxo mantém o conhecimento do projeto no repositório e torna o progresso inspecionável. As vantagens práticas são:
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
-- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+- Onboarding mais rápido: o próximo agente lê um estado atual focado em vez de reconstruir uma longa transcrição.
+- Mudanças mais seguras: afirmações são vinculadas a evidências determinísticas e ficam obsoletas quando o estado do Git muda.
+- Melhor continuidade: decisões, tentativas malsucedidas, pontos de controle e transições sobrevivem a mudanças de agente ou sessão.
+- Refatorações controladas: invariantes, inventário, proteções e pontos seguros tornam o trabalho incompleto visível.
+- Operação local: arquivos canônicos continuam utilizáveis sem serviço em nuvem ou runtime específico do fornecedor.
 
-## Not just memory
+## Não é apenas memória
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+O ArifCE acompanha qual era a tarefa, o que mudou e por quê, o que um agente afirma ter concluído, quais evidências sustentam a afirmação, o que um revisor encontrou, o que permanece inacabado e o que o próximo agente precisa saber. Declarações de agentes são afirmações, não fatos; evidências determinísticas de build, teste, Git e busca são preferidas.
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+A verificação técnica e a aceitação do produto são separadas: registros de aceitação identificam quem aprovou uma afirmação e quais evidências atuais sustentaram a decisão.
 
-## V0.1 workflow
+## Fluxo de trabalho V0.1
 
 ```text
 arifce init
@@ -73,19 +73,19 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+Markdown, YAML, JSON e JSONL canônicos ficam em `.arifce/`. SQLite é um índice derivado descartável: excluir `.arifce/index/` e executar `arifce rebuild` deve preservar a inteligência do projeto.
 
-## Architecture
+## Arquitetura
 
 The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
 
-## Installation and quick start
+## Instalação e início rápido
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 foi publicado como uma ferramenta global .NET multiplataforma. Consulte [instalação](docs/getting-started/installation.md) e [início rápido](docs/getting-started/quick-start.md). A partir do código-fonte:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+O adaptador MCP local opcional está documentado em [configuração do MCP](docs/getting-started/mcp.md).
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+Para um guia completo de instalação e recursos, consulte o [Guia do usuário](docs/USER-GUIDE.md) e a [Política de documentação](docs/DOCUMENTATION-POLICY.md).
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+Agora você tem um estado de projeto local ao repositório, uma tarefa, um ponto de controle e uma transição semântica pronta para o próximo colaborador.
 
 ```bash
 dotnet restore
@@ -110,20 +110,19 @@ dotnet run --project src/ArifCE.Cli -- init
 
 Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
 
-## Continuity, verification, and refactors
+## Continuidade, verificação e refatorações
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- Um agente novo lê `AGENTS.md`, `.arifce/PROTOCOL.md` e `.arifce/CURRENT.md`, depois solicita contexto específico da tarefa em vez de carregar todo o histórico.
+- Afirmações apontam para evidências do repositório. As evidências ficam obsoletas quando o estado relevante muda.
+- Campanhas de refatoração acompanham invariantes, inventário, proteções, progresso e pontos de controle. Proteções bloqueadoras impedem a conclusão.
+- Transições resumem o estado atual da engenharia em vez de despejar transcrições.
 
-## Security and limitations
+## Segurança e limitações
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+Transcrições brutas não são confiáveis e nunca são carregadas ou executadas em massa. Caminhos de importação ocultam segredos comuns; credenciais e dados de autenticação da máquina não pertencem a `.arifce/`. A V0.1 não garante correção, economia de tokens ou melhor qualidade de revisão. Não há serviço em nuvem, UI, banco vetorial, enxame autônomo ou chamada produtiva entre agentes.
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+Consulte [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) e [CONTRIBUTING.md](CONTRIBUTING.md). A sintaxe exata dos comandos implementados está documentada na [referência da CLI](docs/reference/cli.md).
 
-## License
+## Licença
 
-ArifCE is licensed under the [Apache License 2.0](LICENSE).
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+O ArifCE é distribuído sob a [licença Apache 2.0](LICENSE).
