@@ -49,11 +49,11 @@ dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 
 Denne arbeidsflyten holder prosjektkunnskap i repositoriet og gjør fremdriften etterprøvbar. De praktiske fordelene er:
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
-- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+- Raskere innføring: neste agent leser en konsentrert gjeldende status i stedet for å rekonstruere en lang utskrift.
+- Sikrere endringer: påstander kobles til deterministiske bevis og blir utdaterte når Git-statusen endres.
+- Bedre kontinuitet: beslutninger, mislykkede forsøk, sjekkpunkter og overleveringer overlever agent- og øktbytter.
+- Kontrollerte refaktoreringer: invarians, inventar, vakter og sikre punkter synliggjør uferdig arbeid.
+- Lokal først-drift: kanoniske filer kan brukes uten skytjeneste eller leverandørspesifikk kjøretid.
 
 ## Mer enn bare minne
 
@@ -77,7 +77,7 @@ Kanoniske Markdown-, YAML-, JSON- og JSONL-filer ligger under `.arifce/`. SQLite
 
 ## Arkitektur
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Kjernen skiller domeneregler, kanonisk lagring og indeksering, Git-observasjon, henting, verifisering, refaktorering, sikkerhet og CLI. Leverandørens instruksjonsfiler er små adaptere og blir aldri det kanoniske minnelageret. Se [arkitekturoversikten](docs/architecture/overview.md), [domenemodellen](docs/architecture/domain-model.md) og [V0.1-spesifikasjonen](docs/SPECIFICATION-v0.1.md).
 
 ## Installasjon og hurtigstart
 
@@ -112,10 +112,10 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 
 ## Kontinuitet, verifisering og refaktorering
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- En ny agent leser `AGENTS.md`, `.arifce/PROTOCOL.md` og `.arifce/CURRENT.md`, og ber deretter om oppgavespesifikk kontekst i stedet for å laste inn hele historikken.
+- Påstander lenker til bevis avgrenset til repositoriet. Bevis blir utdatert når relevant repository-status endres.
+- Refaktoreringer sporer invarians, inventar, vakter, fremdrift og sjekkpunkter. Blokkerende vakter hindrer fullføring.
+- Overleveringer oppsummerer gjeldende ingeniørstatus i stedet for å dumpe transkripsjoner.
 
 ## Sikkerhet og begrensninger
 
