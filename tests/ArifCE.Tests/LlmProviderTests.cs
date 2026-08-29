@@ -49,6 +49,25 @@ public sealed class LlmProviderTests
         Assert.Equal(0.000014m, result.EstimatedCost);
     }
 
+    [Fact]
+    public async Task Orchestrator_persists_llm_response_as_canonical_evidence()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-llm-");
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(root.FullName, ".git"));
+            var provider = new StubProvider("local", false);
+            var router = new LlmRouter(new[] { (provider.Provider, provider.Profile) });
+            var orchestrator = new LlmOrchestrator(router, new CanonicalStore(), new JournalStore(), new GitInspector());
+            var result = await orchestrator.ExecuteAsync(root.FullName, new LlmRequest("review", "hello"), "CLAIM-0001");
+            Assert.Equal("llm-response", result.Evidence.Kind);
+            Assert.True(File.Exists(Path.Combine(root.FullName, ".arifce", "evidence", result.Evidence.Id.ToLowerInvariant() + ".json")));
+            Assert.Contains("local", result.Evidence.Summary);
+            Assert.True(File.Exists(Path.Combine(root.FullName, ".arifce", "journal", "events.jsonl")));
+        }
+        finally { root.Delete(true); }
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }

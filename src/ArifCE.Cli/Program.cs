@@ -34,6 +34,7 @@ internal static class Cli
                 case "architecture": await ArchitectureCommand(service, root, args); break;
                 case "api": await ApiCommand(service, root, args); break;
                 case "schema": await SchemaCommand(service, root, args); break;
+                case "llm": await LlmCommand(root, args); break;
                 case "handoff": var handoff = await service.HandoffAsync(root); Console.WriteLine(handoff.Markdown); Console.WriteLine($"Saved {handoff.Id}"); break;
                 case "why": Require(args, 2, "why <path-or-id>"); await Why(index, root, args[1]); break;
                 case "refactor": await Refactor(service, canonical, root, args); break;
@@ -74,5 +75,39 @@ internal static class Cli
             default: throw new ArgumentException("Unknown workspace action.");
         }
     }
-    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
+    private static async Task LlmCommand(string root, string[] args)
+    {
+        Require(args, 2, "llm provider list|add|remove|test | llm run <task> <prompt> [--claim <id>]");
+        var store = new LocalLlmSettingsStore();
+        if (args[1].Equals("provider", StringComparison.OrdinalIgnoreCase))
+        {
+            Require(args, 3, "llm provider list|add|remove|test");
+            switch (args[2].ToLowerInvariant())
+            {
+                case "list": foreach (var p in await store.ListAsync()) Console.WriteLine($"{p.Id}\t{p.Provider}\t{p.Model}\t{(p.Enabled ? "enabled" : "disabled")}"); break;
+                case "add":
+                    Require(args, 5, "llm provider add <id> <kind> <model> [--endpoint <url>] [--api-key-env <name>] [--api-key-stdin]");
+                    if (!Enum.TryParse<LlmProviderKind>(args[3], true, out var kind)) throw new ArgumentException("Unknown provider kind.");
+                    var key = Option(args, "--api-key-env") is { } env ? Environment.GetEnvironmentVariable(env) : args.Contains("--api-key-stdin", StringComparer.Ordinal) ? (await Console.In.ReadToEndAsync()).Trim() : null;
+                    await store.UpsertAsync(new LlmProviderProfile(args[2], kind, args[4], Option(args, "--endpoint"), key));
+                    Console.WriteLine($"Saved local provider profile '{args[2]}'."); break;
+                case "remove": Require(args, 4, "llm provider remove <id>"); await store.RemoveAsync(args[3]); Console.WriteLine($"Removed local provider profile '{args[3]}'."); break;
+                case "test":
+                    Require(args, 4, "llm provider test <id>");
+                    var profile = (await store.ListAsync()).FirstOrDefault(x => string.Equals(x.Id, args[3], StringComparison.OrdinalIgnoreCase)) ?? throw new ArgumentException("Provider profile not found.");
+                    var test = await LlmProviderFactory.Create(profile).TestConnectionAsync(); Console.WriteLine($"{test.ProviderId}: {(test.Success ? "OK" : "FAILED")} - {test.Message}"); break;
+                default: throw new ArgumentException("Unknown llm provider action.");
+            }
+            return;
+        }
+        if (!args[1].Equals("run", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Unknown llm action.");
+        Require(args, 4, "llm run <task> <prompt> [--claim <id>]");
+        var profiles = (await store.ListAsync()).Where(x => x.Enabled).ToList();
+        if (profiles.Count == 0) throw new InvalidOperationException("No enabled local LLM providers configured. Add one with 'llm provider add'.");
+        var orchestrator = new LlmOrchestrator(new LlmRouter(profiles.Select(p => (LlmProviderFactory.Create(p), p))), new CanonicalStore(), new JournalStore(), new GitInspector());
+        var prompt = string.Join(' ', args.Skip(3).TakeWhile(x => x != "--claim"));
+        var execution = await orchestrator.ExecuteAsync(root, new LlmRequest(args[2], prompt), Option(args, "--claim") ?? "CLAIM-UNASSIGNED");
+        Console.WriteLine($"{execution.Route.Response.Text}\n\nProvider: {execution.Route.Response.ProviderId}\nModel: {execution.Route.Response.Model}\nTokens: {execution.Route.Response.Usage.TotalTokens}\nEstimated cost: {execution.Route.EstimatedCost:0.########}\nEvidence: {execution.Evidence.Id}");
+    }
+    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm run, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
 }
