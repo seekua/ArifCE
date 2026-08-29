@@ -54,4 +54,26 @@ public sealed class WorkspaceRegistryTests
         }
         finally { root.Delete(true); }
     }
+
+    [Fact]
+    public async Task RemovingActiveProjectClearsSelectionAndRegistriesRemainIsolated()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-workspace-");
+        try
+        {
+            var projectA = Directory.CreateDirectory(Path.Combine(root.FullName, "a")).FullName;
+            var projectB = Directory.CreateDirectory(Path.Combine(root.FullName, "b")).FullName;
+            var registry = new WorkspaceRegistry(Path.Combine(root.FullName, "workspace.json"));
+            await registry.AddAsync("A", projectA);
+            await registry.AddAsync("B", projectB);
+            await registry.SetActiveAsync(projectA);
+            await registry.RemoveAsync(projectA);
+            Assert.Null(await registry.GetActiveAsync());
+            Assert.Single(await registry.ListAsync());
+            Assert.Equal(projectB, (await registry.ListAsync())[0].Root);
+            Assert.True(Directory.Exists(projectA));
+            Assert.True(Directory.Exists(projectB));
+        }
+        finally { root.Delete(true); }
+    }
 }

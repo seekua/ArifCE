@@ -41,6 +41,8 @@ public sealed class WorkspaceRegistry
         var projects = (await ListAsync(cancellationToken)).ToList();
         projects.RemoveAll(x => string.Equals(x.Root, normalized, StringComparison.OrdinalIgnoreCase));
         await SaveAsync(projects, cancellationToken);
+        if (string.Equals(await GetActiveAsync(cancellationToken), normalized, StringComparison.OrdinalIgnoreCase) && File.Exists(ActivePath))
+            File.Delete(ActivePath);
     }
 
     public async Task<string?> GetActiveAsync(CancellationToken cancellationToken = default)
