@@ -18,4 +18,6 @@ Phase 40 is implemented in the local dashboard: decision-maker summaries show la
 
 Phase 41 is complete: local multi-project workspace active switching now clears stale selections on removal, and isolation tests cover independent registered roots.
 
-Next owner-approved objective: define the next post-V0.7 scope.
+Phase 39 is complete: CI now reports canonical README parity separately from human translation review and supports an optional strict `-RequireReviewed` gate. All 21 languages remain explicitly Pending until human review.
+
+Next owner-approved objective: Phase 38 human review of localized README translations.
