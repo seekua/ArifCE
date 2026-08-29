@@ -15,7 +15,7 @@ Softverski timovi gube vrijeme i povjerenje kada važan kontekst postoji samo u 
 
 Cilj nije da agenti zvuče sigurnije, već da svaki saradnik razumije šta tim želi postići, zašto je odluka donesena, šta je zaista provjereno i gdje ostaje neizvjesnost. Kada priča ostane u repozitoriju, tim može brže napredovati bez gubitka sljedivosti, odgovornosti ili povjerenja.
 
-ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
+ArifCE pretvara kontinuitet u zajedničku inženjersku praksu: usmjeren kontekst za sljedeći zadatak, jasne dokaze za važne tvrdnje i iskrene primopredaje kada posao nije završen.
 
 ## Kome je namijenjen
 
