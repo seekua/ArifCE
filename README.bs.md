@@ -5,9 +5,9 @@
 
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
-ArifCE is a local-first project intelligence and continuity layer for AI-assisted software development. It keeps context, decisions, failed attempts, evidence, refactoring state, and handoff information with the repository so Codex, Claude Code, OpenCode, and future agents can continue the same engineering story.
+ArifCE je lokalni sloj projektne inteligencije i kontinuiteta za razvoj softvera uz pomoć AI-ja. Čuva kontekst, odluke, neuspjele pokušaje, dokaze, stanje refaktorisanja i informacije o primopredaji u repozitoriju kako bi Codex, Claude Code, OpenCode i budući agenti nastavili istu inženjersku priču.
 
-> The repository owns the context. The agent only borrows it.
+> Repozitorij posjeduje kontekst. Agent ga samo posuđuje.
 
 ## Zašto ArifCE postoji
 
