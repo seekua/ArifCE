@@ -17,7 +17,7 @@ var git = new GitInspector();
 var service = new ProjectService(canonical, journal, index, git);
 var workspace = new WorkspaceRegistry();
 
-app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", DashboardPageV2.ExtraScript + DashboardPageV2.DecisionBriefScript + DashboardPageV2.WorkScript + DashboardPageV2.HandoffScript + DashboardPageV2.ExplorerScript + DashboardPageV2.WorkspaceScript + DashboardPageV2.LlmScript + "</body>"), "text/html; charset=utf-8"));
+app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", DashboardPageV2.ExecutiveSummaryScript + DashboardPageV2.ExtraScript + DashboardPageV2.DecisionBriefScript + DashboardPageV2.WorkScript + DashboardPageV2.HandoffScript + DashboardPageV2.ExplorerScript + DashboardPageV2.WorkspaceScript + DashboardPageV2.LlmScript + "</body>"), "text/html; charset=utf-8"));
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
