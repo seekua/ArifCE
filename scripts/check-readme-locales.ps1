@@ -3,6 +3,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $canonical = Get-Content (Join-Path $root 'README.md') -Raw
 $translationStatus = Get-Content (Join-Path $root 'docs/TRANSLATION-STATUS.md') -Raw
 $required = @('ArifCE.svg','mermaid','dotnet tool install','arifce init','ROADMAP.md','SECURITY.md','CONTRIBUTING.md','Apache')
+$languageSelector = ($canonical -split "`r?`n" | Where-Object { $_ -match '^\[English\]\(README\.md\)' } | Select-Object -First 1).Trim()
 $canonicalHeadingCount = [regex]::Matches($canonical, '(?m)^#{1,6}\s+.+$').Count
 $files = Get-ChildItem (Join-Path $root 'README.*.md')
 $failed = @()
@@ -22,6 +23,9 @@ foreach ($file in $files) {
   }
   if ($text -notmatch '(?m)^>\s+\S+') {
     $failed += "$($file.Name): missing translated context quote"
+  }
+  if ($text -notmatch [regex]::Escape($languageSelector)) {
+    $failed += "$($file.Name): language selector does not match canonical links"
   }
   foreach ($token in $required) { if ($text -notmatch [regex]::Escape($token)) { $failed += "$($file.Name): missing $token" } }
 }
