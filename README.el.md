@@ -5,63 +5,63 @@
 
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
-ArifCE is a local-first project intelligence and continuity layer for AI-assisted software development. It keeps context, decisions, failed attempts, evidence, refactoring state, and handoff information with the repository so Codex, Claude Code, OpenCode, and future agents can continue the same engineering story.
+Το ArifCE είναι ένα τοπικό επίπεδο ευφυΐας και συνέχειας έργου για ανάπτυξη λογισμικού με υποστήριξη AI. Διατηρεί το πλαίσιο, τις αποφάσεις, τις αποτυχημένες προσπάθειες, τα τεκμήρια, την κατάσταση αναδιαμόρφωσης και τις πληροφορίες παράδοσης στο αποθετήριο, ώστε οι Codex, Claude Code, OpenCode και οι μελλοντικοί πράκτορες να συνεχίζουν την ίδια ιστορία μηχανικής.
 
-> The repository owns the context. The agent only borrows it.
+> Το αποθετήριο κατέχει το πλαίσιο. Ο πράκτορας απλώς το δανείζεται.
 
-## Why ArifCE exists
+## Γιατί υπάρχει το ArifCE
 
-Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
+Οι ομάδες λογισμικού χάνουν χρόνο και εμπιστοσύνη όταν το σημαντικό πλαίσιο υπάρχει μόνο στο ιστορικό συνομιλιών, στην ατομική μνήμη ή σε ένα εργαλείο που ο επόμενος συνεργάτης δεν μπορεί να ελέγξει. Το ArifCE κάνει τη συνέχεια της μηχανικής μέρος του ίδιου του έργου.
 
-The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
+Ο στόχος δεν είναι να ακούγονται οι πράκτορες πιο βέβαιοι. Είναι να βοηθηθεί κάθε συνεργάτης να κατανοεί τι προσπαθεί να επιτύχει η ομάδα, γιατί πάρθηκε μια απόφαση, τι έχει πράγματι επαληθευτεί και πού παραμένει αβεβαιότητα. Όταν αυτή η ιστορία μένει στο αποθετήριο, οι ομάδες κινούνται ταχύτερα χωρίς να θυσιάζουν ιχνηλασιμότητα, ευθύνη ή εμπιστοσύνη.
 
-ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
+Το ArifCE μετατρέπει τη συνέχεια σε κοινή πρακτική μηχανικής: εστιασμένο πλαίσιο για την επόμενη εργασία, σαφή τεκμήρια για σημαντικούς ισχυρισμούς και ειλικρινείς παραδόσεις όταν η εργασία είναι ημιτελής.
 
-## Who it is for
+## Για ποιον είναι
 
-ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
+Το ArifCE απευθύνεται σε ομάδες μηχανικής με υποστήριξη AI, προγραμματιστές που εργάζονται με πράκτορες κώδικα και συντηρητές που χρειάζονται το πλαίσιο του έργου να επιβιώνει πέρα από ένα άτομο, συνομιλία ή συνεδρία. Είναι ιδιαίτερα χρήσιμο όταν πολλοί συνεργάτες μοιράζονται ένα αποθετήριο και χρειάζονται σαφή καταγραφή αποφάσεων, επαλήθευσης και ημιτελούς εργασίας.
 
-## How ArifCE works
+## Πώς λειτουργεί το ArifCE
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[Έναρξη πράκτορα] --> B[Ανάγνωση πρωτοκόλλου και τρέχουσας κατάστασης]
+    B --> C[Ανάκτηση πλαισίου εργασίας]
+    C --> D[Αλλαγή κώδικα]
+    D --> E[Καταγραφή ισχυρισμού και τεκμηρίου]
+    E --> F{Επιτυχής επαλήθευση;}
+    F -- Ναι --> G[Σημείο ελέγχου και παράδοση]
+    F -- Όχι --> H[Καταγραφή ευρήματος ή αποτυχημένης προσπάθειας]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[Συνέχιση από τον επόμενο πράκτορα]
 ```
 
-## Explore the project
+## Εξερεύνηση του έργου
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+Εκτελέστε τον τοπικό πίνακα ελέγχου για οπτική εικόνα της υγείας του έργου, των πρόσφατων εγγραφών και του αναζητήσιμου πλαισίου:
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [ArifCE documentation hub](docs/README.md).
+Ανοίξτε έπειτα το <http://127.0.0.1:5180/>. Για το πλήρες εγχειρίδιο προϊόντος, δείτε το [κέντρο τεκμηρίωσης ArifCE](docs/README.md).
 
-This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
+Αυτή η ροή διατηρεί τη γνώση του έργου στο αποθετήριο και κάνει την πρόοδο ελέγξιμη. Τα πρακτικά οφέλη είναι:
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
-- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+- Ταχύτερη ένταξη: ο επόμενος πράκτορας διαβάζει εστιασμένη τρέχουσα κατάσταση αντί να ανασυνθέτει μεγάλο πρακτικό.
+- Ασφαλέστερες αλλαγές: οι ισχυρισμοί συνδέονται με ντετερμινιστικά τεκμήρια και παλιώνουν όταν αλλάζει η κατάσταση Git.
+- Καλύτερη συνέχεια: αποφάσεις, αποτυχημένες προσπάθειες, σημεία ελέγχου και παραδόσεις επιβιώνουν από αλλαγές πράκτορα ή συνεδρίας.
+- Ελεγχόμενες αναδιαμορφώσεις: αμετάβλητα, απογραφή, φρουροί και ασφαλή σημεία κάνουν την ημιτελή εργασία ορατή.
+- Τοπική λειτουργία: τα κανονικά αρχεία χρησιμοποιούνται χωρίς cloud ή runtime συγκεκριμένου προμηθευτή.
 
-## Not just memory
+## Όχι μόνο μνήμη
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+Το ArifCE παρακολουθεί ποια ήταν η εργασία, τι και γιατί άλλαξε, τι ισχυρίζεται ο πράκτορας ότι ολοκλήρωσε, ποια τεκμήρια το στηρίζουν, τι βρήκε ο αξιολογητής, τι παραμένει ημιτελές και τι πρέπει να γνωρίζει ο επόμενος πράκτορας. Οι δηλώσεις των πρακτόρων είναι ισχυρισμοί, όχι γεγονότα· προτιμώνται ντετερμινιστικά τεκμήρια build, test, Git και αναζήτησης.
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+Η τεχνική επαλήθευση και η αποδοχή προϊόντος είναι ξεχωριστές: οι εγγραφές αποδοχής αναφέρουν ποιος ενέκρινε έναν ισχυρισμό και ποια τρέχοντα τεκμήρια στήριξαν την απόφαση.
 
-## V0.1 workflow
+## Ροή εργασίας V0.1
 
 ```text
 arifce init
@@ -73,19 +73,19 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+Τα κανονικά Markdown, YAML, JSON και JSONL βρίσκονται στο `.arifce/`. Το SQLite είναι παράγωγος δείκτης που μπορεί να διαγραφεί: η διαγραφή του `.arifce/index/` και η εκτέλεση `arifce rebuild` πρέπει να διατηρούν την ευφυΐα του έργου.
 
-## Architecture
+## Αρχιτεκτονική
 
 The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
 
-## Installation and quick start
+## Εγκατάσταση και γρήγορη εκκίνηση
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+Η V0.2.0 κυκλοφορεί ως διαπλατφορμικό καθολικό εργαλείο .NET. Δείτε [εγκατάσταση](docs/getting-started/installation.md) και [γρήγορη εκκίνηση](docs/getting-started/quick-start.md). Από τον πηγαίο κώδικα:
 
-The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
+Ο προαιρετικός τοπικός προσαρμογέας MCP τεκμηριώνεται στη [ρύθμιση MCP](docs/getting-started/mcp.md).
 
-For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
+Για πλήρη περιήγηση εγκατάστασης και δυνατοτήτων, δείτε τον [Οδηγό χρήστη](docs/USER-GUIDE.md) και την [Πολιτική τεκμηρίωσης](docs/DOCUMENTATION-POLICY.md).
 
 ### 60-second quick start
 
@@ -99,7 +99,7 @@ arifce checkpoint --summary "Project context initialized"
 arifce handoff
 ```
 
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+Τώρα έχετε κατάσταση έργου τοπική στο αποθετήριο, εργασία, σημείο ελέγχου και σημασιολογική παράδοση έτοιμη για τον επόμενο συνεργάτη.
 
 ```bash
 dotnet restore
@@ -110,20 +110,19 @@ dotnet run --project src/ArifCE.Cli -- init
 
 Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
 
-## Continuity, verification, and refactors
+## Συνέχεια, επαλήθευση και αναδιαμόρφωση
 
-- A fresh agent reads `AGENTS.md`, `.arifce/PROTOCOL.md`, and `.arifce/CURRENT.md`, then requests task-specific context instead of bulk-loading history.
-- Claims link to repository-scoped evidence. Evidence becomes stale when the relevant repository state changes.
-- Refactor campaigns track invariants, inventory, guards, progress, and checkpoints. Blocking guards prevent completion.
-- Handoffs summarize current engineering state rather than dumping transcripts.
+- Ένας νέος πράκτορας διαβάζει τα `AGENTS.md`, `.arifce/PROTOCOL.md` και `.arifce/CURRENT.md` και ζητά πλαίσιο συγκεκριμένο για την εργασία αντί να φορτώνει όλο το ιστορικό.
+- Οι ισχυρισμοί συνδέονται με τεκμήρια του αποθετηρίου. Τα τεκμήρια παλιώνουν όταν αλλάζει η σχετική κατάσταση.
+- Οι εκστρατείες αναδιαμόρφωσης παρακολουθούν αμετάβλητα, απογραφή, φρουρούς, πρόοδο και σημεία ελέγχου. Οι φρουροί αποκλεισμού εμποδίζουν την ολοκλήρωση.
+- Οι παραδόσεις συνοψίζουν την τρέχουσα μηχανική κατάσταση αντί να παραθέτουν πρακτικά.
 
-## Security and limitations
+## Ασφάλεια και περιορισμοί
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+Τα ακατέργαστα πρακτικά είναι μη αξιόπιστα και δεν φορτώνονται ούτε εκτελούνται μαζικά. Οι διαδρομές εισαγωγής αποκρύπτουν κοινά μυστικά· διαπιστευτήρια και δεδομένα ταυτοποίησης μηχανής δεν ανήκουν στο `.arifce/`. Η V0.1 δεν εγγυάται ορθότητα, εξοικονόμηση token ή καλύτερη ποιότητα ελέγχου και δεν παρέχει cloud, UI, διανυσματική βάση, αυτόνομο σμήνος ή παραγωγικές κλήσεις μεταξύ πρακτόρων.
 
-See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
+Δείτε τα [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md) και [CONTRIBUTING.md](CONTRIBUTING.md). Η ακριβής σύνταξη των υλοποιημένων εντολών τεκμηριώνεται στην [αναφορά CLI](docs/reference/cli.md).
 
-## License
+## Άδεια
 
-ArifCE is licensed under the [Apache License 2.0](LICENSE).
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+Το ArifCE διατίθεται με την [άδεια Apache 2.0](LICENSE).
