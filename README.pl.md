@@ -77,7 +77,7 @@ Kanoniczne pliki Markdown, YAML, JSON i JSONL znajdują się w `.arifce/`. SQLit
 
 ## Architektura
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Rdzeń oddziela reguły domenowe, kanoniczne przechowywanie i indeksowanie, obserwację Git, pobieranie, weryfikację, refaktoryzację, bezpieczeństwo oraz CLI. Pliki instrukcji dostawcy są małymi adapterami i nigdy nie stają się kanonicznym magazynem pamięci. Zobacz [przegląd architektury](docs/architecture/overview.md), [model domeny](docs/architecture/domain-model.md) i [specyfikację V0.1](docs/SPECIFICATION-v0.1.md).
 
 ## Instalacja i szybki start
 
