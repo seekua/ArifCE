@@ -125,6 +125,17 @@ public sealed class LlmProviderTests
         Assert.Equal("cloud", LlmRuntimeSelector.Select(profiles, LlmRuntimeMode.Cloud)[0].Id);
     }
 
+    [Fact]
+    public async Task Benchmark_reports_similarity_latency_tokens_and_cost()
+    {
+        var provider = new StubProvider("local", false);
+        var router = new LlmRouter(new[] { (provider.Provider, provider.Profile) });
+        var results = await LlmBenchmark.RunAsync(new[] { new BenchmarkCase("case-1", "prompt", "done") }, async _ => await router.CompleteAsync(new LlmRequest("benchmark", "prompt")));
+        Assert.Single(results);
+        Assert.True(results[0].Passed);
+        Assert.True(results[0].Tokens >= 0);
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }
