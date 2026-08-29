@@ -25,15 +25,15 @@ ArifCE s’adresse aux équipes d’ingénierie assistées par IA, aux développ
 
 ```mermaid
 flowchart LR
-    A[Agent starts] --> B[Read protocol and current state]
-    B --> C[Retrieve task-specific context]
-    C --> D[Change the code]
-    D --> E[Record claim and evidence]
-    E --> F{Verification passes?}
-    F -- Yes --> G[Checkpoint and handoff]
-    F -- No --> H[Record finding or failed attempt]
+    A[L’agent commence] --> B[Lire le protocole et l’état actuel]
+    B --> C[Récupérer le contexte de la tâche]
+    C --> D[Modifier le code]
+    D --> E[Enregistrer l’affirmation et les preuves]
+    E --> F{La vérification réussit ?}
+    F -- Oui --> G[Point de contrôle et passation]
+    F -- Non --> H[Enregistrer le résultat ou l’échec]
     H --> C
-    G --> I[Next agent continues]
+    G --> I[L’agent suivant continue]
 ```
 
 ## Explorer le projet
