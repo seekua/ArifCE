@@ -6,27 +6,27 @@ Latest successful remote CI evidence: [workflow run 33267779877](https://github.
 
 | File | Scope status | Human translation review |
 | --- | --- | --- |
-| `README.ar.md` | Full Arabic draft (commands/links preserved) | Pending |
-| `README.bn.md` | Complete canonical reference | Pending |
-| `README.bs.md` | Complete canonical reference | Pending |
-| `README.da.md` | Full Danish draft (commands/links/diagram preserved) | Pending |
-| `README.de.md` | Full German draft (commands/links preserved) | Pending |
-| `README.el.md` | Full Greek draft (commands/links/diagram preserved) | Pending |
-| `README.es.md` | Full Spanish draft (commands/links/diagram preserved) | Pending |
-| `README.fr.md` | Full French draft (commands/links preserved) | Pending |
-| `README.it.md` | Full Italian draft (commands/links/diagram preserved) | Pending |
-| `README.ja.md` | Full Japanese draft (commands/links/diagram preserved) | Pending |
-| `README.ko.md` | Full Korean draft (commands/links/diagram preserved) | Pending |
-| `README.no.md` | Full Norwegian draft (commands/links/diagram preserved) | Pending |
-| `README.pl.md` | Full Polish draft (commands/links/diagram preserved) | Pending |
-| `README.pt-BR.md` | Full Brazilian Portuguese draft (commands/links/diagram preserved) | Pending |
-| `README.ru.md` | Full Russian draft (commands/links/diagram preserved) | Pending |
-| `README.th.md` | Complete canonical reference | Pending |
-| `README.tr.md` | Complete canonical reference | Pending |
-| `README.uk.md` | Full Ukrainian draft (commands/links/diagram preserved) | Pending |
-| `README.vi.md` | Full Vietnamese draft (commands/links/diagram preserved) | Pending |
-| `README.zh-CN.md` | Full Simplified Chinese draft (commands/links/diagram preserved) | Pending |
-| `README.zh-TW.md` | Full Traditional Chinese draft (commands/links/diagram preserved) | Pending |
+| `README.ar.md` | Full Arabic draft (commands/links preserved) | Machine-checked; human review pending |
+| `README.bn.md` | Complete canonical reference | Machine-checked; human review pending |
+| `README.bs.md` | Complete canonical reference | Machine-checked; human review pending |
+| `README.da.md` | Full Danish draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.de.md` | Full German draft (commands/links preserved) | Machine-checked; human review pending |
+| `README.el.md` | Full Greek draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.es.md` | Full Spanish draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.fr.md` | Full French draft (commands/links preserved) | Machine-checked; human review pending |
+| `README.it.md` | Full Italian draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.ja.md` | Full Japanese draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.ko.md` | Full Korean draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.no.md` | Full Norwegian draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.pl.md` | Full Polish draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.pt-BR.md` | Full Brazilian Portuguese draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.ru.md` | Full Russian draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.th.md` | Complete canonical reference | Machine-checked; human review pending |
+| `README.tr.md` | Complete canonical reference | Machine-checked; human review pending |
+| `README.uk.md` | Full Ukrainian draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.vi.md` | Full Vietnamese draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.zh-CN.md` | Full Simplified Chinese draft (commands/links/diagram preserved) | Machine-checked; human review pending |
+| `README.zh-TW.md` | Full Traditional Chinese draft (commands/links/diagram preserved) | Machine-checked; human review pending |
 
 The repository includes `scripts/translate-readme-locales.ps1`, which performs paragraph-level DeepL web translation in batches while protecting commands, URLs, HTML, and Markdown links. The public endpoint currently rate-limits automated requests; the script retries and leaves the existing file unchanged when a batch cannot be translated.
 
