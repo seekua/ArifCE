@@ -39,6 +39,12 @@ foreach ($file in $files) {
   if ($text -notmatch [regex]::Escape($languageSelector)) {
     $failed += "$($file.Name): language selector does not match canonical links"
   }
+  if ([regex]::Matches($text, 'assets/ArifCE\.svg').Count -ne 1) {
+    $failed += "$($file.Name): expected exactly one ArifCE logo"
+  }
+  if ([regex]::Matches($text, '(?m)^\[English\]\(README\.md\)').Count -ne 1) {
+    $failed += "$($file.Name): expected exactly one language selector"
+  }
   foreach ($token in $required) { if ($text -notmatch [regex]::Escape($token)) { $failed += "$($file.Name): missing $token" } }
 }
 $listed = [regex]::Matches($translationStatus, '`(README\.[^`]+\.md)`') | ForEach-Object { $_.Groups[1].Value }
