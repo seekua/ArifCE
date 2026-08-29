@@ -9,6 +9,7 @@
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
 ArifCE es una capa local de inteligencia y continuidad del proyecto para el desarrollo de software asistido por IA. Conserva el contexto, las decisiones, los intentos fallidos, las evidencias, el estado de refactorización y la información de entrega en el repositorio para que Codex, Claude Code, OpenCode y los futuros agentes continúen la misma historia de ingeniería.
+
 > El repositorio es dueño del contexto. El agente solo lo toma prestado.
 
 

@@ -9,6 +9,7 @@
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
 ArifCE는 AI 지원 소프트웨어 개발을 위한 로컬 우선 프로젝트 지능 및 연속성 계층입니다. 컨텍스트, 결정, 실패한 시도, 증거, 리팩터링 상태와 인수인계 정보를 저장소에 보존하여 Codex, Claude Code, OpenCode 및 미래의 에이전트가 같은 엔지니어링 이야기를 이어가도록 합니다.
+
 > 저장소가 컨텍스트를 소유하고 에이전트는 그것을 빌릴 뿐입니다.
 
 

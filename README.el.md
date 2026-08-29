@@ -9,6 +9,7 @@
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
 Το ArifCE είναι ένα τοπικό επίπεδο ευφυΐας και συνέχειας έργου για ανάπτυξη λογισμικού με υποστήριξη AI. Διατηρεί το πλαίσιο, τις αποφάσεις, τις αποτυχημένες προσπάθειες, τα τεκμήρια, την κατάσταση αναδιαμόρφωσης και τις πληροφορίες παράδοσης στο αποθετήριο, ώστε οι Codex, Claude Code, OpenCode και οι μελλοντικοί πράκτορες να συνεχίζουν την ίδια ιστορία μηχανικής.
+
 > Το αποθετήριο κατέχει το πλαίσιο. Ο πράκτορας απλώς το δανείζεται.
 
 

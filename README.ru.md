@@ -9,6 +9,7 @@
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
 ArifCE — локальный слой интеллекта и непрерывности проекта для разработки ПО с помощью ИИ. Он хранит контекст, решения, неудачные попытки, доказательства, состояние рефакторинга и сведения о передаче в репозитории, чтобы Codex, Claude Code, OpenCode и будущие агенты продолжали одну инженерную историю.
+
 > Репозиторий владеет контекстом. Агент лишь берёт его взаймы.
 
 
