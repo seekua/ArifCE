@@ -4,7 +4,7 @@ The English `README.md` is canonical. Every localized README currently retains t
 
 | File | Scope status | Human translation review |
 | --- | --- | --- |
-| `README.ar.md` | Complete canonical reference | Pending |
+| `README.ar.md` | Full Arabic draft (commands/links preserved) | Pending |
 | `README.bn.md` | Complete canonical reference | Pending |
 | `README.bs.md` | Complete canonical reference | Pending |
 | `README.da.md` | Complete canonical reference | Pending |
