@@ -2,7 +2,7 @@
 
 The English `README.md` is canonical. All 21 localized README files retain the complete canonical sections, commands, links, badges, license, safety notes, slogan, and context quote. The parity check is enforced by `scripts/check-readme-locales.ps1` in CI.
 
-Latest successful remote CI evidence: [workflow run 33264714886](https://github.com/seekua/ArifCE/actions/runs/33264714886), validating commit `ac0007f`.
+Latest successful remote CI evidence: [workflow run 33264940992](https://github.com/seekua/ArifCE/actions/runs/33264940992), validating commit `d3fff5c`.
 
 | File | Scope status | Human translation review |
 | --- | --- | --- |
