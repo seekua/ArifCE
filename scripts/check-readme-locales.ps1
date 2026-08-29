@@ -8,8 +8,11 @@ $files = Get-ChildItem (Join-Path $root 'README.*.md')
 $failed = @()
 foreach ($file in $files) {
   $text = Get-Content $file.FullName -Raw
-  if ($text.Length -lt ($canonical.Length * 0.85)) {
-    $failed += "$($file.Name): content is shorter than the canonical README (less than 85 percent of canonical length)"
+  # Translation can be substantially more compact than English (especially
+  # Japanese, Chinese, and Arabic). Structural markers and heading parity are
+  # the authoritative checks; use a conservative 60% floor for content loss.
+  if ($text.Length -lt ($canonical.Length * 0.60)) {
+    $failed += "$($file.Name): content is shorter than the canonical README (less than 60 percent of canonical length)"
   }
   if ([regex]::Matches($text, '(?m)^#{1,6}\s+.+$').Count -lt $canonicalHeadingCount) {
     $failed += "$($file.Name): fewer Markdown headings than the canonical README"
