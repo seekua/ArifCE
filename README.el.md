@@ -3,6 +3,13 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
+**
+Οι πράκτορες αλλάζουν. Το έργο σας δεν πρέπει να ξεχνά.
+**
+
+> 
+Το αποθετήριο κατέχει το πλαίσιο. Ο πράκτορας απλώς το δανείζεται.
+
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 
 Το ArifCE είναι ένα τοπικό επίπεδο ευφυΐας και συνέχειας έργου για ανάπτυξη λογισμικού με υποστήριξη AI. Διατηρεί το πλαίσιο, τις αποφάσεις, τις αποτυχημένες προσπάθειες, τα τεκμήρια, την κατάσταση αναδιαμόρφωσης και τις πληροφορίες παράδοσης στο αποθετήριο, ώστε οι Codex, Claude Code, OpenCode και οι μελλοντικοί πράκτορες να συνεχίζουν την ίδια ιστορία μηχανικής.
