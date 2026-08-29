@@ -57,7 +57,7 @@ Ce flux de travail conserve les connaissances du projet dans le dépôt et rend 
 
 ## Plus qu’une mémoire
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+ArifCE suit la tâche, les changements et leurs raisons, ce qu’un agent affirme avoir terminé, les preuves qui étayent cette affirmation, les constats du réviseur, ce qui reste inachevé et ce que le prochain agent doit savoir. Les déclarations des agents sont des affirmations, pas des faits ; les preuves déterministes du build, des tests, de Git et de la recherche sont privilégiées.
 
 La vérification technique et l’acceptation du produit sont distinctes : les enregistrements d’acceptation indiquent qui a approuvé une affirmation et quelles preuves actuelles ont justifié cette décision.
 
