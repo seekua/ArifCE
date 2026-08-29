@@ -45,7 +45,7 @@ $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [ArifCE documentation hub](docs/README.md).
+এরপর <http://127.0.0.1:5180/> খুলুন। সম্পূর্ণ পণ্য নির্দেশিকার জন্য [ArifCE ডকুমেন্টেশন হাব](docs/README.md) দেখুন।
 
 This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
 
@@ -81,7 +81,7 @@ arifce handoff
 
 ## Installation and quick start
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.2.0 একটি ক্রস-প্ল্যাটফর্ম .NET গ্লোবাল টুল হিসেবে প্রকাশিত। [ইনস্টলেশন](docs/getting-started/installation.md) ও [দ্রুত শুরু](docs/getting-started/quick-start.md) দেখুন। সোর্স থেকে:
 
 The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
 
@@ -127,6 +127,7 @@ See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](
 
 ArifCE [Apache License 2.0](LICENSE)-এর অধীনে লাইসেন্সপ্রাপ্ত।
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+
 
 
 
