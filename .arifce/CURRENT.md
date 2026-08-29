@@ -10,7 +10,7 @@ V0.1 through V0.6.0 are published GitHub Releases. V0.6.0 adds a separate, audit
 
 ## Blockers
 
-No release blocker remains. Cloud hosting remains deferred by product decision. External reviewer invocation, full IDE extensions, expanded MCP mutation surface, and autonomous A2A orchestration remain deferred.
+No release blocker remains. Cloud hosting remains deferred by product decision. External vendor reviewer invocation, hosted vector stores, and full IDE-native extensions remain deferred.
 
 ## Next steps
 

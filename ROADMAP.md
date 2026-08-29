@@ -69,13 +69,13 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 ## Explicit deferrals
 
-- **Local LLM provider foundation:** OpenAI, Anthropic, Gemini, OpenRouter, Ollama, and LM Studio adapters, local profile storage, fallback routing, connection tests, token/cost accounting, task preference routing, and canonical response evidence are implemented. User approval policy and benchmark primitives are implemented; dashboard model/cost projections, embedding selection, expanded MCP tools, and A2A orchestration remain the next integration phases.
+- **Local LLM provider platform:** OpenAI, Anthropic, Gemini, OpenRouter, Ollama, and LM Studio adapters, local profile storage, fallback/task routing, connection tests, token/cost accounting, canonical response evidence, explicit reviewer approval, dashboard model/cost projections, local embedding selection, approved MCP execution, and local A2A handoffs are implemented and tested. Hosted vector stores, vendor notifications, issue automation, and full IDE-native extensions remain opt-in integrations.
 
 - **Acceptance lifecycle:** implemented as a separate canonical record in the current release; future policy engines may add configurable approver roles and multi-stage approval without changing the claim model.
 
 - **External semantic reviewer invocation:** V0.1 defines typed blind-review interfaces but does not pretend to invoke Codex, Claude, or OpenCode reliably. Vendor authentication, process control, cost policy, and capability discovery require dedicated integrations.
 - **Advanced MCP surface:** the local stdio MCP server is implemented in V0.3. Shell-backed verification and broad mutation tools remain deferred until a stronger command policy exists.
-- **A2A and multi-worktree coordination:** domain metadata remains extensible, but orchestration is outside V0.1.
+- **A2A and multi-worktree coordination:** local sequential A2A handoffs and multi-project workspace switching are implemented; autonomous worktree creation, assignment, merging, and rollback remain deferred.
 - **Vector search, cloud service, full IDE extension, and autonomous swarms:** explicit future-phase scope. A local dashboard and IDE connection manifest are implemented; a full IDE-native experience is not yet shipped.
 - **Benchmark results:** only the benchmark protocol is defined until repeatable experiments are run; no effectiveness percentages will be claimed.
 - **Manual evidence authoring:** decision, failed-attempt, finding, and review commands persist canonical records. Deterministic command evidence remains available through `verify`; arbitrary manual evidence waits for a provenance and trust policy.
