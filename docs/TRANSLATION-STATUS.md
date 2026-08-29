@@ -28,7 +28,7 @@ The English `README.md` is canonical. Every localized README currently retains t
 
 The repository includes `scripts/translate-readme-locales.ps1`, which performs paragraph-level DeepL web translation in batches while protecting commands, URLs, HTML, and Markdown links. The public endpoint currently rate-limits automated requests; the script retries and leaves the existing file unchanged when a batch cannot be translated.
 
-Localized README files intentionally omit the pre-badge translated-introduction, duplicate slogan, and quick-start block. These are maintained only in the canonical English README; localized files continue with the canonical product reference after the shared language selector.
+Localized README files mirror the canonical structure: the logo, language selector, translated slogan, context quote, badges, product reference, diagrams, commands, safety notes, and license are kept in the same order. Executable commands, links, and badge URLs remain unchanged while surrounding prose is translated.
 
 DeepL's public web endpoint does not expose Bengali (`README.bn.md`), Bosnian (`README.bs.md`), or Thai (`README.th.md`) targets. These three files therefore remain canonical-reference files until a provider supporting those languages is explicitly selected. No language is marked `Reviewed` until its complete translation is verified in CI.
 
