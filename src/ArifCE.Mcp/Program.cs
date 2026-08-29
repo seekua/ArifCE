@@ -71,6 +71,7 @@ internal sealed class McpServer
             Tool("arifce_search", "Search indexed project intelligence using explainable lexical matching.", new { type = "object", required = new[] { "query" }, properties = new { query = new { type = "string" }, limit = new { type = "integer", minimum = 1, maximum = 50 } } }),
             Tool("arifce_checkpoint", "Record a project checkpoint with an explicit summary.", new { type = "object", required = new[] { "summary" }, properties = new { summary = new { type = "string", minLength = 1 } } }),
             Tool("arifce_handoff", "Create a semantic handoff from the current project state.", new { type = "object", properties = new { } })
+            ,Tool("arifce_llm_providers", "List locally configured LLM providers without exposing API keys.", new { type = "object", properties = new { } })
             ,Tool("arifce_refactor_status", "Read a refactor campaign record.", new { type = "object", required = new[] { "id" }, properties = new { id = new { type = "string" } } })
             ,Tool("arifce_refactor_verify", "Run deterministic guards for a refactor campaign without finishing it.", new { type = "object", required = new[] { "id" }, properties = new { id = new { type = "string" } } })
         }
@@ -88,6 +89,7 @@ internal sealed class McpServer
             "arifce_search" => await SearchAsync(root, arguments),
             "arifce_checkpoint" => (await service.CheckpointAsync(root, Required(arguments, "summary"))).Id,
             "arifce_handoff" => (await service.HandoffAsync(root)).Markdown,
+            "arifce_llm_providers" => await LlmProvidersAsync(),
             "arifce_refactor_status" => await RefactorStatusAsync(root, arguments),
             "arifce_refactor_verify" => await RefactorVerifyAsync(service, root, arguments),
             _ => throw new McpException(-32602, $"Unknown tool: {name}")
@@ -113,6 +115,12 @@ internal sealed class McpServer
         var limit = arguments.TryGetProperty("limit", out var value) && value.TryGetInt32(out var parsed) ? Math.Clamp(parsed, 1, 50) : 20;
         var hits = await index.SearchAsync(root, query, limit);
         return string.Join(Environment.NewLine, hits.Select(x => $"{x.Path}\t{x.Score:F3}\t{x.Snippet.Replace(Environment.NewLine, " ")}"));
+    }
+
+    private static async Task<string> LlmProvidersAsync()
+    {
+        var profiles = await new LocalLlmSettingsStore().ListAsync();
+        return JsonSerializer.Serialize(profiles.Select(p => new { p.Id, provider = p.Provider.ToString(), p.Model, p.Endpoint, p.Enabled }));
     }
 
     private string ProjectRoot() => locator.FindRoot(Environment.GetEnvironmentVariable("ARIFCE_PROJECT_ROOT") ?? Environment.CurrentDirectory);
