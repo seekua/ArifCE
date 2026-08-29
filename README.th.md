@@ -57,9 +57,9 @@ This workflow keeps project knowledge in the repository and makes progress inspe
 
 ## ไม่ใช่แค่ความจำ
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+ArifCE ติดตามว่างานคืออะไร มีอะไรเปลี่ยนและเพราะเหตุใด เอเจนต์อ้างว่าทำอะไรเสร็จ หลักฐานใดสนับสนุนข้ออ้างนั้น ผู้ตรวจพบอะไร งานใดยังไม่เสร็จ และเอเจนต์ถัดไปต้องรู้อะไร คำกล่าวของเอเจนต์เป็นข้ออ้างไม่ใช่ข้อเท็จจริง จึงควรใช้หลักฐานจาก build, test, Git และการค้นหาที่ตรวจสอบได้
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+การตรวจสอบทางเทคนิคและการยอมรับผลิตภัณฑ์แยกจากกัน บันทึกการยอมรับระบุว่าใครอนุมัติข้ออ้างและหลักฐานปัจจุบันใดสนับสนุนการตัดสินใจ
 
 ## V0.1 workflow
 

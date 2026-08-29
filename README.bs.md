@@ -57,9 +57,9 @@ This workflow keeps project knowledge in the repository and makes progress inspe
 
 ## Više od memorije
 
-ArifCE tracks what the task was, what changed, why it changed, what an agent claims it completed, what evidence supports that claim, what a reviewer found, what remains unfinished, and what the next agent needs to know. Agent statements are claims, not facts; deterministic build, test, Git, and search evidence is preferred.
+ArifCE prati šta je zadatak bio, šta se promijenilo i zašto, šta agent tvrdi da je završio, koji dokazi podržavaju tvrdnju, šta je recenzent pronašao, šta je nedovršeno i šta sljedeći agent treba znati. Izjave agenata su tvrdnje, ne činjenice; prednost imaju deterministički dokazi iz builda, testova, Gita i pretrage.
 
-Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
+Tehnička verifikacija i prihvatanje proizvoda su odvojeni: zapisi prihvatanja navode ko je odobrio tvrdnju i koji su aktuelni dokazi podržali odluku.
 
 ## V0.1 workflow
 
