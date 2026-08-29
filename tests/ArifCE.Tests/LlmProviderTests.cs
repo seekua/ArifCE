@@ -120,7 +120,7 @@ public sealed class LlmProviderTests
     [Fact]
     public void Runtime_selector_switches_between_local_and_cloud_profiles()
     {
-        var profiles = new[] { new LlmProviderProfile("local", LlmProviderKind.Ollama, "llama"), new LlmProviderProfile("cloud", LlmProviderKind.OpenAI, "gpt") };
+        var profiles = new[] { new LlmProviderProfile("local", LlmProviderKind.Ollama, "llama", null, null), new LlmProviderProfile("cloud", LlmProviderKind.OpenAI, "gpt", null, null) };
         Assert.Single(LlmRuntimeSelector.Select(profiles, LlmRuntimeMode.Local));
         Assert.Equal("cloud", LlmRuntimeSelector.Select(profiles, LlmRuntimeMode.Cloud)[0].Id);
     }
