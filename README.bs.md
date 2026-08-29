@@ -11,7 +11,7 @@ ArifCE je lokalni sloj projektne inteligencije i kontinuiteta za razvoj softvera
 
 ## Zašto ArifCE postoji
 
-Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
+Softverski timovi gube vrijeme i povjerenje kada važan kontekst postoji samo u historiji chata, ličnom sjećanju ili alatu koji sljedeći saradnik ne može pregledati. ArifCE čini inženjerski kontinuitet dijelom samog projekta.
 
 The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
 
@@ -19,7 +19,7 @@ ArifCE turns continuity into a shared engineering practice: focused context for 
 
 ## Kome je namijenjen
 
-ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
+ArifCE je namijenjen inženjerskim timovima uz AI, programerima koji rade s kodnim agentima i održavaocima kojima kontekst projekta treba preživjeti jednu osobu, chat ili sesiju. Posebno je koristan kada više saradnika dijeli repozitorij.
 
 ## Kako ArifCE radi
 
