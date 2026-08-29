@@ -17,6 +17,12 @@ foreach ($file in $files) {
   if ([regex]::Matches($text, '(?m)^#{1,6}\s+.+$').Count -lt $canonicalHeadingCount) {
     $failed += "$($file.Name): fewer Markdown headings than the canonical README"
   }
+  if ($text -notmatch '(?m)^\*\*[^*]+\*\*\s*$') {
+    $failed += "$($file.Name): missing translated slogan"
+  }
+  if ($text -notmatch '(?m)^>\s+\S+') {
+    $failed += "$($file.Name): missing translated context quote"
+  }
   foreach ($token in $required) { if ($text -notmatch [regex]::Escape($token)) { $failed += "$($file.Name): missing $token" } }
 }
 $listed = [regex]::Matches($translationStatus, '`(README\.[^`]+\.md)`') | ForEach-Object { $_.Groups[1].Value }
