@@ -63,7 +63,8 @@ app.MapGet("/api/overview", () =>
             var id = Get("id");
             var createdAt = Get("createdAtUtc");
             if (string.IsNullOrWhiteSpace(createdAt)) createdAt = File.GetLastWriteTimeUtc(file).ToString("O");
-            return (object)new { id, title = Get("title"), status = Get("status"), agent = actorByEntity.TryGetValue(id, out var actor) ? actor : "repository", createdAtUtc = createdAt, summary, statement = Get("statement"), claimId = Get("claimId") };
+            object? metrics = value.TryGetProperty("metrics", out var metricValue) ? JsonSerializer.Deserialize<object>(metricValue.GetRawText()) : null;
+            return (object)new { id, title = Get("title"), status = Get("status"), agent = actorByEntity.TryGetValue(id, out var actor) ? actor : "repository", createdAtUtc = createdAt, summary, statement = Get("statement"), claimId = Get("claimId"), metrics };
         }).ToArray() : [];
     object[] Events() => File.Exists(journalPath) ? File.ReadLines(journalPath).Reverse().Take(20).Select(line =>
     {
