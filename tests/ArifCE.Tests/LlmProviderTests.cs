@@ -37,9 +37,33 @@ public sealed class LlmProviderTests
         Assert.Equal("Bearer", handler.LastRequest!.Headers.Authorization!.Scheme);
     }
 
+    [Fact]
+    public async Task Router_falls_back_and_calculates_estimated_cost()
+    {
+        var failing = new StubProvider("first", true);
+        var succeeding = new StubProvider("second", false);
+        var profile = new LlmProviderProfile("second", LlmProviderKind.OpenAI, "model", null, null, true, 2m, 4m);
+        var result = await new LlmRouter(new[] { (failing.Provider, failing.Profile), (succeeding.Provider, profile) }).CompleteAsync(new LlmRequest("summary", "hello"));
+        Assert.Equal("done", result.Response.Text);
+        Assert.Equal(new[] { "first", "second" }, result.AttemptedProviders);
+        Assert.Equal(0.000014m, result.EstimatedCost);
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) { LastRequest = request; return Task.FromResult(responder(request)); }
+    }
+
+    private sealed class StubProvider(string id, bool fail)
+    {
+        public LlmProviderProfile Profile { get; } = new(id, LlmProviderKind.OpenAI, "model", null, null);
+        public ILlmProvider Provider { get; } = new Impl(id, fail);
+        private sealed class Impl(string id, bool fail) : ILlmProvider
+        {
+            public string ProviderId => id; public LlmProviderKind Kind => LlmProviderKind.OpenAI;
+            public Task<LlmResponse> CompleteAsync(LlmRequest request, CancellationToken cancellationToken = default) => fail ? throw new HttpRequestException("offline") : Task.FromResult(new LlmResponse(id, "model", "done", new LlmUsage(3, 2), TimeSpan.Zero));
+            public Task<LlmConnectionResult> TestConnectionAsync(CancellationToken cancellationToken = default) => Task.FromResult(new LlmConnectionResult(id, !fail, fail ? "offline" : "ok", TimeSpan.Zero));
+        }
     }
 }
