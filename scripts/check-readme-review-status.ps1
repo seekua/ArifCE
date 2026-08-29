@@ -6,7 +6,8 @@ $pending = @()
 foreach ($file in $files) {
   $row = ($status -split "`r?`n" | Where-Object { $_ -match [regex]::Escape($file.Name) } | Select-Object -First 1)
   if (-not $row) { $pending += "$($file.Name): missing status row"; continue }
-  $review = (($row -split '\|') | Select-Object -Last 1).Trim()
+  $columns = $row -split '\|'
+  $review = $columns[$columns.Count - 2].Trim()
   if ($review -notmatch '(?i)reviewed') { $pending += "$($file.Name): $review" }
 }
 if ($pending.Count -gt 0) {
