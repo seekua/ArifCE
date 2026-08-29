@@ -38,7 +38,7 @@ flowchart LR
 
 ## Istražite projekat
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+Pokrenite lokalnu nadzornu ploču za pregled zdravlja projekta, nedavnih zapisa i pretraživog konteksta:
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -73,7 +73,7 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+Kanonski Markdown, YAML, JSON i JSONL nalaze se u `.arifce/`. SQLite je izvedeni indeks koji se može obrisati; brisanje `.arifce/index/` i pokretanje `arifce rebuild` mora sačuvati inteligenciju projekta.
 
 ## Arhitektura
 
@@ -125,8 +125,9 @@ See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](
 
 ## Licenca
 
-ArifCE is licensed under the [Apache License 2.0](LICENSE).
+ArifCE je licenciran pod [Apache License 2.0](LICENSE).
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+
 
 
 

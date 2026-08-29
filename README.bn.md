@@ -38,7 +38,7 @@ flowchart LR
 
 ## প্রকল্প অন্বেষণ
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+প্রকল্পের স্বাস্থ্য, সাম্প্রতিক রেকর্ড ও অনুসন্ধানযোগ্য প্রেক্ষাপট দেখতে স্থানীয় ড্যাশবোর্ড চালান:
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -73,7 +73,7 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+ক্যানোনিকাল Markdown, YAML, JSON ও JSONL `.arifce/`-এ থাকে। SQLite একটি অপসারণযোগ্য সূচক; `.arifce/index/` মুছে `arifce rebuild` চালালেও প্রকল্পের বুদ্ধিমত্তা অক্ষুণ্ণ থাকতে হবে।
 
 ## আর্কিটেকচার
 
@@ -125,8 +125,9 @@ See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](
 
 ## লাইসেন্স
 
-ArifCE is licensed under the [Apache License 2.0](LICENSE).
+ArifCE [Apache License 2.0](LICENSE)-এর অধীনে লাইসেন্সপ্রাপ্ত।
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+
 
 
 

@@ -38,7 +38,7 @@ flowchart LR
 
 ## สำรวจโครงการ
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+เรียกใช้แดชบอร์ดในเครื่องเพื่อดูภาพรวมสุขภาพโครงการ บันทึกล่าสุด และบริบทที่ค้นหาได้:
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -73,7 +73,7 @@ arifce verify CLAIM-0001
 arifce handoff
 ```
 
-Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a disposable derived index: deleting `.arifce/index/` and running `arifce rebuild` must preserve project intelligence.
+ไฟล์ Markdown, YAML, JSON และ JSONL หลักอยู่ใน `.arifce/` ส่วน SQLite เป็นดัชนีที่ลบทิ้งได้ การลบ `.arifce/index/` แล้วเรียก `arifce rebuild` ต้องยังคงรักษาข้อมูลโครงการไว้ได้
 
 ## สถาปัตยกรรม
 
@@ -125,8 +125,9 @@ See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](
 
 ## ใบอนุญาต
 
-ArifCE is licensed under the [Apache License 2.0](LICENSE).
+ArifCE เผยแพร่ภายใต้ [Apache License 2.0](LICENSE)
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+
 
 
 
