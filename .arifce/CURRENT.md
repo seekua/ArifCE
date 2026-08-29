@@ -14,4 +14,6 @@ No release blocker remains. Cloud hosting, UI implementation, IDE extensions, ex
 
 ## Next steps
 
-Monitor the published V0.2.0 release and begin the next owner-approved product objective.
+Phase 40 is implemented in the local dashboard: decision-maker summaries show latest agent/action, evidence freshness, and record/status/agent filters. Remote CI passed for commit `f44437e`.
+
+Next owner-approved objective: Phase 41 local multi-project workspace active switching and isolation tests.
