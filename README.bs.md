@@ -77,7 +77,7 @@ Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a dis
 
 ## Arhitektura
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+Jezgro odvaja pravila domena, kanonsko skladištenje i indeksiranje, posmatranje Gita, dohvat, verifikaciju, refaktorisanje, sigurnost i CLI. Datoteke uputa dobavljača su mali adapteri i nikada ne postaju kanonsko spremište memorije.
 
 ## Installation and quick start
 
@@ -127,5 +127,6 @@ See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](
 
 ArifCE is licensed under the [Apache License 2.0](LICENSE).
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+
 
 
