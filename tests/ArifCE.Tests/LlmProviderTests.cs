@@ -136,6 +136,21 @@ public sealed class LlmProviderTests
         Assert.True(results[0].Tokens >= 0);
     }
 
+    [Fact]
+    public async Task Context_composer_enforces_budget_and_returns_sources()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-context-");
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(root.FullName, ".arifce", "decisions"));
+            await File.WriteAllTextAsync(Path.Combine(root.FullName, ".arifce", "decisions", "adr.json"), "database migration decision context");
+            var index = new IndexStore(); await index.RebuildAsync(root.FullName);
+            var context = await new LlmContextComposer(index).ComposeAsync(root.FullName, "database migration", 100);
+            Assert.Contains("adr.json", context.Sources[0]); Assert.True(context.EstimatedTokens <= 100);
+        }
+        finally { root.Delete(true); }
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }
