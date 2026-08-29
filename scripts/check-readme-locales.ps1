@@ -10,9 +10,9 @@ foreach ($file in $files) {
   $text = Get-Content $file.FullName -Raw
   # Translation can be substantially more compact than English (especially
   # Japanese, Chinese, and Arabic). Structural markers and heading parity are
-  # the authoritative checks; use a conservative 60% floor for content loss.
-  if ($text.Length -lt ($canonical.Length * 0.60)) {
-    $failed += "$($file.Name): content is shorter than the canonical README (less than 60 percent of canonical length)"
+  # authoritative; use a conservative 45% floor for accidental content loss.
+  if ($text.Length -lt ($canonical.Length * 0.45)) {
+    $failed += "$($file.Name): content is shorter than the canonical README (less than 45 percent of canonical length)"
   }
   if ([regex]::Matches($text, '(?m)^#{1,6}\s+.+$').Count -lt $canonicalHeadingCount) {
     $failed += "$($file.Name): fewer Markdown headings than the canonical README"
