@@ -31,6 +31,27 @@ app.MapPost("/api/workspace/active", async (WorkspaceSelection selection) =>
 app.MapGet("/api/overview", () =>
 {
     var root = Root();
+    // Canonical records do not carry an author field by design. Resolve attribution
+    // from the append-only journal so the dashboard never invents an agent.
+    var actorByEntity = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    var journalPath = Path.Combine(root, ".arifce", "journal", "events.jsonl");
+    if (File.Exists(journalPath))
+    {
+        foreach (var line in File.ReadLines(journalPath))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(line);
+                var e = doc.RootElement;
+                var entityId = e.TryGetProperty("entityId", out var entity) ? entity.ToString() : "";
+                if (string.IsNullOrWhiteSpace(entityId)) continue;
+                var actor = "repository";
+                if (e.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object && data.TryGetProperty("agent", out var agent)) actor = agent.ToString();
+                actorByEntity[entityId] = string.IsNullOrWhiteSpace(actor) ? "repository" : actor;
+            }
+            catch (JsonException) { /* a malformed journal line must not break the dashboard */ }
+        }
+    }
     object[] Read(string kind) => Directory.Exists(Path.Combine(root, ".arifce", kind))
         ? Directory.EnumerateFiles(Path.Combine(root, ".arifce", kind), "*.json").OrderByDescending(File.GetLastWriteTimeUtc).Take(8).Select(file =>
         {
@@ -39,9 +60,11 @@ app.MapGet("/api/overview", () =>
             string Get(string name) => value.TryGetProperty(name, out var p) ? p.ToString() : "";
             var summary = Get("summary");
             if (string.IsNullOrWhiteSpace(summary) && value.TryGetProperty("markdown", out var markdown)) summary = markdown.ToString().Replace("\r", "").Replace("\n", " ").Trim();
-            return (object)new { id = Get("id"), title = Get("title"), status = Get("status"), agent = Get("agent"), createdAtUtc = Get("createdAtUtc"), summary, statement = Get("statement"), claimId = Get("claimId") };
+            var id = Get("id");
+            var createdAt = Get("createdAtUtc");
+            if (string.IsNullOrWhiteSpace(createdAt)) createdAt = File.GetLastWriteTimeUtc(file).ToString("O");
+            return (object)new { id, title = Get("title"), status = Get("status"), agent = actorByEntity.TryGetValue(id, out var actor) ? actor : "repository", createdAtUtc = createdAt, summary, statement = Get("statement"), claimId = Get("claimId") };
         }).ToArray() : [];
-    var journalPath = Path.Combine(root, ".arifce", "journal", "events.jsonl");
     object[] Events() => File.Exists(journalPath) ? File.ReadLines(journalPath).Reverse().Take(20).Select(line =>
     {
         using var doc = JsonDocument.Parse(line); var e = doc.RootElement;
