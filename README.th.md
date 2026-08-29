@@ -49,11 +49,11 @@ Then open <http://127.0.0.1:5180/>. For the complete product handbook, see the [
 
 This workflow keeps project knowledge in the repository and makes progress inspectable. The practical advantages are:
 
-- Faster onboarding: the next agent reads a focused current state instead of reconstructing a long transcript.
-- Safer changes: claims are linked to deterministic evidence and become stale when Git state changes.
-- Better continuity: decisions, failed attempts, checkpoints, and handoffs survive agent or session changes.
-- Controlled refactors: invariants, inventory, guards, and safe points make incomplete work visible.
-- Local-first operation: canonical files remain usable without a cloud service or vendor-specific runtime.
+- เริ่มงานได้เร็วขึ้น: เอเจนต์ถัดไปอ่านสถานะปัจจุบันที่สรุปไว้แทนการสร้างบันทึกยาวใหม่
+- เปลี่ยนแปลงปลอดภัยขึ้น: ข้ออ้างเชื่อมกับหลักฐานที่แน่นอน และจะล้าสมัยเมื่อสถานะ Git เปลี่ยน
+- ความต่อเนื่องที่ดีขึ้น: การตัดสินใจ ความพยายามที่ล้มเหลว จุดตรวจ และการส่งต่องานยังคงอยู่แม้เปลี่ยนเอเจนต์หรือเซสชัน
+- รีแฟกเตอร์อย่างควบคุมได้: อินวาเรียนต์ รายการ การป้องกัน และจุดปลอดภัยทำให้งานที่ยังไม่เสร็จมองเห็นได้
+- การทำงานแบบ local-first: ไฟล์หลักยังใช้งานได้โดยไม่ต้องมีคลาวด์หรือ runtime ของผู้ให้บริการ
 
 ## ไม่ใช่แค่ความจำ
 
