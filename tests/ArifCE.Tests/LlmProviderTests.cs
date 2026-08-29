@@ -117,6 +117,14 @@ public sealed class LlmProviderTests
         finally { root.Delete(true); }
     }
 
+    [Fact]
+    public void Runtime_selector_switches_between_local_and_cloud_profiles()
+    {
+        var profiles = new[] { new LlmProviderProfile("local", LlmProviderKind.Ollama, "llama"), new LlmProviderProfile("cloud", LlmProviderKind.OpenAI, "gpt") };
+        Assert.Single(LlmRuntimeSelector.Select(profiles, LlmRuntimeMode.Local));
+        Assert.Equal("cloud", LlmRuntimeSelector.Select(profiles, LlmRuntimeMode.Cloud)[0].Id);
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }

@@ -1,6 +1,7 @@
 namespace ArifCE.Core;
 
 public enum LlmProviderKind { OpenAI, Anthropic, Gemini, OpenRouter, Ollama, LmStudio }
+public enum LlmRuntimeMode { Local, Cloud, Any }
 
 public sealed record LlmProviderProfile(
     string Id,
@@ -10,7 +11,10 @@ public sealed record LlmProviderProfile(
     string? ApiKey,
     bool Enabled = true,
     decimal InputCostPerMillion = 0,
-    decimal OutputCostPerMillion = 0);
+    decimal OutputCostPerMillion = 0)
+{
+    public LlmRuntimeMode RuntimeMode => Provider is LlmProviderKind.Ollama or LlmProviderKind.LmStudio ? LlmRuntimeMode.Local : LlmRuntimeMode.Cloud;
+}
 
 public sealed record LlmRequest(string Task, string Prompt, string? Model = null, int MaxOutputTokens = 2048, decimal Temperature = 0.1m);
 public sealed record LlmUsage(int? InputTokens, int? OutputTokens)
