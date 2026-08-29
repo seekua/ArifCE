@@ -86,6 +86,19 @@ public sealed class LlmProviderTests
         Assert.Equal(128, provider.Dimensions);
     }
 
+    [Fact]
+    public async Task Local_a2a_passes_context_between_agents()
+    {
+        var flow = new LocalA2AOrchestrator(new[]
+        {
+            new A2AAgent("planner", "planner", (input, _) => Task.FromResult(input + " -> planned")),
+            new A2AAgent("reviewer", "reviewer", (input, _) => Task.FromResult(input + " -> reviewed"))
+        });
+        var turns = await flow.RunAsync("task");
+        Assert.Equal(2, turns.Count);
+        Assert.EndsWith("reviewed", turns[^1].Output);
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }
