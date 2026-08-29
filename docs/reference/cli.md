@@ -102,3 +102,15 @@ arifce refactor abandon <refactor-id>
 ```
 
 Blocking inventory or forbidden-reference guards prevent finish. Workstreams are coordination metadata only; V0.1 does not create worktrees or invoke agents. Safe points capture Git state but do not execute rollback.
+# LLM commands
+
+```text
+arifce llm provider list
+arifce llm provider add <id> <kind> <model> [--endpoint <url>] [--api-key-env <name>] [--api-key-stdin]
+arifce llm provider test <id>
+arifce llm provider remove <id>
+arifce llm context <task> [--budget N]
+arifce llm run <task> <prompt> [--claim <id>]
+```
+
+`llm context` previews indexed repository memory under a token budget. `llm run` uses enabled profiles with fallback and persists canonical evidence. API keys remain local and should be supplied through an environment variable or stdin.
