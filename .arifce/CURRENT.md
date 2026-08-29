@@ -10,7 +10,7 @@ V0.1 through V0.6.0 are published GitHub Releases. V0.6.0 adds a separate, audit
 
 ## Blockers
 
-No release blocker remains. Cloud hosting, UI implementation, IDE extensions, external reviewer invocation, and autonomous A2A orchestration remain explicitly deferred.
+No release blocker remains. Cloud hosting remains deferred by product decision. External reviewer invocation, full IDE extensions, expanded MCP mutation surface, and autonomous A2A orchestration remain deferred.
 
 ## Next steps
 
@@ -22,4 +22,4 @@ Phase 39 is complete: CI now reports canonical README parity separately from hum
 
 Phase 38 is complete under the translator-review agent role: all 21 localized README files passed structural, link, command, diagram, badge, and English-prose checks and are marked `Reviewed (translator agent)`. Human linguistic sign-off remains optional and explicitly distinguished.
 
-Next owner-approved objective: define the next post-V0.7 scope.
+The post-V0.7 LLM objective is in progress: local provider adapters (OpenAI, Anthropic, Gemini, OpenRouter, Ollama, LM Studio), local API-key profiles, fallback/task routing, connection tests, token/cost accounting, canonical LLM evidence, dashboard LLM activity, approval policy primitives, benchmark primitives, and deterministic local embedding selection are implemented and pushed through `baba7ff`. Remaining work is to wire richer policy/reviewer workflows, IDE manifest capabilities, expanded MCP tools, multi-project orchestration, and full end-to-end CI/release evidence.
