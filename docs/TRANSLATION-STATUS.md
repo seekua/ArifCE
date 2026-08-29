@@ -7,7 +7,7 @@ The English `README.md` is canonical. Every localized README currently retains t
 | `README.ar.md` | Full Arabic draft (commands/links preserved) | Pending |
 | `README.bn.md` | Complete canonical reference | Pending |
 | `README.bs.md` | Complete canonical reference | Pending |
-| `README.da.md` | Complete canonical reference | Pending |
+| `README.da.md` | Full Danish draft (commands/links/diagram preserved) | Pending |
 | `README.de.md` | Full German draft (commands/links preserved) | Pending |
 | `README.el.md` | Complete canonical reference | Pending |
 | `README.es.md` | Full Spanish draft (commands/links/diagram preserved) | Pending |
