@@ -1,23 +1,6 @@
 # ArifCE
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
-
-
 [English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
-
-**يتغير الوكلاء، لكن المشروع لا ينسى.** ArifCE هو طبقة محلية أولاً تركز على ذكاء المشاريع واستمراريتها، مخصصة لتطوير البرمجيات بمساعدة الذكاء الاصطناعي. وهي تحتفظ بالسياق، والقرارات، والمحاولات الفاشلة، والأدلة، وحالة إعادة الهيكلة، ومعلومات التسليم مع المستودع، بحيث يمكن لـ Codex وClaude Code وOpenCode والوكلاء المستقبليين مواصلة نفس مسار العمل الهندسي.
-
-```powershell
-dotnet tool install --global ArifCE.Cli
-cd your-project
-arifce init
-arifce status
-```
-
-## مرجع المنتج الكامل
-
-يتبع المقدمة المترجمة أعلاه مرجع المنتج الأساسي الكامل. يحافظ ذلك على توفر كل أمر ورابط وشارة وملاحظة أمان وقيد أثناء استكمال الترجمة البشرية الكاملة.
-
-**يتغير الوكلاء، لكن مشروعك يجب ألا ينسى.**
 
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 

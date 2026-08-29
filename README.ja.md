@@ -1,23 +1,6 @@
 # ArifCE
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
-
-
 [English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
-
-**エージェントが変わっても、プロジェクトは忘れません。** ArifCE は AI 支援開発のコンテキスト、決定、証拠、引き継ぎをリポジトリに保存します。
-
-```powershell
-dotnet tool install --global ArifCE.Cli
-cd your-project
-arifce init
-arifce status
-```
-
-## 完全な製品リファレンス
-
-上の翻訳された紹介に続いて、完全な正規製品リファレンスを掲載しています。人による完全な翻訳が完了するまで、すべてのコマンド、リンク、バッジ、安全上の注意、制限を利用できます。
-
-**エージェントは変わっても、プロジェクトは忘れません。**
 
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
 

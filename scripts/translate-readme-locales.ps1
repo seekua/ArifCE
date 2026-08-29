@@ -7,7 +7,12 @@ $locales = [ordered]@{
   'ko'='KO'; 'no'='NB'; 'pl'='PL'; 'pt-BR'='PT-BR'; 'ru'='RU'; 'uk'='UK'; 'vi'='VI';
   'zh-CN'='ZH'; 'zh-TW'='ZH'; 'bn'='BN'; 'bs'='BS'; 'th'='TH'
 }
-$source = Get-Content (Join-Path $Root 'README.md')
+$rawSource = Get-Content (Join-Path $Root 'README.md')
+# Localized files intentionally begin with only the shared title, logo, and
+# language selector. Any canonical pre-badge intro/slogan is not duplicated.
+$badgeIndex = ($rawSource | Select-String -Pattern '^\[!\[CI\]' | Select-Object -First 1).LineNumber - 1
+$header = @($rawSource[0..($badgeIndex-1)] | Where-Object {$_ -match '^# ArifCE$|<p align="center"><img|^\[English\]'})
+$source = @($header + '' + $rawSource[$badgeIndex..($rawSource.Count-1)])
 
 function Protect([string]$text) {
   $map=@{}; $n=0
