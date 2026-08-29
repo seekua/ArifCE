@@ -13,7 +13,7 @@ ArifCE je lokalni sloj projektne inteligencije i kontinuiteta za razvoj softvera
 
 Softverski timovi gube vrijeme i povjerenje kada važan kontekst postoji samo u historiji chata, ličnom sjećanju ili alatu koji sljedeći saradnik ne može pregledati. ArifCE čini inženjerski kontinuitet dijelom samog projekta.
 
-The goal is not to make agents sound more certain. The goal is to help every contributor understand what the team is trying to accomplish, why a decision was made, what has actually been verified, and where uncertainty remains. When that story stays with the repository, teams can move faster without giving up traceability, ownership, or trust.
+Cilj nije da agenti zvuče sigurnije, već da svaki saradnik razumije šta tim želi postići, zašto je odluka donesena, šta je zaista provjereno i gdje ostaje neizvjesnost. Kada priča ostane u repozitoriju, tim može brže napredovati bez gubitka sljedivosti, odgovornosti ili povjerenja.
 
 ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
 
