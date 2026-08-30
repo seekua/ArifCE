@@ -1,0 +1,18 @@
+root = true
+
+[*]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+[*.cs]
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_new_line_before_members_in_chained_methods = true
+csharp_preserve_single_line_blocks = false
+csharp_preserve_single_line_statements = false
+
+[*.{json,jsonc,yml,yaml,md}]
+indent_size = 2
