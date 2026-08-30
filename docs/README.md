@@ -23,6 +23,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Semantic embeddings plan](release/semantic-embeddings-plan.md)
 - [Incremental index plan](release/incremental-index-plan.md)
+- [Agent hooks plan](release/agent-hooks-plan.md)
 - [Refactor campaigns](concepts/refactor-campaigns.md)
 
 ## Build and integrate
