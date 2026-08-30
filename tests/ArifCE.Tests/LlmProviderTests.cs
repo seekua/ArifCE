@@ -112,7 +112,7 @@ public sealed class LlmProviderTests
     [Fact]
     public async Task Local_embedding_is_deterministic_and_selectable()
     {
-        var selector = new EmbeddingProviderSelector(new[] { (IEmbeddingProvider)new LocalEmbeddingProvider(new EmbeddingProfile("local", "local")) });
+        var selector = new EmbeddingProviderSelector(new[] { (IEmbeddingProvider)new DeterministicHashEmbeddingProvider(new EmbeddingProfile("local", "local")) });
         var provider = selector.Select("local");
         Assert.Equal(await provider.EmbedAsync("same"), await provider.EmbedAsync("same"), (IEqualityComparer<float>)EqualityComparer<float>.Default);
         Assert.Equal(128, provider.Dimensions);
