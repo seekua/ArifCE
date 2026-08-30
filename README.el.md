@@ -130,3 +130,15 @@ dotnet run --project src/ArifCE.Cli -- init
 ## Άδεια
 
 Το ArifCE διατίθεται με την [άδεια Apache 2.0](LICENSE).
+### Local LLM workflows
+
+ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+
+```bash
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+arifce llm context "review the migration" --budget 2000
+arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+```
+
+Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](docs/reference/LLM-PROVIDERS.md).
