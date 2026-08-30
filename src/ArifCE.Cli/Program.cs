@@ -111,11 +111,18 @@ internal static class Cli
             return;
         }
         if (!args[1].Equals("run", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Unknown llm action.");
-        Require(args, 4, "llm run <task> <prompt> [--claim <id>]");
+        Require(args, 4, "llm run <task> <prompt> [--claim <id>] [--with-context] [--budget N]");
         var profiles = (await store.ListAsync()).Where(x => x.Enabled).ToList();
         if (profiles.Count == 0) throw new InvalidOperationException("No enabled local LLM providers configured. Add one with 'llm provider add'.");
         var orchestrator = new LlmOrchestrator(new LlmRouter(profiles.Select(p => (LlmProviderFactory.Create(p), p))), new CanonicalStore(), new JournalStore(), new GitInspector());
-        var prompt = string.Join(' ', args.Skip(3).TakeWhile(x => x != "--claim"));
+        var prompt = string.Join(' ', args.Skip(3).TakeWhile(x => x is not "--claim" and not "--with-context" and not "--budget"));
+        if (args.Contains("--with-context", StringComparer.Ordinal))
+        {
+            var budgetIndex = Array.IndexOf(args, "--budget");
+            var budget = budgetIndex >= 0 && budgetIndex + 1 < args.Length && int.TryParse(args[budgetIndex + 1], out var parsedBudget) ? parsedBudget : 4000;
+            var context = await new LlmContextComposer(new IndexStore()).ComposeAsync(root, args[2], budget);
+            prompt = $"Repository context:\n{context.Content}\n\nTask prompt:\n{prompt}";
+        }
         var execution = await orchestrator.ExecuteAsync(root, new LlmRequest(args[2], prompt), Option(args, "--claim") ?? "CLAIM-UNASSIGNED");
         Console.WriteLine($"{execution.Route.Response.Text}\n\nProvider: {execution.Route.Response.ProviderId}\nModel: {execution.Route.Response.Model}\nTokens: {execution.Route.Response.Usage.TotalTokens}\nEstimated cost: {execution.Route.EstimatedCost:0.########}\nEvidence: {execution.Evidence.Id}");
     }
