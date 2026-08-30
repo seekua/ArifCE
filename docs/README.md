@@ -19,6 +19,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Continuity](concepts/continuity.md)
 - [Handoffs](concepts/handoffs.md)
 - [Comparison](COMPARISON.md)
+- [Product evidence](EVIDENCE.md)
 - [Refactor campaigns](concepts/refactor-campaigns.md)
 
 ## Build and integrate
