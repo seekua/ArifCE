@@ -96,8 +96,8 @@ internal static class Cli
             var reviewProfiles = (await store.ListAsync()).Where(x => x.Enabled).ToList();
             if (reviewProfiles.Count == 0) throw new InvalidOperationException("No enabled local LLM providers configured.");
             var workflow = new LlmReviewerWorkflow(new LlmOrchestrator(new LlmRouter(reviewProfiles.Select(p => (LlmProviderFactory.Create(p), p))), new CanonicalStore(), new JournalStore(), new GitInspector()), new CanonicalStore());
-            var prompt = string.Join(' ', args.Skip(3).TakeWhile(x => x is not "--reviewer" and not "--rationale" and not "--approved"));
-            var review = await workflow.RunAsync(root, args[2], Option(args, "--reviewer") ?? throw new ArgumentException("--reviewer is required."), Option(args, "--rationale") ?? throw new ArgumentException("--rationale is required."), prompt, true);
+            var reviewPrompt = string.Join(' ', args.Skip(3).TakeWhile(x => x is not "--reviewer" and not "--rationale" and not "--approved"));
+            var review = await workflow.RunAsync(root, args[2], Option(args, "--reviewer") ?? throw new ArgumentException("--reviewer is required."), Option(args, "--rationale") ?? throw new ArgumentException("--rationale is required."), reviewPrompt, true);
             Console.WriteLine($"Review evidence: {review.Execution.Evidence.Id}\nReview provider: {review.Execution.Route.Response.ProviderId} / {review.Execution.Route.Response.Model}");
             return;
         }
