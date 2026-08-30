@@ -315,8 +315,9 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (File.Exists(currentPath))
         {
             var currentLength = (await File.ReadAllTextAsync(currentPath, cancellationToken)).Length;
-            if (currentLength > 32000) findings.Add($"CURRENT.md exceeds the hard 8,000-token safety limit ({currentLength} characters); move historical detail to checkpoints.");
-            else if (currentLength > 16000) findings.Add($"CURRENT.md exceeds the soft 4,000-token warning ({currentLength} characters); keep active state concise.");
+            var limits = await CurrentLimitsAsync(root, cancellationToken);
+            if (currentLength > limits.HardChars) findings.Add($"CURRENT.md exceeds the hard {limits.HardChars / 4:N0}-token safety limit ({currentLength} characters); move historical detail to checkpoints.");
+            else if (currentLength > limits.SoftChars) findings.Add($"CURRENT.md exceeds the soft {limits.SoftChars / 4:N0}-token warning ({currentLength} characters); keep active state concise.");
         }
         var journalPath = Path.Combine(store, "journal", "events.jsonl");
         if (File.Exists(journalPath))
@@ -350,8 +351,21 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     }
     private static async Task<string> BoundedCurrentAsync(string root, CancellationToken ct)
     {
-        var path = Path.Combine(root, ".arifce", "CURRENT.md"); var text = await File.ReadAllTextAsync(path, ct);
-        return text.Length <= 32000 ? text : text[..32000] + "\n\n> CURRENT.md was truncated in this handoff at the configured hard limit. Move historical detail to checkpoints.\n";
+        var path = Path.Combine(root, ".arifce", "CURRENT.md"); var text = await File.ReadAllTextAsync(path, ct); var limits = await CurrentLimitsAsync(root, ct);
+        return text.Length <= limits.HardChars ? text : text[..limits.HardChars] + "\n\n> CURRENT.md was truncated in this handoff at the configured hard limit. Move historical detail to checkpoints.\n";
+    }
+    private static async Task<(int SoftChars, int HardChars)> CurrentLimitsAsync(string root, CancellationToken ct)
+    {
+        var path = Path.Combine(root, ".arifce", "config.json");
+        if (!File.Exists(path)) return (16000, 32000);
+        try
+        {
+            using var document = JsonDocument.Parse(await File.ReadAllTextAsync(path, ct));
+            var soft = document.RootElement.TryGetProperty("currentSoftTokenWarning", out var softValue) && softValue.TryGetInt32(out var softTokens) && softTokens > 0 ? softTokens * 4 : 4000 * 4;
+            var hard = document.RootElement.TryGetProperty("currentHardTokenWarning", out var hardValue) && hardValue.TryGetInt32(out var hardTokens) && hardTokens > 0 ? hardTokens * 4 : 8000 * 4;
+            return (Math.Min(soft, hard), Math.Max(soft, hard));
+        }
+        catch (JsonException) { return (16000, 32000); }
     }
     private static bool IsTextFile(string path) => new[] { ".cs", ".md", ".json", ".xml", ".yml", ".yaml", ".txt" }.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
     private static string Truncate(string value, int length) => value.Length <= length ? value : value[..length] + "…";

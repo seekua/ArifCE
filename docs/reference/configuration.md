@@ -10,6 +10,6 @@
 }
 ```
 
-`schemaVersion` is required for compatibility. `currentSoftTokenWarning` and `currentHardTokenWarning` document the active-state budget; `doctor` reports when `CURRENT.md` exceeds the default safety bands, and handoffs apply the hard bound to their rendered snapshot. Custom threshold wiring remains a follow-up. Unknown configuration behavior must not be assumed.
+`schemaVersion` is required for compatibility. `currentSoftTokenWarning` and `currentHardTokenWarning` define the active-state budget in approximate tokens (the implementation uses four characters per token); `doctor` reports when `CURRENT.md` exceeds these bands, and handoffs apply the configured hard bound to their rendered snapshot. Unknown configuration behavior must not be assumed.
 
 Credentials, vendor authentication, machine paths, and OAuth tokens are prohibited in portable configuration.
