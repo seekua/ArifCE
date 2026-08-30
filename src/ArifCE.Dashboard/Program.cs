@@ -23,6 +23,7 @@ app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.Base
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
 app.MapGet("/api/workspace", async () => Results.Json(await workspace.ListAsync()));
 app.MapGet("/api/workspace/active", async () => Results.Json(new { root = await workspace.GetActiveAsync() }));
+app.MapGet("/api/llm/providers", async () => Results.Json((await new LocalLlmSettingsStore().ListAsync()).Select(p => new { p.Id, provider = p.Provider.ToString(), p.Model, p.Endpoint, p.Enabled, runtime = p.RuntimeMode.ToString() })));
 app.MapPost("/api/workspace/active", async (WorkspaceSelection selection) =>
 {
     try { return Results.Json(new { root = await workspace.SetActiveAsync(selection.Root) }); }
