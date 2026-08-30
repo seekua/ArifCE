@@ -70,7 +70,7 @@ public sealed class BehaviorTests : IDisposable
     public async Task Claim_verification_and_git_freshness_are_snapshot_scoped()
     {
         await Service.InitializeAsync(root, false); var claim = await Service.CreateClaimAsync(root, "Command succeeds", RiskLevel.Low); var result = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
-        Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal(0, result.Evidence.ExitCode);
+        Assert.Equal(ClaimStatus.Supported, result.Claim.Status); Assert.Equal("UNVERIFIED_COMMAND", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
         await File.WriteAllTextAsync(Path.Combine(root, "changed.txt"), "change"); var after = await git.CaptureAsync(root); Assert.NotEqual(result.Evidence.Snapshot.Digest, after.Digest);
         Assert.Equal(EvidenceFreshness.Stale, EvidenceEvaluator.Evaluate(result.Evidence.Snapshot, after));
     }
@@ -102,7 +102,7 @@ public sealed class BehaviorTests : IDisposable
         Assert.Equal(claim.Id, acceptance.ClaimId);
         var revoked = await Service.RevokeAcceptanceAsync(root, acceptance.Id);
         Assert.Equal(AcceptanceStatus.Revoked, revoked.Status);
-        Assert.Equal(ClaimStatus.Verified, verified.Claim.Status);
+        Assert.Equal(ClaimStatus.Supported, verified.Claim.Status);
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public sealed class BehaviorTests : IDisposable
         await Service.CheckpointAsync(root, "Task represented and checkpointed");
         var claim = await Service.CreateClaimAsync(root, "A deterministic command succeeds", RiskLevel.Low);
         var verified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
-        Assert.Equal(ClaimStatus.Verified, verified.Claim.Status);
+        Assert.Equal(ClaimStatus.Supported, verified.Claim.Status);
         var handoff = await Service.HandoffAsync(root); Assert.Contains(task.Id, handoff.Markdown);
         var campaign = await Service.StartRefactorAsync(root, "Fixture refactor", "Prove guarded completion");
         Assert.Empty(await Service.VerifyRefactorAsync(root, campaign.Id)); Assert.Equal(WorkStatus.Completed, (await Service.FinishRefactorAsync(root, campaign.Id)).Status);

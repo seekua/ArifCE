@@ -163,9 +163,10 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var result = await RunCommandAsync(root, commandText, cancellationToken);
         var evidenceId = canonical.NextId(root, "evidence", "EVIDENCE");
         var parsed = CommandEvidenceParser.Parse(commandText, result.Output);
-        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, parsed.Kind, commandText, result.ExitCode, Truncate(result.Output, 1000), before, DateTimeOffset.UtcNow, parsed.Metrics);
+        var evidenceKind = parsed.Kind == "COMMAND" ? "UNVERIFIED_COMMAND" : parsed.Kind;
+        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, evidenceKind, commandText, result.ExitCode, Truncate(result.Output, 1000), before, DateTimeOffset.UtcNow, parsed.Metrics);
         await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
-        var status = result.ExitCode == 0 ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
+        var status = result.ExitCode == 0 ? (parsed.Kind == "COMMAND" ? ClaimStatus.Supported : claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
         var updated = claim with { Status = status, Evidence = claim.Evidence.Concat([evidenceId]).ToArray() };
         await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken);
         await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
