@@ -36,6 +36,9 @@ jobs:
       - name: README human review status
         shell: pwsh
         run: ./scripts/check-readme-review-status.ps1
+      - name: Version consistency
+        shell: pwsh
+        run: ./scripts/check-version-consistency.ps1
       - name: Package smoke test
         shell: pwsh
         run: ./scripts/package-smoke.ps1 -Configuration Release

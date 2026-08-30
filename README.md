@@ -84,7 +84,7 @@ The core separates domain rules, canonical storage and indexing, Git observation
 
 ## Installation and quick start
 
-V0.2.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.6.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
 
 The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
 
@@ -93,7 +93,7 @@ For a complete installation and feature walkthrough, see the [User Guide](docs/U
 ### 60-second quick start
 
 ```bash
-dotnet tool install --global ArifCE.Cli --version 0.2.0
+dotnet tool install --global ArifCE.Cli --version 0.6.0
 mkdir my-project && cd my-project
 git init
 arifce init
