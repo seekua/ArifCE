@@ -24,6 +24,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Semantic embeddings plan](release/semantic-embeddings-plan.md)
 - [Incremental index plan](release/incremental-index-plan.md)
 - [Agent hooks plan](release/agent-hooks-plan.md)
+- [Dashboard asset refactor plan](release/dashboard-assets-plan.md)
 - [Refactor campaigns](concepts/refactor-campaigns.md)
 
 ## Build and integrate
