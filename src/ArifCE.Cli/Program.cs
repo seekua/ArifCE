@@ -108,8 +108,8 @@ internal static class Cli
             var benchmarkProfiles = (await store.ListAsync()).Where(x => x.Enabled).ToList();
             if (benchmarkProfiles.Count == 0) throw new InvalidOperationException("No enabled local LLM providers configured.");
             var benchmarkRouter = new LlmRouter(benchmarkProfiles.Select(p => (LlmProviderFactory.Create(p), p)));
-            var prompt = string.Join(' ', args.Skip(2).TakeWhile(x => x != "--expected"));
-            var results = await LlmBenchmark.RunAsync(new[] { new BenchmarkCase("cli", prompt, expected) }, async _ => await benchmarkRouter.CompleteAsync(new LlmRequest("benchmark", prompt)));
+            var benchmarkPrompt = string.Join(' ', args.Skip(2).TakeWhile(x => x != "--expected"));
+            var results = await LlmBenchmark.RunAsync(new[] { new BenchmarkCase("cli", benchmarkPrompt, expected) }, async _ => await benchmarkRouter.CompleteAsync(new LlmRequest("benchmark", benchmarkPrompt)));
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(results, JsonDefaults.Options));
             return;
         }
