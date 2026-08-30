@@ -69,6 +69,7 @@ internal sealed class McpServer
         {
             Tool("arifce_status", "Read the current project status and Git snapshot.", new { type = "object", properties = new { } }),
             Tool("arifce_search", "Search indexed project intelligence using explainable lexical matching.", new { type = "object", required = new[] { "query" }, properties = new { query = new { type = "string" }, limit = new { type = "integer", minimum = 1, maximum = 50 } } }),
+            Tool("arifce_context", "Compose bounded repository context for an LLM task.", new { type = "object", required = new[] { "task" }, properties = new { task = new { type = "string" }, budget = new { type = "integer", minimum = 1, maximum = 20000 } } }),
             Tool("arifce_checkpoint", "Record a project checkpoint with an explicit summary.", new { type = "object", required = new[] { "summary" }, properties = new { summary = new { type = "string", minLength = 1 } } }),
             Tool("arifce_handoff", "Create a semantic handoff from the current project state.", new { type = "object", properties = new { } })
             ,Tool("arifce_llm_providers", "List locally configured LLM providers without exposing API keys.", new { type = "object", properties = new { } })
@@ -88,6 +89,7 @@ internal sealed class McpServer
         {
             "arifce_status" => await service.StatusAsync(root),
             "arifce_search" => await SearchAsync(root, arguments),
+            "arifce_context" => await ContextAsync(root, arguments),
             "arifce_checkpoint" => (await service.CheckpointAsync(root, Required(arguments, "summary"))).Id,
             "arifce_handoff" => (await service.HandoffAsync(root)).Markdown,
             "arifce_llm_providers" => await LlmProvidersAsync(),
@@ -117,6 +119,14 @@ internal sealed class McpServer
         var limit = arguments.TryGetProperty("limit", out var value) && value.TryGetInt32(out var parsed) ? Math.Clamp(parsed, 1, 50) : 20;
         var hits = await index.SearchAsync(root, query, limit);
         return string.Join(Environment.NewLine, hits.Select(x => $"{x.Path}\t{x.Score:F3}\t{x.Snippet.Replace(Environment.NewLine, " ")}"));
+    }
+
+    private static async Task<string> ContextAsync(string root, JsonElement arguments)
+    {
+        var task = Required(arguments, "task");
+        var budget = arguments.TryGetProperty("budget", out var value) && value.TryGetInt32(out var parsed) ? Math.Clamp(parsed, 1, 20000) : 4000;
+        var context = await new LlmContextComposer(new IndexStore()).ComposeAsync(root, task, budget);
+        return JsonSerializer.Serialize(new { context.Task, context.Content, context.EstimatedTokens, context.Sources });
     }
 
     private static async Task<string> LlmProvidersAsync()
