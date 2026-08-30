@@ -74,6 +74,7 @@ internal sealed class McpServer
             Tool("arifce_handoff", "Create a semantic handoff from the current project state.", new { type = "object", properties = new { } })
             ,Tool("arifce_llm_providers", "List locally configured LLM providers without exposing API keys.", new { type = "object", properties = new { } })
             ,Tool("arifce_llm_run", "Run a local LLM task and persist canonical evidence; explicit approval is required.", new { type = "object", required = new[] { "task", "prompt", "approved" }, properties = new { task = new { type = "string" }, prompt = new { type = "string" }, claimId = new { type = "string" }, approved = new { type = "boolean" } } })
+            ,Tool("arifce_llm_review", "Run an approved local LLM reviewer for a claim and persist a review record.", new { type = "object", required = new[] { "claimId", "prompt", "reviewer", "rationale", "approved" }, properties = new { claimId = new { type = "string" }, prompt = new { type = "string" }, reviewer = new { type = "string" }, rationale = new { type = "string" }, approved = new { type = "boolean" } } })
             ,Tool("arifce_refactor_status", "Read a refactor campaign record.", new { type = "object", required = new[] { "id" }, properties = new { id = new { type = "string" } } })
             ,Tool("arifce_refactor_verify", "Run deterministic guards for a refactor campaign without finishing it.", new { type = "object", required = new[] { "id" }, properties = new { id = new { type = "string" } } })
         }
@@ -94,6 +95,7 @@ internal sealed class McpServer
             "arifce_handoff" => (await service.HandoffAsync(root)).Markdown,
             "arifce_llm_providers" => await LlmProvidersAsync(),
             "arifce_llm_run" => await LlmRunAsync(root, arguments),
+            "arifce_llm_review" => await LlmReviewAsync(root, arguments),
             "arifce_refactor_status" => await RefactorStatusAsync(root, arguments),
             "arifce_refactor_verify" => await RefactorVerifyAsync(service, root, arguments),
             _ => throw new McpException(-32602, $"Unknown tool: {name}")
@@ -146,6 +148,16 @@ internal sealed class McpServer
         var claim = arguments.TryGetProperty("claimId", out var claimValue) && claimValue.ValueKind == JsonValueKind.String ? claimValue.GetString()! : "CLAIM-UNASSIGNED";
         var result = await orchestrator.ExecuteAsync(root, new ArifCE.Core.LlmRequest(task, prompt), claim);
         return JsonSerializer.Serialize(new { provider = result.Route.Response.ProviderId, model = result.Route.Response.Model, tokens = result.Route.Response.Usage.TotalTokens, estimatedCost = result.Route.EstimatedCost, evidenceId = result.Evidence.Id, text = result.Route.Response.Text });
+    }
+
+    private static async Task<string> LlmReviewAsync(string root, JsonElement arguments)
+    {
+        if (!arguments.TryGetProperty("approved", out var approved) || approved.ValueKind != JsonValueKind.True) throw new McpException(-32602, "Explicit approved=true is required for reviewer execution.");
+        var profiles = (await new LocalLlmSettingsStore().ListAsync()).Where(p => p.Enabled).ToList();
+        if (profiles.Count == 0) throw new McpException(-32602, "No enabled local LLM providers are configured.");
+        var workflow = new LlmReviewerWorkflow(new LlmOrchestrator(new LlmRouter(profiles.Select(p => (LlmProviderFactory.Create(p), p))), new CanonicalStore(), new JournalStore(), new GitInspector()), new CanonicalStore());
+        var result = await workflow.RunAsync(root, Required(arguments, "claimId"), Required(arguments, "reviewer"), Required(arguments, "rationale"), Required(arguments, "prompt"), true);
+        return JsonSerializer.Serialize(new { evidenceId = result.Execution.Evidence.Id, provider = result.Execution.Route.Response.ProviderId, model = result.Execution.Route.Response.Model, review = "recorded" });
     }
 
     private string ProjectRoot() => locator.FindRoot(Environment.GetEnvironmentVariable("ARIFCE_PROJECT_ROOT") ?? Environment.CurrentDirectory);

@@ -7,7 +7,7 @@
   "mcp": {
     "command": "dotnet run --project src/ArifCE.Mcp/ArifCE.Mcp.csproj",
     "workingDirectory": "${workspaceFolder}",
-    "tools": ["arifce_status", "arifce_search", "arifce_context", "arifce_llm_providers", "arifce_llm_run"]
+    "tools": ["arifce_status", "arifce_search", "arifce_context", "arifce_llm_providers", "arifce_llm_run", "arifce_llm_review"]
   },
   "llm": {
     "settings": "%LOCALAPPDATA%/ArifCE/llm-providers.json",

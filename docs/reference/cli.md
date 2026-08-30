@@ -111,6 +111,7 @@ arifce llm provider test <id>
 arifce llm provider remove <id>
 arifce llm context <task> [--budget N]
 arifce llm run <task> <prompt> [--claim <id>] [--with-context] [--budget N]
+arifce llm review <claim> <prompt> --reviewer <name> --rationale <text> --approved
 ```
 
 `llm context` previews indexed repository memory under a token budget. `llm run --with-context` injects that bounded memory into the prompt automatically. Runs use enabled profiles with fallback and persist canonical evidence. API keys remain local and should be supplied through an environment variable or stdin.
