@@ -68,21 +68,27 @@ public sealed class JournalStore
         var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var line = JsonSerializer.Serialize(value, JournalOptions) + Environment.NewLine;
-        await File.AppendAllTextAsync(path, line, new UTF8Encoding(false), cancellationToken);
+        await using var stream = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, useAsync: true);
+        var bytes = Encoding.UTF8.GetBytes(line);
+        await stream.WriteAsync(bytes, cancellationToken);
+        await stream.FlushAsync(cancellationToken);
     }
 
     public async IAsyncEnumerable<JournalEvent> ReadAsync(string root, bool recovery = false, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
         if (!File.Exists(path)) yield break;
-        var lines = await File.ReadAllLinesAsync(path, cancellationToken);
-        for (var i = 0; i < lines.Length; i++)
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, useAsync: true);
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        var lineNumber = 0;
+        while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
-            if (string.IsNullOrWhiteSpace(lines[i])) continue;
+            lineNumber++;
+            if (string.IsNullOrWhiteSpace(line)) continue;
             JournalEvent? item;
-            try { item = JsonSerializer.Deserialize<JournalEvent>(lines[i], JournalOptions); }
-            catch (JsonException) when (recovery || i == lines.Length - 1) { continue; }
-            catch (JsonException exception) { throw new InvalidDataException($"Journal line {i + 1} is corrupt.", exception); }
+            try { item = JsonSerializer.Deserialize<JournalEvent>(line, JournalOptions); }
+            catch (JsonException) when (recovery || reader.Peek() == -1) { continue; }
+            catch (JsonException exception) { throw new InvalidDataException($"Journal line {lineNumber} is corrupt.", exception); }
             if (item is not null) yield return item;
         }
     }
