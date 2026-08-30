@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ArifCE.Core;
 using ArifCE.Infrastructure;
 
 var server = new McpServer();
@@ -71,6 +72,13 @@ internal sealed class McpServer
             Tool("arifce_search", "Search indexed project intelligence using explainable lexical matching.", new { type = "object", required = new[] { "query" }, properties = new { query = new { type = "string" }, limit = new { type = "integer", minimum = 1, maximum = 50 } } }),
             Tool("arifce_context", "Compose bounded repository context for an LLM task.", new { type = "object", required = new[] { "task" }, properties = new { task = new { type = "string" }, budget = new { type = "integer", minimum = 1, maximum = 20000 } } }),
             Tool("arifce_checkpoint", "Record a project checkpoint with an explicit summary.", new { type = "object", required = new[] { "summary" }, properties = new { summary = new { type = "string", minLength = 1 } } }),
+            Tool("arifce_task_create", "Create a tracked task in the canonical project store.", new { type = "object", required = new[] { "title" }, properties = new { title = new { type = "string" }, risk = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } } } }),
+            Tool("arifce_decision_create", "Record a project decision and its historical rationale.", new { type = "object", required = new[] { "title", "decision" }, properties = new { title = new { type = "string" }, decision = new { type = "string" }, historicalRationale = new { type = "string" } } }),
+            Tool("arifce_attempt_record", "Record a failed or rejected approach for an existing task.", new { type = "object", required = new[] { "taskId", "approach", "result", "reason" }, properties = new { taskId = new { type = "string" }, approach = new { type = "string" }, result = new { type = "string" }, reason = new { type = "string" } } }),
+            Tool("arifce_claim_create", "Create an explicit claim requiring evidence.", new { type = "object", required = new[] { "statement" }, properties = new { statement = new { type = "string" }, risk = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } } } }),
+            Tool("arifce_finding_create", "Record an actionable project finding.", new { type = "object", required = new[] { "title", "description" }, properties = new { title = new { type = "string" }, description = new { type = "string" }, severity = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } }, taskId = new { type = "string" }, path = new { type = "string" } } }),
+            Tool("arifce_review_record", "Record a review verdict for an existing claim.", new { type = "object", required = new[] { "claimId", "reviewer", "verdict", "summary" }, properties = new { claimId = new { type = "string" }, reviewer = new { type = "string" }, verdict = new { type = "string", @enum = new[] { "Agree", "PartiallyAgree", "Disagree", "Inconclusive" } }, summary = new { type = "string" } } }),
+            Tool("arifce_acceptance_create", "Accept a supported or verified claim with explicit human rationale.", new { type = "object", required = new[] { "claimId", "actor", "rationale" }, properties = new { claimId = new { type = "string" }, actor = new { type = "string" }, rationale = new { type = "string" } } }),
             Tool("arifce_handoff", "Create a semantic handoff from the current project state.", new { type = "object", properties = new { } })
             ,Tool("arifce_llm_providers", "List locally configured LLM providers without exposing API keys.", new { type = "object", properties = new { } })
             ,Tool("arifce_llm_run", "Run a local LLM task and persist canonical evidence; explicit approval is required.", new { type = "object", required = new[] { "task", "prompt", "approved" }, properties = new { task = new { type = "string" }, prompt = new { type = "string" }, claimId = new { type = "string" }, approved = new { type = "boolean" } } })
@@ -92,6 +100,13 @@ internal sealed class McpServer
             "arifce_search" => await SearchAsync(root, arguments),
             "arifce_context" => await ContextAsync(root, arguments),
             "arifce_checkpoint" => (await service.CheckpointAsync(root, Required(arguments, "summary"))).Id,
+            "arifce_task_create" => (await service.CreateTaskAsync(root, Required(arguments, "title"), Enum(arguments, "risk", RiskLevel.Medium))).Id,
+            "arifce_decision_create" => (await service.CreateDecisionAsync(root, Required(arguments, "title"), Required(arguments, "decision"), Optional(arguments, "historicalRationale"))).Id,
+            "arifce_attempt_record" => (await service.RecordAttemptAsync(root, Required(arguments, "taskId"), Required(arguments, "approach"), Required(arguments, "result"), Required(arguments, "reason"))).Id,
+            "arifce_claim_create" => (await service.CreateClaimAsync(root, Required(arguments, "statement"), Enum(arguments, "risk", RiskLevel.Medium))).Id,
+            "arifce_finding_create" => (await service.CreateFindingAsync(root, Required(arguments, "title"), Required(arguments, "description"), Enum(arguments, "severity", RiskLevel.Medium), Optional(arguments, "taskId"), Optional(arguments, "path"))).Id,
+            "arifce_review_record" => (await service.RecordReviewAsync(root, Required(arguments, "claimId"), Required(arguments, "reviewer"), Enum(arguments, "verdict", ReviewVerdict.Inconclusive), Required(arguments, "summary"), [])).Id,
+            "arifce_acceptance_create" => (await service.CreateAcceptanceAsync(root, Required(arguments, "claimId"), Required(arguments, "actor"), Required(arguments, "rationale"))).Id,
             "arifce_handoff" => (await service.HandoffAsync(root)).Markdown,
             "arifce_llm_providers" => await LlmProvidersAsync(),
             "arifce_llm_run" => await LlmRunAsync(root, arguments),
@@ -162,6 +177,8 @@ internal sealed class McpServer
 
     private string ProjectRoot() => locator.FindRoot(Environment.GetEnvironmentVariable("ARIFCE_PROJECT_ROOT") ?? Environment.CurrentDirectory);
     private static string Required(JsonElement value, string name) => value.ValueKind == JsonValueKind.Object && value.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(property.GetString()) ? property.GetString()! : throw new McpException(-32602, $"Missing required argument: {name}");
+    private static string? Optional(JsonElement value, string name) => value.ValueKind == JsonValueKind.Object && value.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String ? property.GetString() : null;
+    private static T Enum<T>(JsonElement value, string name, T fallback) where T : struct, System.Enum => Optional(value, name) is { } text && System.Enum.TryParse<T>(text, true, out var parsed) ? parsed : fallback;
     private static object Tool(string name, string description, object schema) => new { name, description, inputSchema = schema };
     private static object Error(JsonElement? id, int code, string message) => new { jsonrpc = "2.0", id, error = new { code, message } };
     private static async Task WriteAsync(TextWriter output, object value) { await output.WriteLineAsync(JsonSerializer.Serialize(value)); await output.FlushAsync(); }

@@ -4,7 +4,7 @@ V0.3 introduces an optional local-first MCP adapter. The CLI and filesystem rema
 
 The server will use stdio JSON-RPC transport and resolve the project root from its configured working directory. It will call the same application services as the CLI and will never create a second canonical store. Canonical Markdown/JSON/JSONL under `.arifce/` remains authoritative; SQLite remains derived and rebuildable.
 
-Initial tools are intentionally narrow: `arifce_status`, `arifce_search`, `arifce_checkpoint`, `arifce_handoff`, `arifce_refactor_status`, and `arifce_refactor_verify`. Shell-backed verification and refactor mutation tools require explicit follow-up acceptance criteria because they can execute commands or change lifecycle state.
+The MCP surface includes read tools and typed canonical writes for tasks, decisions, attempts, claims, findings, reviews, acceptances, and checkpoints, alongside status/search/context/handoff and refactor inspection. Shell-backed verification and refactor mutation tools remain outside the surface because they can execute commands or change lifecycle state.
 
 Safety boundaries:
 

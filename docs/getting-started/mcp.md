@@ -19,4 +19,4 @@ dotnet tool install --global ArifCE.Dashboard --version 0.5.0
 arifce-dashboard
 ```
 
-The server advertises six initial tools: `arifce_status`, `arifce_search`, `arifce_checkpoint`, `arifce_handoff`, `arifce_refactor_status`, and `arifce_refactor_verify`. They operate on the same canonical `.arifce/` files used by the CLI. Shell command execution, external review invocation, and cloud synchronization are intentionally not exposed.
+The server exposes read tools plus typed canonical write tools: `arifce_status`, `arifce_search`, `arifce_context`, `arifce_checkpoint`, `arifce_task_create`, `arifce_decision_create`, `arifce_attempt_record`, `arifce_claim_create`, `arifce_finding_create`, `arifce_review_record`, `arifce_acceptance_create`, `arifce_handoff`, and refactor inspection tools. They operate on the same canonical `.arifce/` files used by the CLI. Shell command execution, external review invocation, and cloud synchronization are intentionally not exposed; acceptance remains guarded by current evidence and open high-severity findings.
