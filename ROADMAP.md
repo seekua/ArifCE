@@ -71,7 +71,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 ### Independent technical review (2026-08-30)
 
-The external review was cross-checked against the current `master` tree. Two concrete findings were applied: user search input is normalized into a safe FTS5 literal query (preventing syntax errors from punctuation such as `-`, `:`, and parentheses), and canonical redaction now covers common provider tokens, credential assignments, and credential-bearing connection strings. Both changes are covered by the behavior suite (43 tests passing).
+The external review was cross-checked against the current `master` tree. Three concrete findings are now applied: user search input is normalized into a safe FTS5 literal query (preventing syntax errors from punctuation such as `-`, `:`, and parentheses); canonical redaction covers common provider tokens, credential assignments, and credential-bearing connection strings; and new record IDs reserve an atomic `.reserve` marker, use unique temporary files, and never silently overwrite a competing create. These changes are covered by the behavior suite (including the concurrent-create test).
 
 The review's larger recommendations remain deliberately scoped rather than silently treated as complete. Atomic/merge-safe record IDs, richer retrieval ranking and full-record budgeting, named verification checks, MCP mutation coverage, incremental index/journal rotation, NativeAOT/npm distribution, OKF migration, and empirical A/B value measurement require separate owner-approved phases. The review's requests to remove localized READMEs, dashboard, LLM platform, or benchmark are product-direction opinions and conflict with the current owner-approved scope; they are not adopted.
 

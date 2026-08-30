@@ -26,6 +26,20 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Concurrent_record_creation_reserves_distinct_ids_without_overwriting()
+    {
+        await Service.InitializeAsync(root, false);
+        var ids = await Task.WhenAll(Enumerable.Range(0, 16).Select(async number =>
+        {
+            var id = canonical.NextId(root, "tasks", "TASK");
+            await canonical.WriteAsync(root, "tasks", id, new { id, number });
+            return id;
+        }));
+        Assert.Equal(ids.Length, ids.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.Equal(ids.Length, Directory.EnumerateFiles(Path.Combine(root, ".arifce", "tasks"), "task-*.json").Count());
+    }
+
+    [Fact]
     public async Task Adoption_reports_observation_without_inventing_rationale()
     {
         await File.WriteAllTextAsync(Path.Combine(root, "README.md"), "Existing"); await Service.InitializeAsync(root, true);

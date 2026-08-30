@@ -132,9 +132,11 @@ public sealed class CanonicalStore
         var folder = Path.Combine(root, ".arifce", directory);
         Directory.CreateDirectory(folder);
         var target = Path.Combine(folder, id.ToLowerInvariant() + ".json");
-        var temporary = target + ".tmp";
+        var reservation = target + ".reserve";
+        var temporary = target + $".{Guid.NewGuid():N}.tmp";
         await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(value, JsonDefaults.Options), new UTF8Encoding(false), cancellationToken);
-        File.Move(temporary, target, true);
+        try { File.Move(temporary, target, true); if (File.Exists(reservation)) File.Delete(reservation); }
+        finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
 
     public async Task<T?> ReadAsync<T>(string root, string directory, string id, CancellationToken cancellationToken = default)
@@ -147,9 +149,19 @@ public sealed class CanonicalStore
     public string NextId(string root, string directory, string prefix)
     {
         var folder = Path.Combine(root, ".arifce", directory);
-        if (!Directory.Exists(folder)) return $"{prefix}-0001";
-        var maximum = Directory.EnumerateFiles(folder, $"{prefix.ToLowerInvariant()}-*.json").Select(Path.GetFileNameWithoutExtension).Select(x => int.TryParse(x?[(prefix.Length + 1)..], out var n) ? n : 0).DefaultIfEmpty().Max();
-        return $"{prefix}-{maximum + 1:0000}";
+        Directory.CreateDirectory(folder);
+        var prefixPattern = prefix.ToLowerInvariant() + "-";
+        var maximum = Directory.EnumerateFiles(folder, $"{prefixPattern}*.json*")
+            .Select(path => Path.GetFileName(path)?.Split('.')[0])
+            .Select(x => int.TryParse(x?[(prefix.Length + 1)..], out var n) ? n : 0)
+            .DefaultIfEmpty().Max();
+        for (var number = maximum + 1; ; number++)
+        {
+            var id = $"{prefix}-{number:0000}";
+            var reservation = Path.Combine(folder, id.ToLowerInvariant() + ".json.reserve");
+            try { using var _ = new FileStream(reservation, FileMode.CreateNew, FileAccess.Write, FileShare.None); return id; }
+            catch (IOException) { }
+        }
     }
 }
 
