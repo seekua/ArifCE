@@ -17,13 +17,19 @@ var git = new GitInspector();
 var service = new ProjectService(canonical, journal, index, git);
 var workspace = new WorkspaceRegistry();
 
-app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", DashboardPageV2.ExecutiveSummaryScript + DashboardPageV2.ExtraScript + DashboardPageV2.DecisionBriefScript + DashboardPageV2.WorkScript + DashboardPageV2.HandoffScript + DashboardPageV2.ExplorerScript + DashboardPageV2.WorkspaceScript + DashboardPageV2.LlmScript + "</body>"), "text/html; charset=utf-8"));
+app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", DashboardPageV2.ExecutiveSummaryScript + DashboardPageV2.ExtraScript + DashboardPageV2.DecisionBriefScript + DashboardPageV2.WorkScript + DashboardPageV2.HandoffScript + DashboardPageV2.ExplorerScript + DashboardPageV2.WorkspaceScript + DashboardPageV2.LlmScript + DashboardPageV2.ProviderScript + "</body>"), "text/html; charset=utf-8"));
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
 app.MapGet("/api/workspace", async () => Results.Json(await workspace.ListAsync()));
 app.MapGet("/api/workspace/active", async () => Results.Json(new { root = await workspace.GetActiveAsync() }));
 app.MapGet("/api/llm/providers", async () => Results.Json((await new LocalLlmSettingsStore().ListAsync()).Select(p => new { p.Id, provider = p.Provider.ToString(), p.Model, p.Endpoint, p.Enabled, runtime = p.RuntimeMode.ToString() })));
+app.MapPost("/api/llm/providers/{id}/test", async (string id) =>
+{
+    var profile = (await new LocalLlmSettingsStore().ListAsync()).FirstOrDefault(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+    if (profile is null) return Results.NotFound(new { error = "Provider profile not found." });
+    return Results.Json(await LlmProviderFactory.Create(profile).TestConnectionAsync());
+});
 app.MapPost("/api/workspace/active", async (WorkspaceSelection selection) =>
 {
     try { return Results.Json(new { root = await workspace.SetActiveAsync(selection.Root) }); }
