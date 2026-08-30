@@ -89,6 +89,8 @@ public sealed class BehaviorTests : IDisposable
     {
         Assert.True(ClaimTransitions.IsAllowed(ClaimStatus.Verified, ClaimStatus.Stale));
         Assert.False(ClaimTransitions.IsAllowed(ClaimStatus.Verified, ClaimStatus.Unverified));
+        Assert.True(ClaimTransitions.IsAllowed(ClaimStatus.Supported, ClaimStatus.Disputed));
+        Assert.True(ClaimTransitions.IsAllowed(ClaimStatus.Disputed, ClaimStatus.Supported));
     }
 
     [Fact]
