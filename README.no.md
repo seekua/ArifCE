@@ -142,3 +142,12 @@ arifce llm run review "Check the migration for data-loss risk" --with-context --
 ```
 
 Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](docs/reference/LLM-PROVIDERS.md).
+### From source
+
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```

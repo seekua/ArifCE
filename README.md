@@ -86,6 +86,14 @@ The core separates domain rules, canonical storage and indexing, Git observation
 
 V0.6.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
 
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```
+
 The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
 
 For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
