@@ -318,6 +318,13 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
             if (currentLength > 32000) findings.Add($"CURRENT.md exceeds the hard 8,000-token safety limit ({currentLength} characters); move historical detail to checkpoints.");
             else if (currentLength > 16000) findings.Add($"CURRENT.md exceeds the soft 4,000-token warning ({currentLength} characters); keep active state concise.");
         }
+        var journalPath = Path.Combine(store, "journal", "events.jsonl");
+        if (File.Exists(journalPath))
+        {
+            var journalLength = new FileInfo(journalPath).Length;
+            if (journalLength > 50_000_000) findings.Add($"Journal exceeds 50 MB ({journalLength:N0} bytes); archive or rotate historical events before rebuilding.");
+            else if (journalLength > 10_000_000) findings.Add($"Journal exceeds 10 MB ({journalLength:N0} bytes); plan rotation or archival.");
+        }
         var health = findings.Count == 0 ? "Doctor: healthy" : "Doctor findings:\n- " + string.Join("\n- ", findings);
         return repairSummary is null ? health : repairSummary + Environment.NewLine + health;
     }
