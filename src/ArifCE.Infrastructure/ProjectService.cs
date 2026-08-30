@@ -225,7 +225,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     public async Task<HandoffRecord> HandoffAsync(string root, CancellationToken cancellationToken = default)
     {
         var snapshot = await git.CaptureAsync(root, cancellationToken);
-        var current = await File.ReadAllTextAsync(Path.Combine(root, ".arifce", "CURRENT.md"), cancellationToken);
+        var current = await BoundedCurrentAsync(root, cancellationToken);
         var tasks = await LatestJsonAsync(root, "tasks", cancellationToken); var decisions = await LatestJsonAsync(root, "decisions", cancellationToken); var attempts = await LatestJsonAsync(root, "attempts", cancellationToken); var checkpoints = await LatestJsonAsync(root, "checkpoints", cancellationToken); var claims = await LatestJsonAsync(root, "claims", cancellationToken); var evidence = await LatestJsonAsync(root, "evidence", cancellationToken); var findings = await LatestJsonAsync(root, "findings", cancellationToken); var reviews = await LatestJsonAsync(root, "reviews", cancellationToken);
         var markdown = $"# Handoff\n\n## Current State\n\n{current}\n\n## Latest Task\n\n{tasks}\n\n## Latest Decision\n\n{decisions}\n\n## Latest Failed Attempt\n\n{attempts}\n\n## Latest Checkpoint\n\n{checkpoints}\n\n## Latest Claim\n\n{claims}\n\n## Latest Evidence\n\n{evidence}\n\n## Latest Finding\n\n{findings}\n\n## Latest Review\n\n{reviews}\n\n## Git State\n\n- Branch: {snapshot.Branch ?? "unknown"}\n- Commit: {snapshot.Commit ?? "none"}\n- Dirty: {snapshot.IsDirty}\n- Modified files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles))}\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n";
         var id = canonical.NextId(root, "handoffs", "HANDOFF"); var item = new HandoffRecord(1, id, markdown, snapshot, DateTimeOffset.UtcNow);
@@ -311,6 +311,13 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
             if (result is not null) { await index.RebuildAsync(root, cancellationToken); repairSummary = $"Repaired journal: kept {result.Value.Kept}, removed {result.Value.Removed}, backup {result.Value.BackupPath}"; findings.RemoveAll(x => x.StartsWith("CORRUPT Journal line", StringComparison.Ordinal)); }
         }
         if (!File.Exists(Path.Combine(store, "index", "arifce.db"))) findings.Add("MISSING derived index; run 'arifce rebuild'.");
+        var currentPath = Path.Combine(store, "CURRENT.md");
+        if (File.Exists(currentPath))
+        {
+            var currentLength = (await File.ReadAllTextAsync(currentPath, cancellationToken)).Length;
+            if (currentLength > 32000) findings.Add($"CURRENT.md exceeds the hard 8,000-token safety limit ({currentLength} characters); move historical detail to checkpoints.");
+            else if (currentLength > 16000) findings.Add($"CURRENT.md exceeds the soft 4,000-token warning ({currentLength} characters); keep active state concise.");
+        }
         var health = findings.Count == 0 ? "Doctor: healthy" : "Doctor findings:\n- " + string.Join("\n- ", findings);
         return repairSummary is null ? health : repairSummary + Environment.NewLine + health;
     }
@@ -320,7 +327,25 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     private static string ToTitle(string text) => string.Join(' ', text.Split('-', StringSplitOptions.RemoveEmptyEntries).Select(x => char.ToUpperInvariant(x[0]) + x[1..]));
     private static async Task CreateAsync(string path, string content, List<string> created, CancellationToken ct) { if (File.Exists(path)) return; Directory.CreateDirectory(Path.GetDirectoryName(path)!); await File.WriteAllTextAsync(path, content, new UTF8Encoding(false), ct); created.Add(path); }
     private static async Task<string> AdoptionDraftAsync(string root, CancellationToken ct) { var files = Directory.EnumerateFiles(root, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Where(x => x is not null && x != ".git").Order(StringComparer.OrdinalIgnoreCase).ToArray(); await Task.CompletedTask; return $"# Project\n\n## Observed repository files\n\n{string.Join('\n', files.Select(x => $"- {x}"))}\n\n## Historical rationale\n\nUnknown. No rationale is inferred from structure alone.\n"; }
-    private static async Task<string> LatestJsonAsync(string root, string dir, CancellationToken ct) { var folder = Path.Combine(root, ".arifce", dir); var file = Directory.Exists(folder) ? Directory.EnumerateFiles(folder, "*.json").OrderDescending().FirstOrDefault() : null; return file is null ? "None recorded." : Truncate(await File.ReadAllTextAsync(file, ct), 1600); }
+    private static async Task<string> LatestJsonAsync(string root, string dir, CancellationToken ct)
+    {
+        var folder = Path.Combine(root, ".arifce", dir); var file = Directory.Exists(folder) ? Directory.EnumerateFiles(folder, "*.json").OrderDescending().FirstOrDefault() : null;
+        if (file is null) return "None recorded.";
+        try
+        {
+            using var document = JsonDocument.Parse(await File.ReadAllTextAsync(file, ct));
+            var fields = new[] { "id", "title", "statement", "summary", "description", "status", "result", "reason", "kind", "claimId", "reviewer" }
+                .Where(name => document.RootElement.TryGetProperty(name, out var value) && value.ValueKind is not JsonValueKind.Null)
+                .Select(name => $"{name}: {document.RootElement.GetProperty(name).ToString()}");
+            return string.Join("; ", fields) is { Length: > 0 } summary ? summary : "Record has no summary fields.";
+        }
+        catch (JsonException) { return "Latest record is malformed JSON; inspect the canonical file."; }
+    }
+    private static async Task<string> BoundedCurrentAsync(string root, CancellationToken ct)
+    {
+        var path = Path.Combine(root, ".arifce", "CURRENT.md"); var text = await File.ReadAllTextAsync(path, ct);
+        return text.Length <= 32000 ? text : text[..32000] + "\n\n> CURRENT.md was truncated in this handoff at the configured hard limit. Move historical detail to checkpoints.\n";
+    }
     private static bool IsTextFile(string path) => new[] { ".cs", ".md", ".json", ".xml", ".yml", ".yaml", ".txt" }.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
     private static string Truncate(string value, int length) => value.Length <= length ? value : value[..length] + "…";
     private static async Task<(int ExitCode, string Output)> RunCommandAsync(string root, string command, CancellationToken ct) { var shell = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh"; var args = OperatingSystem.IsWindows() ? $"/d /s /c \"{command}\"" : $"-c \"{command.Replace("\"", "\\\"")}\""; using var p = new Process { StartInfo = new ProcessStartInfo(shell, args) { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true } }; p.Start(); var stdout = await p.StandardOutput.ReadToEndAsync(ct); var stderr = await p.StandardError.ReadToEndAsync(ct); await p.WaitForExitAsync(ct); return (p.ExitCode, stdout + stderr); }
