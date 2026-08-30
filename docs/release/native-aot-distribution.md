@@ -18,4 +18,4 @@ NativeAOT is a planned distribution channel for the CLI, not a claim that the cu
 4. Run the packaged binary smoke test against a temporary Git repository.
 5. Document any trimming roots or source-generation changes required.
 
-The current repository has not enabled `PublishAot`; no release binary is advertised until these checks pass.
+The current repository has not enabled `PublishAot`; no release binary is advertised until these checks pass. A Windows `win-x64` probe was run on 2026-08-31 and correctly failed closed: trimming/AOT diagnostics identify reflection-based `System.Text.Json` serialization, the flexible enum converter, and runtime assembly inspection in `ApiSurfaceAnalyzer` as requiring source-generation or explicit dynamic-access annotations. This is recorded as a technical blocker, not suppressed with warning disables.
