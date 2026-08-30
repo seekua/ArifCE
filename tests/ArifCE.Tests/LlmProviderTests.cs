@@ -73,6 +73,15 @@ public sealed class LlmProviderTests
     }
 
     [Fact]
+    public async Task Router_prefers_task_selected_provider()
+    {
+        var first = new StubProvider("first", false); var preferred = new StubProvider("preferred", false);
+        var result = await new LlmRouter(new[] { (first.Provider, first.Profile), (preferred.Provider, preferred.Profile) }).CompleteAsync(new LlmRequest("review", "hello"), "preferred");
+        Assert.Equal("preferred", result.Response.ProviderId);
+        Assert.Equal("preferred", result.AttemptedProviders[0]);
+    }
+
+    [Fact]
     public async Task Orchestrator_persists_llm_response_as_canonical_evidence()
     {
         var root = Directory.CreateTempSubdirectory("arifce-llm-");
