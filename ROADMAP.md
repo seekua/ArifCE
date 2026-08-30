@@ -69,7 +69,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 ## Explicit deferrals
 
-- **Post-V0.7 local LLM platform:** completed and verified by remote CI run [33308852224](https://github.com/seekua/ArifCE/actions/runs/33308852224) at commit `e6afd00`; see [verification checklist](docs/release/llm-platform-checklist.md).
+- **Post-V0.7 local LLM platform:** completed and verified by remote CI run [33311981481](https://github.com/seekua/ArifCE/actions/runs/33311981481) at commit `253b160`; see [verification checklist](docs/release/llm-platform-checklist.md).
 
 - **Local LLM provider platform:** OpenAI, Anthropic, Gemini, OpenRouter, Ollama, and LM Studio adapters, local profile storage, fallback/task routing, connection tests, token/cost accounting, canonical response evidence, explicit reviewer approval, dashboard model/cost projections, local embedding selection, approved MCP execution, and local A2A handoffs are implemented and tested. Hosted vector stores, vendor notifications, issue automation, and full IDE-native extensions remain opt-in integrations.
 
