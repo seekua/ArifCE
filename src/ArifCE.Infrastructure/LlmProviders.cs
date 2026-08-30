@@ -19,6 +19,8 @@ public sealed class LocalLlmSettingsStore
     }
     public async Task UpsertAsync(LlmProviderProfile profile, CancellationToken cancellationToken = default)
     {
+        var errors = LlmProviderValidation.Validate(profile);
+        if (errors.Count > 0) throw new ArgumentException(string.Join(" ", errors));
         var items = (await ListAsync(cancellationToken)).Where(x => !string.Equals(x.Id, profile.Id, StringComparison.OrdinalIgnoreCase)).Append(profile).ToList();
         Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
         await File.WriteAllTextAsync(_path, JsonSerializer.Serialize(items, JsonDefaults.Options), new UTF8Encoding(false), cancellationToken);

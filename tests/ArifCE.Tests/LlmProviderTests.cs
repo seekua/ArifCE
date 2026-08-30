@@ -26,6 +26,13 @@ public sealed class LlmProviderTests
     }
 
     [Fact]
+    public void Provider_validation_rejects_cloud_profile_without_secret()
+    {
+        var errors = LlmProviderValidation.Validate(new LlmProviderProfile("cloud", LlmProviderKind.OpenAI, "gpt", null, null));
+        Assert.Contains(errors, e => e.Contains("API key", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task OpenAi_compatible_adapter_parses_completion_and_usage()
     {
         var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
