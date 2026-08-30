@@ -110,7 +110,7 @@ arifce llm provider add <id> <kind> <model> [--endpoint <url>] [--api-key-env <n
 arifce llm provider test <id>
 arifce llm provider remove <id>
 arifce llm context <task> [--budget N]
-arifce llm run <task> <prompt> [--claim <id>]
+arifce llm run <task> <prompt> [--claim <id>] [--with-context] [--budget N]
 ```
 
-`llm context` previews indexed repository memory under a token budget. `llm run` uses enabled profiles with fallback and persists canonical evidence. API keys remain local and should be supplied through an environment variable or stdin.
+`llm context` previews indexed repository memory under a token budget. `llm run --with-context` injects that bounded memory into the prompt automatically. Runs use enabled profiles with fallback and persist canonical evidence. API keys remain local and should be supplied through an environment variable or stdin.
