@@ -20,6 +20,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Handoffs](concepts/handoffs.md)
 - [Comparison](COMPARISON.md)
 - [Product evidence](EVIDENCE.md)
+- [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Refactor campaigns](concepts/refactor-campaigns.md)
 
 ## Build and integrate
