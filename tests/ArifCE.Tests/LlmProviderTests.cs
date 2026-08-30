@@ -38,6 +38,22 @@ public sealed class LlmProviderTests
     }
 
     [Fact]
+    public async Task Anthropic_adapter_parses_usage()
+    {
+        var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"content\":[{\"text\":\"ok\"}],\"usage\":{\"input_tokens\":7,\"output_tokens\":4}}") });
+        var response = await new AnthropicProvider(new LlmProviderProfile("anthropic", LlmProviderKind.Anthropic, "claude", "https://provider.test/v1", "secret"), new HttpClient(handler)).CompleteAsync(new LlmRequest("review", "hello"));
+        Assert.Equal(11, response.Usage.TotalTokens);
+    }
+
+    [Fact]
+    public async Task Gemini_adapter_parses_usage()
+    {
+        var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"ok\"}]}}],\"usageMetadata\":{\"promptTokenCount\":6,\"candidatesTokenCount\":3}}") });
+        var response = await new GeminiProvider(new LlmProviderProfile("gemini", LlmProviderKind.Gemini, "gemini", "https://provider.test/v1beta", "secret"), new HttpClient(handler)).CompleteAsync(new LlmRequest("review", "hello"));
+        Assert.Equal(9, response.Usage.TotalTokens);
+    }
+
+    [Fact]
     public async Task Router_falls_back_and_calculates_estimated_cost()
     {
         var failing = new StubProvider("first", true);
