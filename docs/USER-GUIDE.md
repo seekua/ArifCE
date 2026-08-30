@@ -143,6 +143,8 @@ arifce rebuild
 
 ## Local LLM providers
 
+The dashboard opens with a **Daily engineering brief** and an **Agent activity timeline**. The brief surfaces the latest canonical change, open work, open risk, and the next signal; the timeline shows which agent or repository event changed which record. These are projections of canonical memory, not a second source of truth.
+
 Configure local provider profiles with `arifce llm provider add`, test them with `arifce llm provider test`, and run a task with `arifce llm run`. Enabled profiles are tried in order with fallback; each successful run stores provider, model, token usage, cost estimate, and Git snapshot as canonical evidence. See [LLM provider reference](reference/LLM-PROVIDERS.md). Reviewer execution requires explicit local approval.
 
 ## MCP and dashboard
