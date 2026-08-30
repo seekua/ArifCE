@@ -47,6 +47,9 @@ public sealed class BehaviorTests : IDisposable
         await Service.InitializeAsync(root, false); await canonical.WriteAsync(root, "decisions", "ADR-0001", new { schemaVersion = 1, id = "ADR-0001", rationale = "Use deterministic lexical retrieval" }); await index.RebuildAsync(root);
         Assert.Contains(await index.SearchAsync(root, "deterministic"), x => x.Path.Contains("adr-0001", StringComparison.Ordinal));
         var redacted = new SecretRedactor().Redact("password=hunter2 Authorization: Bearer abc.def.ghi"); Assert.Equal(2, redacted.Count); Assert.DoesNotContain("hunter2", redacted.Text); Assert.DoesNotContain("abc.def.ghi", redacted.Text);
+        var expanded = new SecretRedactor().Redact("access_token=refresh secret ghp_12345678901234567890 postgres://user:pass@example.test/db");
+        Assert.Equal(3, expanded.Count); Assert.DoesNotContain("ghp_12345678901234567890", expanded.Text); Assert.DoesNotContain("user:pass", expanded.Text);
+        Assert.NotEmpty(await index.SearchAsync(root, "auth-service (cache)"));
     }
 
     [Fact]

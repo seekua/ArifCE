@@ -69,7 +69,13 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 ## Explicit deferrals
 
-- **Post-V0.7 local LLM platform:** completed and verified by remote CI run [33311981481](https://github.com/seekua/ArifCE/actions/runs/33311981481) at commit `253b160`; see [verification checklist](docs/release/llm-platform-checklist.md).
+### Independent technical review (2026-08-30)
+
+The external review was cross-checked against the current `master` tree. Two concrete findings were applied: user search input is normalized into a safe FTS5 literal query (preventing syntax errors from punctuation such as `-`, `:`, and parentheses), and canonical redaction now covers common provider tokens, credential assignments, and credential-bearing connection strings. Both changes are covered by the behavior suite (43 tests passing).
+
+The review's larger recommendations remain deliberately scoped rather than silently treated as complete. Atomic/merge-safe record IDs, richer retrieval ranking and full-record budgeting, named verification checks, MCP mutation coverage, incremental index/journal rotation, NativeAOT/npm distribution, OKF migration, and empirical A/B value measurement require separate owner-approved phases. The review's requests to remove localized READMEs, dashboard, LLM platform, or benchmark are product-direction opinions and conflict with the current owner-approved scope; they are not adopted.
+
+- **Post-V0.7 local LLM platform:** completed and verified by remote CI run [33311981481](https://github.com/seekua/ArifCE/actions/runs/33311981481) at commit `253b160`; see [verification checklist](docs/release/llm-platform-checklist.md). 
 
 - **Local LLM provider platform:** OpenAI, Anthropic, Gemini, OpenRouter, Ollama, and LM Studio adapters, local profile storage, fallback/task routing, connection tests, token/cost accounting, canonical response evidence, explicit reviewer approval, dashboard model/cost projections, local embedding selection, approved MCP execution, and local A2A handoffs are implemented and tested. Hosted vector stores, vendor notifications, issue automation, and full IDE-native extensions remain opt-in integrations.
 

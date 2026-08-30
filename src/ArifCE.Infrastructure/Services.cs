@@ -161,6 +161,12 @@ public sealed partial class SecretRedactor
     private static partial Regex BearerPattern();
     [GeneratedRegex(@"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----")]
     private static partial Regex PrivateKeyPattern();
+    [GeneratedRegex(@"(?i)\b(?:AKIA|ASIA)[A-Z0-9]{16}\b|\bgh[pousr]_[A-Za-z0-9_]{20,}\b|\bsk-(?:proj-)?[A-Za-z0-9_-]{16,}\b|\bxox[baprs]-[A-Za-z0-9-]{16,}\b|\bglpat-[A-Za-z0-9_-]{16,}\b|\bAIza[A-Za-z0-9_-]{20,}\b")]
+    private static partial Regex ProviderTokenPattern();
+    [GeneratedRegex(@"(?i)\b(?:access[_-]?token|refresh[_-]?token|credential|auth|passwd|private[_-]?key)\s*[=:]\s*([^\s;]+)")]
+    private static partial Regex CredentialAssignmentPattern();
+    [GeneratedRegex(@"\b[A-Za-z][A-Za-z0-9+.-]*://[^\s:/]+:[^\s@/]+@[^\s]+")]
+    private static partial Regex ConnectionStringPattern();
 
     public (string Text, int Count) Redact(string input)
     {
@@ -169,6 +175,9 @@ public sealed partial class SecretRedactor
         var text = AssignmentPattern().Replace(input, m => Replace(m, $"{m.Groups[1].Value}=[REDACTED]"));
         text = BearerPattern().Replace(text, m => Replace(m, "Bearer [REDACTED]"));
         text = PrivateKeyPattern().Replace(text, m => Replace(m, "[REDACTED PRIVATE KEY]"));
+        text = CredentialAssignmentPattern().Replace(text, m => Replace(m, $"{m.Value[..m.Value.IndexOfAny(['=', ':'])]}=[REDACTED]"));
+        text = ProviderTokenPattern().Replace(text, m => Replace(m, "[REDACTED TOKEN]"));
+        text = ConnectionStringPattern().Replace(text, m => Replace(m, "[REDACTED CONNECTION STRING]"));
         return (text, count);
     }
 }
@@ -206,11 +215,23 @@ public sealed class IndexStore
         await connection.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT path, snippet(search,3,'[',']',' … ',20), bm25(search) FROM search WHERE search MATCH $query ORDER BY bm25(search), path LIMIT $limit";
-        command.Parameters.AddWithValue("$query", query); command.Parameters.AddWithValue("$limit", limit);
+        command.Parameters.AddWithValue("$query", ToSafeQuery(query)); command.Parameters.AddWithValue("$limit", limit);
         var results = new List<(string, string, double)>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken)) results.Add((reader.GetString(0), reader.GetString(1), reader.GetDouble(2)));
         return results;
+    }
+
+    private static string ToSafeQuery(string query)
+    {
+        var terms = System.Text.RegularExpressions.Regex.Matches(query ?? string.Empty, "[A-Za-z0-9_]+", System.Text.RegularExpressions.RegexOptions.CultureInvariant)
+            .Select(match => match.Value)
+            .Where(value => value.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(32)
+            .Select(value => $"\"{value.Replace("\"", "\"\"")}\"")
+            .ToArray();
+        return terms.Length == 0 ? "\"\"" : string.Join(" OR ", terms);
     }
 
     private static bool IsCanonical(string path) => !path.Contains($"{Path.DirectorySeparatorChar}index{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) && !path.Contains($"{Path.DirectorySeparatorChar}cache{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) && !path.Contains($"{Path.DirectorySeparatorChar}raw{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) && (path.EndsWith(".md", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
