@@ -221,13 +221,13 @@ public sealed class IndexStore
         }
     }
 
-    public async Task<IReadOnlyList<(string Path, string Snippet, double Score)>> SearchAsync(string root, string query, int limit = 20, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<(string Path, string Snippet, double Score)>> SearchAsync(string root, string query, int limit = 20, CancellationToken cancellationToken = default, int snippetTokens = 20)
     {
         await using var connection = new SqliteConnection(ConnectionString(root));
         await connection.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT path, snippet(search,3,'[',']',' … ',20), bm25(search) FROM search WHERE search MATCH $query ORDER BY bm25(search), path LIMIT $limit";
-        command.Parameters.AddWithValue("$query", ToSafeQuery(query)); command.Parameters.AddWithValue("$limit", limit);
+        command.CommandText = "SELECT path, snippet(search,3,'[',']',' … ',$snippetTokens), bm25(search) FROM search WHERE search MATCH $query ORDER BY bm25(search), path LIMIT $limit";
+        command.Parameters.AddWithValue("$query", ToSafeQuery(query)); command.Parameters.AddWithValue("$limit", limit); command.Parameters.AddWithValue("$snippetTokens", Math.Clamp(snippetTokens, 8, 160));
         var results = new List<(string, string, double)>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken)) results.Add((reader.GetString(0), reader.GetString(1), reader.GetDouble(2)));
@@ -236,9 +236,11 @@ public sealed class IndexStore
 
     private static string ToSafeQuery(string query)
     {
+        var stopWords = new HashSet<string>(["a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is", "it", "of", "on", "or", "the", "to", "with"], StringComparer.OrdinalIgnoreCase);
         var terms = System.Text.RegularExpressions.Regex.Matches(query ?? string.Empty, "[A-Za-z0-9_]+", System.Text.RegularExpressions.RegexOptions.CultureInvariant)
             .Select(match => match.Value)
             .Where(value => value.Length > 0)
+            .Where(value => !stopWords.Contains(value) || value.Length > 3)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(32)
             .Select(value => $"\"{value.Replace("\"", "\"\"")}\"")
