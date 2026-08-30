@@ -32,7 +32,7 @@ arifce llm provider remove openai
 arifce llm run review "Check the migration for data-loss risk" --claim CLAIM-0007
 ```
 
-Task routes can prefer a provider while preserving fallback behavior through `LlmTaskRouter`. Local policy evaluation can require human approval, restrict providers, or cap estimated cost before a caller executes a route. `LlmBenchmark` provides deterministic token, latency, cost, and lexical similarity measurements; benchmark results are not effectiveness claims until repeatable runs are published.
+Task routes can prefer a provider while preserving fallback behavior through `LlmTaskRouter`. Local policy evaluation can require human approval, restrict providers, or cap estimated cost before a caller executes a route. `LlmBenchmark` provides deterministic token, latency, cost, and lexical `TokenRecall` measurements. `Passed` means only that at least 80% of expected words were present; it is a smoke-test signal, not semantic quality or an effectiveness claim.
 
 ## Boundaries
 

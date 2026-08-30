@@ -117,4 +117,4 @@ arifce llm benchmark <prompt> --expected <text>
 
 `llm context` previews indexed repository memory under a token budget. `llm run --with-context` injects that bounded memory into the prompt automatically. Runs use enabled profiles with fallback and persist canonical evidence. API keys remain local and should be supplied through an environment variable or stdin.
 
-`llm benchmark` runs a deterministic comparison case and reports provider, pass/fail similarity, latency, tokens, and estimated cost.
+`llm benchmark` runs a deterministic comparison case and reports provider, expected-token recall (`TokenRecall`), latency, tokens, and estimated cost. The pass threshold is a coarse smoke-test threshold, not a quality score.

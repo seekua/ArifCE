@@ -22,7 +22,12 @@ public sealed class LocalPolicyEngine
 }
 
 public sealed record BenchmarkCase(string Id, string Prompt, string Expected, string? ProviderId = null);
-public sealed record BenchmarkResult(string CaseId, string ProviderId, bool Passed, double Similarity, TimeSpan Latency, int Tokens, decimal EstimatedCost);
+/// <summary>A smoke-test result. TokenRecall is expected-token coverage, not semantic quality.</summary>
+public sealed record BenchmarkResult(string CaseId, string ProviderId, double TokenRecall, TimeSpan Latency, int Tokens, decimal EstimatedCost)
+{
+    public bool Passed => TokenRecall >= .8;
+    public double Similarity => TokenRecall;
+}
 
 public static class LlmBenchmark
 {
@@ -34,7 +39,7 @@ public static class LlmBenchmark
             var started = DateTimeOffset.UtcNow;
             var route = await execute(test);
             var similarity = Similarity(route.Response.Text, test.Expected);
-            results.Add(new(test.Id, route.Response.ProviderId, similarity >= .8, similarity, DateTimeOffset.UtcNow - started, route.Response.Usage.TotalTokens, route.EstimatedCost));
+            results.Add(new(test.Id, route.Response.ProviderId, similarity, DateTimeOffset.UtcNow - started, route.Response.Usage.TotalTokens, route.EstimatedCost));
         }
         return results;
     }
