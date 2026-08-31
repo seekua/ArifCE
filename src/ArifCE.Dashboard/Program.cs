@@ -24,6 +24,7 @@ app.MapGet("/assets/dashboard-daily-brief.js", () => Results.File(Path.Combine(A
 app.MapGet("/assets/dashboard-activity-timeline.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-activity-timeline.js"), "text/javascript"));
 app.MapGet("/assets/dashboard-provider-health.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-provider-health.js"), "text/javascript"));
 app.MapGet("/assets/dashboard-executive-summary.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-executive-summary.js"), "text/javascript"));
+app.MapGet("/assets/dashboard-decision-brief.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-decision-brief.js"), "text/javascript"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
 app.MapGet("/api/workspace", async () => Results.Json(await workspace.ListAsync()));
