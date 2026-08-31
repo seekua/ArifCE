@@ -23,4 +23,4 @@ For each task, keep the repository snapshot, model, prompt, and token budget con
 - A result is evidence about the tested workflow and repository snapshot; it is not a guarantee for every project or model.
 - If ArifCE does not improve a measure, keep that result and use it to narrow the product scope.
 
-No experiment has been completed yet. This is intentional: the project currently records the protocol before claiming an outcome.
+The repository now includes `scripts/run-ab-benchmark.ps1`, a strict normalizer that accepts two caller-produced raw JSON arms and refuses to write a report unless both contain the same 20 task identifiers. It does not fabricate scores or claim effectiveness. No real experiment has been run yet.
