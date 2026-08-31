@@ -7,7 +7,7 @@ ArifCE is a local-first continuity layer for software projects worked on by peop
 Requirements: Git and the .NET 10 SDK.
 
 ```bash
-dotnet tool install --global ArifCE.Cli --version 0.6.0
+dotnet tool install --global ArifCE.Cli --version 0.7.0
 arifce help
 ```
 

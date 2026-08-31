@@ -1,6 +1,6 @@
 {
   "name": "@arifce/cli",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Local-first project intelligence CLI launcher",
   "license": "Apache-2.0",
   "bin": { "arifce": "bin/arifce.js" },

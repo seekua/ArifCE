@@ -1,5 +1,7 @@
 # Changelog
 
+- Prepare V0.7.0 with cross-platform self-contained CLI artifacts, checksum verification, and organized localized README documentation.
+
 - Start V0.2 with an explicit deterministic verification-adapter contract covering architecture, API surface, and SQLite schema compatibility.
 - Add repository-confined, deterministic architecture-boundary evidence with actionable file-and-line findings and packaged CLI coverage.
 - Begin the V0.2 public API surface adapter with normalized assembly baselines and compatibility comparison commands.
