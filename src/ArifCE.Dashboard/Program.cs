@@ -21,6 +21,7 @@ app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", Da
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/arifce-dashboard.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "arifce-dashboard.css"), "text/css"));
 app.MapGet("/assets/dashboard-daily-brief.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-daily-brief.js"), "text/javascript"));
+app.MapGet("/assets/dashboard-activity-timeline.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-activity-timeline.js"), "text/javascript"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
 app.MapGet("/api/workspace", async () => Results.Json(await workspace.ListAsync()));
