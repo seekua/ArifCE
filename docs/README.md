@@ -20,6 +20,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Handoffs](concepts/handoffs.md)
 - [Comparison](COMPARISON.md)
 - [Product evidence](EVIDENCE.md)
+- [Benchmark protocol and V0.7 smoke evidence](research/benchmarks.md)
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Dependency policy](architecture/dependency-policy.md)
 - [Binary releases](release/binary-releases.md)
