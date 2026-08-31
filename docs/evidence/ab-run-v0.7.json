@@ -1,0 +1,415 @@
+{
+  "generatedAtUtc": "2026-08-31T22:53:23.0519218Z",
+  "fixture": "temporary independent example Git repositories",
+  "fixtureCommit": "none (generated fixture)",
+  "taskCount": 20,
+  "commands": [
+    "git init + arifce status",
+    "arifce init + arifce context --task ... --budget 600"
+  ],
+  "baseline": [
+    {
+      "taskId": "example-task-01",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 11861,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-02",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 7296,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-03",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6744,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-04",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6543,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-05",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6630,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-06",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6207,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-07",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6908,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-08",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6908,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-09",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 5951,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-10",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 7155,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-11",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 7328,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-12",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6593,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-13",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6376,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-14",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6446,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-15",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 9412,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-16",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6136,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-17",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6367,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-18",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6556,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-19",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 10606,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    },
+    {
+      "taskId": "example-task-20",
+      "arm": "baseline",
+      "success": true,
+      "durationMs": 6164,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 0,
+      "outputChars": 218
+    }
+  ],
+  "arifce": [
+    {
+      "taskId": "example-task-01",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6310,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-02",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6828,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-03",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 7107,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-04",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6021,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-05",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6568,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-06",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6377,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-07",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6033,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-08",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6878,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-09",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 5933,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-10",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 7147,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-11",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 5792,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-12",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6121,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-13",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6242,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-14",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6536,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-15",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6002,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-16",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 5860,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-17",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 5888,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-18",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 5936,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-19",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 5821,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    },
+    {
+      "taskId": "example-task-20",
+      "arm": "arifce",
+      "success": true,
+      "durationMs": 6199,
+      "steps": 1,
+      "reads": 1,
+      "contextTokens": 82.0,
+      "outputChars": 326
+    }
+  ],
+  "interpretation": "Raw matched-task smoke metadata only. This fixture does not measure correctness or claim product effectiveness."
+}

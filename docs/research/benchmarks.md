@@ -19,3 +19,5 @@ Seed true, false, stale, and insufficient claims about builds, tests, Git state,
 Use a multi-file migration fixture with invariants and forbidden references. Measure remaining inventory, regressions, handoff effectiveness, builder/reviewer cost, defects detected, and completion accuracy.
 
 Every result must name fixture commit, environment, commands, budgets, and failures. Inconclusive runs remain visible.
+
+The V0.7 smoke fixture can be regenerated with `./scripts/run-example-benchmark.ps1`. Its output is stored in `docs/evidence/ab-run-v0.7.json` and contains 20 matched tasks. It records raw command metadata only; it is not an effectiveness, quality, or token-saving claim.
