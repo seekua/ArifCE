@@ -70,6 +70,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 ## Explicit deferrals
 
 - **Self-contained distribution:** the repeatable CLI packaging script, dependency policy, cross-platform smoke matrix, downloadable CI artifacts, and local checksum verification are now present. Publishing and signing every platform binary, package-manager manifests, and NativeAOT compatibility remain deferred until release signing and the recorded AOT diagnostics are resolved.
+- **V0.7 release operations:** the versioned release checklist is prepared; tagging, signing, immutable asset attachment, and external package-manager submissions remain maintainer-controlled steps.
 
 GitHub repository description/topics remain an external account-setting task. No local `GITHUB_TOKEN` is available in this environment, so metadata has not been claimed as updated; repository code and releases continue to be pushed normally. Journal rotation is now implemented with a size threshold and timestamped archive.
 

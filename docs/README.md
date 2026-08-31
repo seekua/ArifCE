@@ -23,6 +23,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Dependency policy](architecture/dependency-policy.md)
 - [Binary releases](release/binary-releases.md)
+- [V0.7 release checklist](release/v0.7-checklist.md)
 - [Semantic embeddings plan](release/semantic-embeddings-plan.md)
 - [Incremental index plan](release/incremental-index-plan.md)
 - [Agent hooks plan](release/agent-hooks-plan.md)
