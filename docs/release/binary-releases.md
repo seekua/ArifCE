@@ -4,4 +4,10 @@ Tagged releases prepare downloadable CLI archives for Windows, Linux, and macOS 
 
 Each archive contains the self-contained executable and `SHA256SUMS`. Download the three artifacts from the completed Actions run and attach them to the corresponding GitHub Release. The workflow intentionally has read-only repository permissions; release publication and overwrite remain a deliberate maintainer action.
 
+Before attaching an archive, verify its integrity locally:
+
+```powershell
+./scripts/verify-release-artifacts.ps1 -Archive ./arifce-win-x64.zip
+```
+
 The .NET global tool remains the supported fallback. Release signing, additional architectures, package-manager manifests, and NativeAOT remain separate follow-up work.
