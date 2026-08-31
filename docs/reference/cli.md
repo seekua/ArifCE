@@ -12,6 +12,12 @@ arifce doctor [--repair]
 arifce rebuild
 ```
 
+Rotate an oversized append-only journal into a timestamped local archive:
+
+```bash
+arifce journal rotate [--max-bytes N]
+```
+
 `init` is non-destructive and idempotent. `adopt` inspects an existing repository without inventing historical rationale. `doctor` is read-only unless `--repair` is supplied. Repair creates a timestamped journal backup, removes corrupt lines, atomically writes valid events, and rebuilds the derived index.
 
 ## Local workspace registry

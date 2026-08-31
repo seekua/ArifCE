@@ -7,3 +7,5 @@ Writers append and flush canonical events after entity mutation. Readers tolerat
 `arifce doctor --repair` is explicit mutation. It copies the original journal to `.arifce/backups/journal/`, retains valid JSON events, atomically replaces the journal, rebuilds the derived index, and reports kept/removed counts plus the backup path. Plain `doctor` never repairs.
 
 The journal is a timeline, not the only canonical source. Rebuild scans canonical entity and Markdown files because users may legitimately edit human-readable documents outside an ArifCE command.
+
+`arifce journal rotate` archives the active journal when it exceeds the configured byte threshold, then creates a fresh writer file. Archives remain under `.arifce/backups/journal/` and are never deleted automatically.
