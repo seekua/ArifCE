@@ -1,7 +1,7 @@
 # ArifCE
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
-[English](README.md) · [简体中文](locales/README.zh-CN.md) · [繁體中文](locales/README.zh-TW.md) · [한국어](locales/README.ko.md) · [Deutsch](locales/README.de.md) · [Español](locales/README.es.md) · [Français](locales/README.fr.md) · [Italiano](locales/README.it.md) · [Dansk](locales/README.da.md) · [日本語](locales/README.ja.md) · [Polski](locales/README.pl.md) · [Русский](locales/README.ru.md) · [Bosanski](locales/README.bs.md) · [العربية](locales/README.ar.md) · [Norsk](locales/README.no.md) · [Português (Brasil)](locales/README.pt-BR.md) · [ไทย](locales/README.th.md) · [Türkçe](locales/README.tr.md) · [Українська](locales/README.uk.md) · [বাংলা](locales/README.bn.md) · [Ελληνικά](locales/README.el.md) · [Tiếng Việt](locales/README.vi.md)
+[English](README.md) · [简体中文](docs/locales/README.zh-CN.md) · [繁體中文](docs/locales/README.zh-TW.md) · [한국어](docs/locales/README.ko.md) · [Deutsch](docs/locales/README.de.md) · [Español](docs/locales/README.es.md) · [Français](docs/locales/README.fr.md) · [Italiano](docs/locales/README.it.md) · [Dansk](docs/locales/README.da.md) · [日本語](docs/locales/README.ja.md) · [Polski](docs/locales/README.pl.md) · [Русский](docs/locales/README.ru.md) · [Bosanski](docs/locales/README.bs.md) · [العربية](docs/locales/README.ar.md) · [Norsk](docs/locales/README.no.md) · [Português (Brasil)](docs/locales/README.pt-BR.md) · [ไทย](docs/locales/README.th.md) · [Türkçe](docs/locales/README.tr.md) · [Українська](docs/locales/README.uk.md) · [বাংলা](docs/locales/README.bn.md) · [Ελληνικά](docs/locales/README.el.md) · [Tiếng Việt](docs/locales/README.vi.md)
 
 
 **Agents change. Your project should not forget.**
