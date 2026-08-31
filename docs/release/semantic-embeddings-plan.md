@@ -1,6 +1,6 @@
 # Semantic embeddings plan
 
-The current `DeterministicHashEmbeddingProvider` is a deterministic test stub. It must not be used as semantic similarity and is not presented as one.
+The current `DeterministicHashEmbeddingProvider` is a deterministic test stub. An opt-in `TokenEmbeddingProvider` now provides an offline, explainable lexical-semantic baseline (shared token concepts), but it is not a pretrained language model and is not presented as one.
 
 ## Acceptance criteria
 

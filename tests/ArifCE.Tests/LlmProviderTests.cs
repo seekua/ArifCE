@@ -183,6 +183,18 @@ public sealed class LlmProviderTests
         finally { root.Delete(true); }
     }
 
+    [Fact]
+    public async Task Token_embedding_is_deterministic_and_shared_terms_are_comparable()
+    {
+        var provider = new TokenEmbeddingProvider(new EmbeddingProfile("tokens", "offline", 128));
+        var a = await provider.EmbedAsync("database migration plan");
+        var b = await provider.EmbedAsync("database migration checklist");
+        var c = await provider.EmbedAsync("unrelated weather forecast");
+        static double Cos(float[] x, float[] y) => x.Zip(y, (a, b) => (double)a * b).Sum();
+        Assert.Equal(a, await provider.EmbedAsync("database migration plan"));
+        Assert.True(Cos(a, b) > Cos(a, c));
+    }
+
     private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }
