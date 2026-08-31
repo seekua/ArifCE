@@ -1,5 +1,7 @@
 # Project File Layout
 
+At the repository root, `README.md` is the canonical English entry point. Translated entry points live under `docs/locales/` (for example, `docs/locales/README.tr.md`) so the root stays easy to scan.
+
 ```text
 .arifce/
   README.md              store guide
