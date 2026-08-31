@@ -20,6 +20,7 @@ var workspace = new WorkspaceRegistry();
 app.MapGet("/", () => Results.Content(DashboardPageV2.Html.Replace("</body>", DashboardPageV2.DailyBriefScript + DashboardPageV2.ActivityTimelineScript + DashboardPageV2.ExecutiveSummaryScript + DashboardPageV2.ExtraScript + DashboardPageV2.DecisionBriefScript + DashboardPageV2.WorkScript + DashboardPageV2.HandoffScript + DashboardPageV2.ExplorerScript + DashboardPageV2.WorkspaceScript + DashboardPageV2.LlmScript + DashboardPageV2.ProviderScript + "</body>"), "text/html; charset=utf-8"));
 app.MapGet("/assets/tabler.min.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "tabler.min.css"), "text/css"));
 app.MapGet("/assets/arifce-dashboard.css", () => Results.File(Path.Combine(AppContext.BaseDirectory, "arifce-dashboard.css"), "text/css"));
+app.MapGet("/assets/dashboard-daily-brief.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-daily-brief.js"), "text/javascript"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
 app.MapGet("/api/workspace", async () => Results.Json(await workspace.ListAsync()));
