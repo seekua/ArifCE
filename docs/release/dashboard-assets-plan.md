@@ -4,6 +4,8 @@ The local dashboard currently serves a Tabler-based page assembled from embedded
 
 The stable custom CSS and dashboard card controllers are now versioned local assets (`arifce-dashboard.css` plus the `dashboard-*.js` files) with explicit endpoints. The HTML shell and remaining helper markup stay embedded until browser smoke coverage is available.
 
+Local smoke validation on port 5199 returned HTTP 200 for the dashboard shell, Tabler CSS, ArifCE overrides, memory explorer JavaScript, and `/api/overview`. Visual browser verification remains a separate release check.
+
 ## Target shape
 
 - Keep the dashboard local-only and preserve the current routes/API contract.
