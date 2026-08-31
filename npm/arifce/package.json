@@ -1,0 +1,10 @@
+{
+  "name": "@arifce/cli",
+  "version": "0.6.0",
+  "description": "Local-first project intelligence CLI launcher",
+  "license": "Apache-2.0",
+  "bin": { "arifce": "bin/arifce.js" },
+  "engines": { "node": ">=18" },
+  "files": ["bin"],
+  "repository": { "type": "git", "url": "https://github.com/seekua/ArifCE.git" }
+}
