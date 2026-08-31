@@ -2,6 +2,8 @@
 
 The local dashboard currently serves a Tabler-based page assembled from embedded C# string literals. This works offline, but the large generated file is difficult to review and maintain.
 
+The stable custom CSS and dashboard card controllers are now versioned local assets (`arifce-dashboard.css` plus the `dashboard-*.js` files) with explicit endpoints. The HTML shell and remaining helper markup stay embedded until browser smoke coverage is available.
+
 ## Target shape
 
 - Keep the dashboard local-only and preserve the current routes/API contract.
