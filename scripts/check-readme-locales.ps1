@@ -4,7 +4,7 @@ $canonical = Get-Content (Join-Path $root 'README.md') -Raw
 $translationStatus = Get-Content (Join-Path $root 'docs/TRANSLATION-STATUS.md') -Raw
 $required = @('ArifCE.svg','mermaid','dotnet tool install','arifce init','ROADMAP.md','SECURITY.md','CONTRIBUTING.md','Apache')
 $languageSelector = ($canonical -split "`r?`n" | Where-Object { $_ -match '^\[English\]\(README\.md\)' } | Select-Object -First 1).Trim()
-$localizedLanguageSelector = $languageSelector.Replace('(README.md)', '(../README.md)').Replace('(locales/', '(')
+$localizedLanguageSelector = $languageSelector.Replace('(README.md)', '(../../README.md)').Replace('(locales/', '(')
 $canonicalHeadingCount = [regex]::Matches($canonical, '(?m)^#{1,6}\s+.+$').Count
 $canonicalFenceCount = [regex]::Matches($canonical, '(?m)^```').Count
 $canonicalMermaidCount = [regex]::Matches($canonical, '(?m)^```mermaid').Count
@@ -43,7 +43,7 @@ foreach ($file in $files) {
   if ([regex]::Matches($text, '\.\./\.\./assets/ArifCE\.svg').Count -ne 1) {
     $failed += "$($file.Name): expected exactly one ArifCE logo"
   }
-  if ([regex]::Matches($text, '(?m)^\[English\]\(\.\./README\.md\)').Count -ne 1) {
+  if ([regex]::Matches($text, '(?m)^\[English\]\(\.\./\.\./README\.md\)').Count -ne 1) {
     $failed += "$($file.Name): expected exactly one language selector"
   }
   foreach ($match in [regex]::Matches($text, '\]\(([^)]+)\)')) {
