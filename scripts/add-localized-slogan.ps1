@@ -21,9 +21,9 @@ $map = @{
   'zh-CN'=@('代理会更替，项目不应遗忘。','仓库拥有上下文，代理只是借用它。')
   'zh-TW'=@('代理會更替，專案不應遺忘。','儲存庫擁有上下文，代理只是借用它。')
 }
-foreach($f in Get-ChildItem README.*.md | Where-Object Name -ne 'README.md') {
+foreach($f in Get-ChildItem (Join-Path (Get-Location) 'docs/locales/README.*.md')) {
   $key=$f.BaseName.Substring(7); if(!$map.ContainsKey($key)){continue}
   $t=Get-Content $f.FullName -Raw; if($t -match '\*\*Agents change|\*\*Ajanlar değişir'){continue}
-  $lines=$t -split "`r?`n"; $idx=($lines | Select-String '^\[English\]\(README\.md\)' | Select-Object -First 1).LineNumber-1
+  $lines=$t -split "`r?`n"; $idx=($lines | Select-String '^\[English\]\(\.\./README\.md\)' | Select-Object -First 1).LineNumber-1
   if($idx -ge 0){$ins=@('','**'+$map[$key][0]+'**','', '> '+$map[$key][1]); $lines=@($lines[0..$idx]+$ins+$lines[($idx+1)..($lines.Length-1)]); [IO.File]::WriteAllText($f.FullName,($lines -join "`r`n"))}
 }

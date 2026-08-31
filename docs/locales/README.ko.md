@@ -1,12 +1,12 @@
 # ArifCE
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+<p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
+[English](../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **에이전트는 바뀝니다. 프로젝트는 잊지 않아야 합니다.**
 
 
-[![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
+[![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](../../LICENSE)
 
 ArifCE는 AI 지원 소프트웨어 개발을 위한 로컬 우선 프로젝트 지능 및 연속성 계층입니다. 컨텍스트, 결정, 실패한 시도, 증거, 리팩터링 상태와 인수인계 정보를 저장소에 보존하여 Codex, Claude Code, OpenCode 및 미래의 에이전트가 같은 엔지니어링 이야기를 이어가도록 합니다.
 
@@ -49,7 +49,7 @@ $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-그런 다음 <http://127.0.0.1:5180/>을 여세요. 전체 제품 안내서는 [ArifCE 문서 허브](docs/README.md)를 참조하세요.
+그런 다음 <http://127.0.0.1:5180/>을 여세요. 전체 제품 안내서는 [ArifCE 문서 허브](../README.md)를 참조하세요.
 
 이 워크플로는 프로젝트 지식을 저장소에 보존하고 진행 상황을 확인 가능하게 합니다. 실용적인 장점은 다음과 같습니다.
 
@@ -81,15 +81,15 @@ arifce handoff
 
 ## 아키텍처
 
-핵심은 도메인 규칙, 표준 저장소와 인덱싱, Git 관찰, 검색, 검증, 리팩터링, 보안 및 CLI를 분리합니다. 공급업체 지침 파일은 작은 어댑터이며 표준 메모리 저장소가 되지 않습니다. [아키텍처 개요](docs/architecture/overview.md), [도메인 모델](docs/architecture/domain-model.md), [V0.1 사양](docs/SPECIFICATION-v0.1.md)을 참조하세요.
+핵심은 도메인 규칙, 표준 저장소와 인덱싱, Git 관찰, 검색, 검증, 리팩터링, 보안 및 CLI를 분리합니다. 공급업체 지침 파일은 작은 어댑터이며 표준 메모리 저장소가 되지 않습니다. [아키텍처 개요](../architecture/overview.md), [도메인 모델](../architecture/domain-model.md), [V0.1 사양](../SPECIFICATION-v0.1.md)을 참조하세요.
 
 ## 설치 및 빠른 시작
 
-V0.2.0은 크로스 플랫폼 .NET 전역 도구로 게시되었습니다. [설치](docs/getting-started/installation.md)와 [빠른 시작](docs/getting-started/quick-start.md)을 참조하세요. 소스에서 실행하려면:
+V0.2.0은 크로스 플랫폼 .NET 전역 도구로 게시되었습니다. [설치](../getting-started/installation.md)와 [빠른 시작](../getting-started/quick-start.md)을 참조하세요. 소스에서 실행하려면:
 
-선택적 로컬 MCP 어댑터는 [MCP 설정](docs/getting-started/mcp.md)에 문서화되어 있습니다.
+선택적 로컬 MCP 어댑터는 [MCP 설정](../getting-started/mcp.md)에 문서화되어 있습니다.
 
-설치 및 기능 전체 안내는 [사용자 가이드](docs/USER-GUIDE.md)와 [문서 정책](docs/DOCUMENTATION-POLICY.md)을 참조하세요.
+설치 및 기능 전체 안내는 [사용자 가이드](../USER-GUIDE.md)와 [문서 정책](../DOCUMENTATION-POLICY.md)을 참조하세요.
 
 ### 60-second quick start
 
@@ -125,11 +125,11 @@ dotnet run --project src/ArifCE.Cli -- init
 
 원시 대화 기록은 신뢰할 수 없으며 일괄 로드하거나 실행하지 않습니다. 가져오기 경로는 일반적인 비밀을 가립니다. 자격 증명과 시스템 인증 정보는 `.arifce/`에 저장하지 마세요. V0.1은 정확성, 토큰 절약 또는 더 나은 검토 품질을 보장하지 않습니다. 클라우드 서비스, UI, 벡터 데이터베이스, 자율 스웜 또는 프로덕션 에이전트 간 호출도 제공하지 않습니다.
 
-자세한 내용은 [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md)를 참조하세요. 구현된 명령의 정확한 구문은 [CLI 참조](docs/reference/cli.md)에 문서화되어 있습니다.
+자세한 내용은 [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md), [CONTRIBUTING.md](../../CONTRIBUTING.md)를 참조하세요. 구현된 명령의 정확한 구문은 [CLI 참조](../reference/cli.md)에 문서화되어 있습니다.
 
 ## 라이선스
 
-ArifCE는 [Apache License 2.0](LICENSE)에 따라 사용이 허가됩니다.
+ArifCE는 [Apache License 2.0](../../LICENSE)에 따라 사용이 허가됩니다.
 ### Local LLM workflows
 
 ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
@@ -141,7 +141,7 @@ arifce llm context "review the migration" --budget 2000
 arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](docs/reference/LLM-PROVIDERS.md).
+Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
 ### From source
 
 ```bash

@@ -1,12 +1,12 @@
 # ArifCE
-<p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
+<p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
+[English](../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **الوكلاء يتغيرون. يجب ألا ينسى مشروعك.**
 
 
-[![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
+[![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](../../LICENSE)
 
 ArifCE هي طبقة محلية أولاً لذكاء المشروع واستمراريته في تطوير البرمجيات بمساعدة الذكاء الاصطناعي. تحتفظ بالسياق والقرارات والمحاولات الفاشلة والأدلة وحالة إعادة الهيكلة ومعلومات التسليم مع المستودع، كي يتمكن Codex وClaude Code وOpenCode والوكلاء المستقبليون من متابعة القصة الهندسية نفسها.
 
@@ -49,7 +49,7 @@ $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
 ```
 
-ثم افتح <http://127.0.0.1:5180/>. وللاطلاع على دليل المنتج الكامل، راجع [مركز توثيق ArifCE](docs/README.md).
+ثم افتح <http://127.0.0.1:5180/>. وللاطلاع على دليل المنتج الكامل، راجع [مركز توثيق ArifCE](../README.md).
 
 يحافظ هذا التدفق على معرفة المشروع داخل المستودع ويجعل التقدم قابلاً للفحص. ومن مزاياه العملية:
 
@@ -81,15 +81,15 @@ arifce handoff
 
 ## البنية
 
-يفصل القلب بين قواعد المجال والتخزين والفهرسة الأساسية ومراقبة Git والاسترجاع والتحقق وإعادة الهيكلة والأمان وواجهة CLI. ملفات تعليمات المورّد محولات صغيرة ولا تصبح أبداً مخزن الذاكرة الأساسي. راجع [نظرة عامة على البنية](docs/architecture/overview.md) و[نموذج المجال](docs/architecture/domain-model.md) و[مواصفة V0.1](docs/SPECIFICATION-v0.1.md).
+يفصل القلب بين قواعد المجال والتخزين والفهرسة الأساسية ومراقبة Git والاسترجاع والتحقق وإعادة الهيكلة والأمان وواجهة CLI. ملفات تعليمات المورّد محولات صغيرة ولا تصبح أبداً مخزن الذاكرة الأساسي. راجع [نظرة عامة على البنية](../architecture/overview.md) و[نموذج المجال](../architecture/domain-model.md) و[مواصفة V0.1](../SPECIFICATION-v0.1.md).
 
 ## التثبيت والبدء السريع
 
-تم نشر V0.2.0 كأداة .NET عامة متعددة المنصات. راجع [التثبيت](docs/getting-started/installation.md) و[البدء السريع](docs/getting-started/quick-start.md). ومن المصدر:
+تم نشر V0.2.0 كأداة .NET عامة متعددة المنصات. راجع [التثبيت](../getting-started/installation.md) و[البدء السريع](../getting-started/quick-start.md). ومن المصدر:
 
-موثّق المحول المحلي الاختياري لـ MCP في [إعداد MCP](docs/getting-started/mcp.md).
+موثّق المحول المحلي الاختياري لـ MCP في [إعداد MCP](../getting-started/mcp.md).
 
-للحصول على شرح كامل للتثبيت والميزات، راجع [دليل المستخدم](docs/USER-GUIDE.md) و[سياسة التوثيق](docs/DOCUMENTATION-POLICY.md).
+للحصول على شرح كامل للتثبيت والميزات، راجع [دليل المستخدم](../USER-GUIDE.md) و[سياسة التوثيق](../DOCUMENTATION-POLICY.md).
 
 ### بدء سريع خلال 60 ثانية
 
@@ -125,11 +125,11 @@ dotnet run --project src/ArifCE.Cli -- init
 
 السجلات الخام غير موثوقة ولا تُحمّل جماعياً ولا تُنفّذ أبداً. تحجب مسارات الاستيراد الأسرار الشائعة؛ ولا مكان لبيانات الاعتماد أو مصادقة الجهاز داخل `.arifce/`. لا تضمن V0.1 الصحة أو توفير الرموز أو تحسين جودة المراجعة. ولا تتضمن خدمة سحابية أو واجهة مستخدم أو قاعدة بيانات متجهات أو سرباً ذاتياً أو استدعاءً إنتاجياً بين الوكلاء.
 
-راجع [ROADMAP.md](ROADMAP.md) و[SECURITY.md](SECURITY.md) و[CONTRIBUTING.md](CONTRIBUTING.md). وتوثق [مرجعية CLI](docs/reference/cli.md) الصياغة الدقيقة للأوامر المنفذة.
+راجع [ROADMAP.md](../../ROADMAP.md) و[SECURITY.md](../../SECURITY.md) و[CONTRIBUTING.md](../../CONTRIBUTING.md). وتوثق [مرجعية CLI](../reference/cli.md) الصياغة الدقيقة للأوامر المنفذة.
 
 ## الترخيص
 
-تخضع ArifCE لـ [ترخيص Apache 2.0](LICENSE).
+تخضع ArifCE لـ [ترخيص Apache 2.0](../../LICENSE).
 ### Local LLM workflows
 
 ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
@@ -141,7 +141,7 @@ arifce llm context "review the migration" --budget 2000
 arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](docs/reference/LLM-PROVIDERS.md).
+Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
 ### From source
 
 ```bash

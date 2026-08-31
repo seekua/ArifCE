@@ -1,7 +1,7 @@
 # ArifCE
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
+[English](README.md) · [简体中文](locales/README.zh-CN.md) · [繁體中文](locales/README.zh-TW.md) · [한국어](locales/README.ko.md) · [Deutsch](locales/README.de.md) · [Español](locales/README.es.md) · [Français](locales/README.fr.md) · [Italiano](locales/README.it.md) · [Dansk](locales/README.da.md) · [日本語](locales/README.ja.md) · [Polski](locales/README.pl.md) · [Русский](locales/README.ru.md) · [Bosanski](locales/README.bs.md) · [العربية](locales/README.ar.md) · [Norsk](locales/README.no.md) · [Português (Brasil)](locales/README.pt-BR.md) · [ไทย](locales/README.th.md) · [Türkçe](locales/README.tr.md) · [Українська](locales/README.uk.md) · [বাংলা](locales/README.bn.md) · [Ελληνικά](locales/README.el.md) · [Tiếng Việt](locales/README.vi.md)
 
 
 **Agents change. Your project should not forget.**
