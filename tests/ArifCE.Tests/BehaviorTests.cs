@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using ArifCE.Core;
 using ArifCE.Infrastructure;
 using Xunit;
@@ -41,6 +42,18 @@ public sealed class BehaviorTests : IDisposable
         File.Delete(path);
         await index.UpdateIncrementalAsync(root);
         Assert.Empty(await index.SearchAsync(root, "beta"));
+    }
+
+    [Fact]
+    public async Task Agent_hooks_are_opt_in_allowlisted_and_redacted()
+    {
+        await Service.InitializeAsync(root, false);
+        var recorder = new AgentHookRecorder(journal);
+        var entry = await recorder.RecordAsync(root, new AgentHookPayload("codex", "command.completed", "builder", Summary: "password=secret completed"));
+        Assert.Equal("agent.command.completed", entry.Type);
+        Assert.DoesNotContain("secret", JsonSerializer.Serialize(entry));
+        await Assert.ThrowsAsync<ArgumentException>(() => recorder.RecordAsync(root, new AgentHookPayload("unknown", "session.start")));
+        await Assert.ThrowsAsync<ArgumentException>(() => recorder.RecordAsync(root, new AgentHookPayload("codex", "prompt.captured")));
     }
 
     [Fact]

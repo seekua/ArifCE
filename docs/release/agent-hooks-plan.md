@@ -2,6 +2,8 @@
 
 Automatic capture can reduce the manual ceremony identified in the technical review, but hooks must remain opt-in and local.
 
+The shared `AgentHookRecorder` now accepts allowlisted lifecycle payloads for Claude, Codex, and OpenCode, redacts secrets, truncates summaries, and writes only journal metadata. It does not execute commands or capture prompts/transcripts. Provider-specific installer scripts and fixture packs remain deferred.
+
 ## Allowed observations
 
 - Session start/end metadata
