@@ -9,6 +9,7 @@ $patterns = @(
 
 $allowedFixtures = @(
     @{ Path = 'tests/ArifCE.Tests/BehaviorTests.cs'; Pattern = 'bearer-token'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('QmVhcmVyIGFiYy5kZWYuZ2hp')) },
+    @{ Path = 'tests/ArifCE.Tests/BehaviorTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9c2VjcmV0')) }
     @{ Path = 'tests/ArifCE.Tests/BehaviorTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9aHVudGVyMg==')) }
 )
 
