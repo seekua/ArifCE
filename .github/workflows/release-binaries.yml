@@ -1,0 +1,46 @@
+name: Prepare self-contained release binaries
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: macos-latest
+            rid: osx-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+      - name: Publish binary
+        shell: pwsh
+        run: ./scripts/publish-self-contained.ps1 -Runtime $env:ARIFCE_RID -Configuration Release
+        env:
+          ARIFCE_RID: ${{ matrix.rid }}
+      - name: Package binary
+        shell: pwsh
+        run: |
+          $source = "artifacts/self-contained/${{ matrix.rid }}"
+          $archive = "artifacts/arifce-${{ matrix.rid }}.zip"
+          Compress-Archive -Path "$source/*" -DestinationPath $archive -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arifce-${{ matrix.rid }}
+          path: artifacts/arifce-${{ matrix.rid }}.zip
+          if-no-files-found: error
