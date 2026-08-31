@@ -203,6 +203,7 @@ public sealed partial class SecretRedactor
 public sealed class IndexStore
 {
     private static string ConnectionString(string root) => new SqliteConnectionStringBuilder { DataSource = Path.Combine(root, ".arifce", "index", "arifce.db"), Pooling = false }.ToString();
+    private sealed record ManifestEntry(string Path, string Hash);
 
     public async Task RebuildAsync(string root, CancellationToken cancellationToken = default)
     {
@@ -225,6 +226,47 @@ public sealed class IndexStore
             command.Parameters.AddWithValue("$id", id); command.Parameters.AddWithValue("$kind", kind); command.Parameters.AddWithValue("$path", relative); command.Parameters.AddWithValue("$content", content);
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
+        await WriteManifestAsync(root, cancellationToken);
+    }
+
+    public async Task UpdateIncrementalAsync(string root, CancellationToken cancellationToken = default)
+    {
+        var manifestPath = Path.Combine(root, ".arifce", "index", "manifest.json");
+        var database = Path.Combine(root, ".arifce", "index", "arifce.db");
+        if (!File.Exists(database) || !File.Exists(manifestPath)) { await RebuildAsync(root, cancellationToken); return; }
+        List<ManifestEntry> previous;
+        try { previous = JsonSerializer.Deserialize<List<ManifestEntry>>(await File.ReadAllTextAsync(manifestPath, cancellationToken), JsonDefaults.Options) ?? []; }
+        catch (JsonException) { await RebuildAsync(root, cancellationToken); return; }
+        var current = CanonicalFiles(root).ToDictionary(x => x.Path, StringComparer.OrdinalIgnoreCase);
+        var old = previous.ToDictionary(x => x.Path, StringComparer.OrdinalIgnoreCase);
+        await using var connection = new SqliteConnection(ConnectionString(root)); await connection.OpenAsync(cancellationToken);
+        var changed = old.Count != current.Count || old.Any(pair => !current.TryGetValue(pair.Key, out var entry) || entry.Hash != pair.Value.Hash);
+        foreach (var removed in old.Keys.Except(current.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            await using var command = connection.CreateCommand(); command.CommandText = "DELETE FROM search WHERE path=$path"; command.Parameters.AddWithValue("$path", removed); await command.ExecuteNonQueryAsync(cancellationToken);
+            await using var entityCommand = connection.CreateCommand(); entityCommand.CommandText = "DELETE FROM entities WHERE path=$path"; entityCommand.Parameters.AddWithValue("$path", removed); await entityCommand.ExecuteNonQueryAsync(cancellationToken);
+        }
+        foreach (var entry in current.Values)
+        {
+            if (old.TryGetValue(entry.Path, out var prior) && prior.Hash == entry.Hash) continue;
+            var content = await File.ReadAllTextAsync(Path.Combine(root, ".arifce", entry.Path), cancellationToken); var id = Path.GetFileNameWithoutExtension(entry.Path); var kind = entry.Path.Split('/')[0];
+            await using var deleteSearch = connection.CreateCommand(); deleteSearch.CommandText = "DELETE FROM search WHERE path=$path"; deleteSearch.Parameters.AddWithValue("$path", entry.Path); await deleteSearch.ExecuteNonQueryAsync(cancellationToken);
+            await using var deleteEntity = connection.CreateCommand(); deleteEntity.CommandText = "DELETE FROM entities WHERE path=$path"; deleteEntity.Parameters.AddWithValue("$path", entry.Path); await deleteEntity.ExecuteNonQueryAsync(cancellationToken);
+            await using var insertEntity = connection.CreateCommand(); insertEntity.CommandText = "INSERT INTO entities VALUES ($id,$kind,$path,$content)"; insertEntity.Parameters.AddWithValue("$id", id); insertEntity.Parameters.AddWithValue("$kind", kind); insertEntity.Parameters.AddWithValue("$path", entry.Path); insertEntity.Parameters.AddWithValue("$content", content); await insertEntity.ExecuteNonQueryAsync(cancellationToken);
+            await using var insertSearch = connection.CreateCommand(); insertSearch.CommandText = "INSERT INTO search VALUES ($id,$kind,$path,$content)"; insertSearch.Parameters.AddWithValue("$id", id); insertSearch.Parameters.AddWithValue("$kind", kind); insertSearch.Parameters.AddWithValue("$path", entry.Path); insertSearch.Parameters.AddWithValue("$content", content); await insertSearch.ExecuteNonQueryAsync(cancellationToken);
+        }
+        // SQLite FTS5 maintains its own index; rebuild only the FTS projection when the manifest changed.
+        // Canonical entity rows above remain delta-updated.
+        if (changed)
+        {
+            await using var clearSearch = connection.CreateCommand(); clearSearch.CommandText = "DROP TABLE search; CREATE VIRTUAL TABLE search USING fts5(id UNINDEXED, kind, path, content)"; await clearSearch.ExecuteNonQueryAsync(cancellationToken);
+            foreach (var entry in current.Values)
+            {
+                var content = await File.ReadAllTextAsync(Path.Combine(root, ".arifce", entry.Path), cancellationToken);
+                await using var insert = connection.CreateCommand(); insert.CommandText = "INSERT INTO search VALUES ($id,$kind,$path,$content)"; insert.Parameters.AddWithValue("$id", Path.GetFileNameWithoutExtension(entry.Path)); insert.Parameters.AddWithValue("$kind", entry.Path.Split('/')[0]); insert.Parameters.AddWithValue("$path", entry.Path); insert.Parameters.AddWithValue("$content", content); await insert.ExecuteNonQueryAsync(cancellationToken);
+            }
+        }
+        await WriteManifestAsync(root, cancellationToken);
     }
 
     public async Task<IReadOnlyList<(string Path, string Snippet, double Score)>> SearchAsync(string root, string query, int limit = 20, CancellationToken cancellationToken = default, int snippetTokens = 20)
@@ -255,5 +297,7 @@ public sealed class IndexStore
     }
 
     private static bool IsCanonical(string path) => !path.Contains($"{Path.DirectorySeparatorChar}index{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) && !path.Contains($"{Path.DirectorySeparatorChar}cache{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) && !path.Contains($"{Path.DirectorySeparatorChar}raw{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) && (path.EndsWith(".md", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
+    private static IEnumerable<ManifestEntry> CanonicalFiles(string root) => Directory.EnumerateFiles(Path.Combine(root, ".arifce"), "*", SearchOption.AllDirectories).Where(IsCanonical).Select(path => new ManifestEntry(Path.GetRelativePath(Path.Combine(root, ".arifce"), path).Replace('\\', '/'), Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))))).OrderBy(x => x.Path, StringComparer.Ordinal);
+    private async Task WriteManifestAsync(string root, CancellationToken ct) => await File.WriteAllTextAsync(Path.Combine(root, ".arifce", "index", "manifest.json"), JsonSerializer.Serialize(CanonicalFiles(root), JsonDefaults.Options), new UTF8Encoding(false), ct);
     private static async Task ExecuteAsync(SqliteConnection connection, string sql, CancellationToken cancellationToken) { await using var command = connection.CreateCommand(); command.CommandText = sql; await command.ExecuteNonQueryAsync(cancellationToken); }
 }

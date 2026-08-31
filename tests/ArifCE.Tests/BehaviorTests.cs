@@ -26,6 +26,24 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Incremental_index_tracks_added_changed_and_removed_canonical_files()
+    {
+        await Service.InitializeAsync(root, false);
+        await index.RebuildAsync(root);
+        await canonical.WriteAsync(root, "decisions", "ADR-0099", new { schemaVersion = 1, id = "ADR-0099", rationale = "incremental marker alpha" });
+        var path = Path.Combine(root, ".arifce", "decisions", "adr-0099.json");
+        await index.UpdateIncrementalAsync(root);
+        Assert.Contains(await index.SearchAsync(root, "incremental marker alpha"), x => x.Path.EndsWith("adr-0099.json", StringComparison.OrdinalIgnoreCase));
+        await File.WriteAllTextAsync(path, "{\"schemaVersion\":1,\"id\":\"ADR-0099\",\"rationale\":\"incremental marker beta\"}");
+        await index.UpdateIncrementalAsync(root);
+        Assert.Empty(await index.SearchAsync(root, "alpha"));
+        Assert.Contains(await index.SearchAsync(root, "incremental marker beta"), x => x.Path.EndsWith("adr-0099.json", StringComparison.OrdinalIgnoreCase));
+        File.Delete(path);
+        await index.UpdateIncrementalAsync(root);
+        Assert.Empty(await index.SearchAsync(root, "beta"));
+    }
+
+    [Fact]
     public async Task Concurrent_record_creation_reserves_distinct_ids_without_overwriting()
     {
         await Service.InitializeAsync(root, false);
