@@ -39,7 +39,7 @@ static class DashboardPageV2
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ArifCE Dashboard</title><link rel="stylesheet" href="/assets/tabler.min.css">
-  <style>body{background:#f4f6fa}.brand-logo{height:48px;width:auto}.hero{background:linear-gradient(135deg,#182d57,#2563ad);color:#fff}.hero p.lead,.hero .text-white-50,.hero .text-uppercase{color:#f4f8ff!important;opacity:.98}.metric{font-size:1.7rem;font-weight:700}pre{white-space:pre-wrap;max-height:330px;overflow:auto;background:#f8fafc;padding:1rem;border-radius:var(--tblr-border-radius)}.navbar-vertical .navbar-brand{margin-bottom:.75rem!important}.navbar-vertical .navbar-nav{padding-top:0!important}</style>
+<link rel="stylesheet" href="/assets/arifce-dashboard.css">
 </head>
 <body>
 <div class="page">
