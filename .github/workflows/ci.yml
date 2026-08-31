@@ -42,3 +42,36 @@ jobs:
       - name: Package smoke test
         shell: pwsh
         run: ./scripts/package-smoke.ps1 -Configuration Release
+
+  self-contained-cli:
+    name: Self-contained CLI (${{ matrix.rid }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: macos-latest
+            rid: osx-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+      - name: Publish self-contained binary
+        shell: pwsh
+        run: ./scripts/publish-self-contained.ps1 -Runtime $env:ARIFCE_RID -Configuration Release
+        env:
+          ARIFCE_RID: ${{ matrix.rid }}
+      - name: Run binary smoke check
+        shell: pwsh
+        run: |
+          $binary = Get-ChildItem -LiteralPath "artifacts/self-contained/${{ matrix.rid }}" -File | Where-Object { $_.Name -notlike 'SHA256SUMS' -and $_.Extension -notin @('.dll', '.json', '.pdb') } | Select-Object -First 1
+          if ($null -eq $binary) { throw 'Published executable not found' }
+          & $binary.FullName help
+          if ($LASTEXITCODE -ne 0) { throw "Binary smoke check failed with exit code $LASTEXITCODE" }

@@ -17,8 +17,13 @@ foreach ($rid in $Runtime) {
     $output = Join-Path $OutputRoot $rid
     New-Item -ItemType Directory -Force -Path $output | Out-Null
     dotnet publish $project --configuration $Configuration --runtime $rid --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --output $output
-    $binary = if ($rid -like 'win-*') { Join-Path $output 'arifce.exe' } else { Join-Path $output 'arifce' }
-    if (-not (Test-Path -LiteralPath $binary)) { throw "Expected published binary was not produced: $binary" }
+    $binary = if ($rid -like 'win-*') {
+        Get-ChildItem -LiteralPath $output -Filter '*.exe' -File | Where-Object { $_.Name -notlike '*.dll' } | Select-Object -First 1
+    } else {
+        Get-ChildItem -LiteralPath $output -File | Where-Object { $_.Name -notmatch '\\.(dll|json|pdb|deps|runtimeconfig)$' -and $_.Name -notlike 'SHA256SUMS' } | Select-Object -First 1
+    }
+    if ($null -eq $binary) { throw "No self-contained executable was produced in $output" }
+    $binary = $binary.FullName
     $hash = Get-FileHash -Algorithm SHA256 -LiteralPath $binary
     "{0}  {1}" -f $hash.Hash.ToLowerInvariant(), (Split-Path -Leaf $binary) | Set-Content -LiteralPath (Join-Path $output 'SHA256SUMS') -Encoding ascii
     Write-Host "Published $rid -> $binary"
