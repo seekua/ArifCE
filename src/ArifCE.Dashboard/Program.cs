@@ -29,6 +29,7 @@ app.MapGet("/assets/dashboard-llm-activity.js", () => Results.File(Path.Combine(
 app.MapGet("/assets/dashboard-claims-evidence.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-claims-evidence.js"), "text/javascript"));
 app.MapGet("/assets/dashboard-work-board.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-work-board.js"), "text/javascript"));
 app.MapGet("/assets/dashboard-handoff.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-handoff.js"), "text/javascript"));
+app.MapGet("/assets/dashboard-memory-explorer.js", () => Results.File(Path.Combine(AppContext.BaseDirectory, "dashboard-memory-explorer.js"), "text/javascript"));
 app.MapGet("/assets/ArifCE.svg", () => Results.File(Path.Combine(AppContext.BaseDirectory, "ArifCE.svg"), "image/svg+xml"));
 app.MapGet("/api/status", async () => Results.Json(new { status = "Healthy", details = await service.StatusAsync(Root()) }));
 app.MapGet("/api/workspace", async () => Results.Json(await workspace.ListAsync()));

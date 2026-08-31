@@ -32,6 +32,7 @@
     <None Include="../../assets/dashboard-claims-evidence.js" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="/assets" />
     <None Include="../../assets/dashboard-work-board.js" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="/assets" />
     <None Include="../../assets/dashboard-handoff.js" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="/assets" />
+    <None Include="../../assets/dashboard-memory-explorer.js" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="/assets" />
     <None Include="../../assets/ArifCE.svg" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="/assets" />
     <None Include="../../README.md" Pack="true" PackagePath="/" Link="README.md" />
     <None Include="../../LICENSE" Pack="true" PackagePath="/" Link="LICENSE" />
