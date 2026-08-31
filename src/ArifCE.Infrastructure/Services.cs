@@ -127,6 +127,17 @@ public sealed class JournalStore
         File.Move(temporary, path, true);
         return (backup, valid.Count, removed);
     }
+
+    public async Task<string?> RotateAsync(string root, long maxBytes = 5_000_000, CancellationToken cancellationToken = default)
+    {
+        var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
+        if (!File.Exists(path) || new FileInfo(path).Length <= maxBytes) return null;
+        var backupDirectory = Path.Combine(root, ".arifce", "backups", "journal"); Directory.CreateDirectory(backupDirectory);
+        var backup = Path.Combine(backupDirectory, $"events-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}.jsonl.archive");
+        File.Move(path, backup, false);
+        await File.WriteAllTextAsync(path, string.Empty, new UTF8Encoding(false), cancellationToken);
+        return backup;
+    }
 }
 
 public sealed class CanonicalStore

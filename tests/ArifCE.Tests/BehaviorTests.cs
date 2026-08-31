@@ -87,6 +87,17 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Journal_rotation_archives_large_logs_and_keeps_writer_path()
+    {
+        await Service.InitializeAsync(root, false);
+        var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
+        await File.AppendAllTextAsync(path, new string('x', 256));
+        var archive = await journal.RotateAsync(root, 10);
+        Assert.NotNull(archive); Assert.True(File.Exists(archive)); Assert.True(File.Exists(path)); Assert.Equal(0, new FileInfo(path).Length);
+        Assert.Null(await journal.RotateAsync(root, 10));
+    }
+
+    [Fact]
     public async Task Context_search_and_redaction_have_user_visible_behavior()
     {
         await Service.InitializeAsync(root, false); await canonical.WriteAsync(root, "decisions", "ADR-0001", new { schemaVersion = 1, id = "ADR-0001", rationale = "Use deterministic lexical retrieval" }); await index.RebuildAsync(root);
