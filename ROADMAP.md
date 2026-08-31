@@ -69,6 +69,8 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 ## Explicit deferrals
 
+- **Self-contained distribution:** the repeatable CLI packaging script and dependency policy are now present. Publishing and signing every platform binary, package-manager manifests, and NativeAOT compatibility remain deferred until cross-platform smoke evidence and the recorded AOT diagnostics are resolved.
+
 GitHub repository description/topics remain an external account-setting task. No local `GITHUB_TOKEN` is available in this environment, so metadata has not been claimed as updated; repository code and releases continue to be pushed normally. Journal rotation is now implemented with a size threshold and timestamped archive.
 
 ### Independent technical review (2026-08-30)

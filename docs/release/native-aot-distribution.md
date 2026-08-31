@@ -20,4 +20,4 @@ NativeAOT is a planned distribution channel for the CLI, not a claim that the cu
 
 The current repository has not enabled `PublishAot`; no release binary is advertised until these checks pass. A Windows `win-x64` probe was run on 2026-08-31 and correctly failed closed: trimming/AOT diagnostics identify reflection-based `System.Text.Json` serialization, the flexible enum converter, and runtime assembly inspection in `ApiSurfaceAnalyzer` as requiring source-generation or explicit dynamic-access annotations. This is recorded as a technical blocker, not suppressed with warning disables.
 
-An npm launcher is now available at `npm/arifce`. It delegates to the locally installed .NET tool and does not imply NativeAOT support; the self-contained binary path remains blocked by the diagnostics above.
+An npm launcher is now available at `npm/arifce`. It delegates to the locally installed .NET tool and does not imply NativeAOT support. A self-contained (non-AOT) packaging probe is available through `scripts/publish-self-contained.ps1`; it removes the .NET runtime requirement while compatibility work for NativeAOT continues.

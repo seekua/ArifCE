@@ -2,6 +2,14 @@
 
 ArifCE V0.6.0 requires the .NET 10 SDK and Git. The published NuGet tool is available from the GitHub release.
 
+For a machine that should not install the .NET runtime separately, maintainers can build a self-contained CLI binary for a supported runtime:
+
+```powershell
+./scripts/publish-self-contained.ps1 -Runtime win-x64
+```
+
+This packaging path is experimental until each platform has completed the smoke matrix. NativeAOT remains a separate, currently blocked compatibility track; see the [distribution plan](../release/native-aot-distribution.md).
+
 ## Run from source
 
 ```bash
