@@ -330,7 +330,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         return repairSummary is null ? health : repairSummary + Environment.NewLine + health;
     }
 
-    private async Task RecordAsync(string root, string type, string id, object value, CancellationToken ct) { await journal.AppendAsync(root, new JournalEvent(1, Guid.NewGuid().ToString("N"), type, DateTimeOffset.UtcNow, id, value), ct); await index.RebuildAsync(root, ct); }
+    private async Task RecordAsync(string root, string type, string id, object value, CancellationToken ct) { await journal.AppendAsync(root, new JournalEvent(1, Guid.NewGuid().ToString("N"), type, DateTimeOffset.UtcNow, id, value), ct); await index.UpdateIncrementalAsync(root, ct); }
     private static int Count(string root, string directory) { var path = Path.Combine(root, ".arifce", directory); return Directory.Exists(path) ? Directory.EnumerateFiles(path, "*.json").Count() : 0; }
     private static string ToTitle(string text) => string.Join(' ', text.Split('-', StringSplitOptions.RemoveEmptyEntries).Select(x => char.ToUpperInvariant(x[0]) + x[1..]));
     private static async Task CreateAsync(string path, string content, List<string> created, CancellationToken ct) { if (File.Exists(path)) return; Directory.CreateDirectory(Path.GetDirectoryName(path)!); await File.WriteAllTextAsync(path, content, new UTF8Encoding(false), ct); created.Add(path); }
