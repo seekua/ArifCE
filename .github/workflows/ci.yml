@@ -75,3 +75,9 @@ jobs:
           if ($null -eq $binary) { throw 'Published executable not found' }
           & $binary.FullName help
           if ($LASTEXITCODE -ne 0) { throw "Binary smoke check failed with exit code $LASTEXITCODE" }
+      - name: Upload self-contained artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: arifce-${{ matrix.rid }}
+          path: artifacts/self-contained/${{ matrix.rid }}
+          if-no-files-found: error
