@@ -32,6 +32,7 @@ internal static class Cli
                 case "acceptance": await AcceptanceCommand(service, root, args); break;
                 case "trust": Require(args, 2, "trust refresh"); if (!args[1].Equals("refresh", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Unknown trust action."); var trust = await service.RefreshTrustAsync(root); Console.WriteLine($"Claims staled: {trust.ClaimsStaled}\nAcceptances flagged: {trust.AcceptancesFlagged}\n{string.Join(Environment.NewLine, trust.Warnings)}"); break;
                 case "codegraph": await CodeGraphCommand(new CodeGraphStore(), root, args); break;
+                case "contract": await ChangeContractCommand(service, root, args); break;
                 case "verify": Require(args, 2, "verify <claim-id> --command <command>"); var verified = await service.VerifyAsync(root, args[1], Option(args, "--command") ?? throw new ArgumentException("--command is required.")); Console.WriteLine($"{verified.Claim.Id}: {verified.Claim.Status} ({verified.Evidence.Id})"); break;
                 case "architecture": await ArchitectureCommand(service, root, args); break;
                 case "api": await ApiCommand(service, root, args); break;
@@ -61,6 +62,24 @@ internal static class Cli
             Console.WriteLine($"Related: {result.RelatedNodes.Count}\n{string.Join(Environment.NewLine, result.Edges.Select(edge => $"{edge.Kind}\t{edge.From}\t{edge.To}\t{edge.Confidence}"))}"); return;
         }
         throw new ArgumentException("Unknown codegraph action.");
+    }
+    private static async Task ChangeContractCommand(ProjectService service, string root, string[] args)
+    {
+        Require(args, 3, "contract create <symbol> [--risk <level>] [--invariant <text>] | contract status <id>");
+        if (args[1].Equals("create", StringComparison.OrdinalIgnoreCase))
+        {
+            var riskText = Option(args, "--risk") ?? "Medium";
+            if (!Enum.TryParse<RiskLevel>(riskText, true, out var risk)) throw new ArgumentException("--risk must be LOW, MEDIUM, HIGH, or CRITICAL.");
+            var contract = await service.CreateChangeContractAsync(root, args[2], risk, Options(args, "--invariant"));
+            Console.WriteLine($"{contract.Id}\nClaim: {contract.ClaimId}\nImpact candidates: {contract.PotentialImpact.Count}\nRelated tests: {contract.RelatedTests.Count}\nHistorical records: {contract.HistoricalRecords.Count}"); return;
+        }
+        if (args[1].Equals("status", StringComparison.OrdinalIgnoreCase))
+        {
+            var contract = await service.GetChangeContractAsync(root, args[2]) ?? throw new InvalidOperationException("Change contract not found.");
+            var claim = await service.GetClaimAsync(root, contract.ClaimId) ?? throw new InvalidOperationException("Linked claim not found.");
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { contract, claimStatus = claim.Status }, JsonDefaults.Options)); return;
+        }
+        throw new ArgumentException("Unknown contract action.");
     }
     private static async Task JournalCommand(JournalStore journal, string root, string[] args) { Require(args, 2, "journal rotate [--max-bytes N]"); if (args[1] != "rotate") throw new ArgumentException("Unknown journal action."); var marker = Array.IndexOf(args, "--max-bytes"); var max = marker >= 0 && marker + 1 < args.Length && long.TryParse(args[marker + 1], out var parsed) && parsed > 0 ? parsed : 5_000_000; var archive = await journal.RotateAsync(root, max); Console.WriteLine(archive is null ? "Journal is below the rotation threshold." : $"Journal archived: {archive}"); }
     private static async Task Context(IndexStore index, string root, string[] args) { var marker = Array.IndexOf(args, "--budget"); var budget = marker >= 0 && marker + 1 < args.Length && int.TryParse(args[marker + 1], out var n) && n > 0 ? n : 8000; var task = string.Join(' ', args.Skip(1).Take(marker < 0 ? args.Length - 1 : marker - 1)); var terms = System.Text.RegularExpressions.Regex.Matches(task, "[A-Za-z0-9_]+", System.Text.RegularExpressions.RegexOptions.CultureInvariant).Select(x => x.Value).Distinct(StringComparer.OrdinalIgnoreCase).Take(12).ToArray(); if (terms.Length == 0) throw new ArgumentException("Context task must contain searchable terms."); var query = string.Join(" OR ", terms.Select(x => $"\"{x}\"")); var used = 0; var snippetTokens = Math.Clamp(budget / Math.Max(terms.Length, 1), 20, 120); Console.WriteLine($"Context Budget: {budget}\n\nIncluded"); foreach (var item in await index.SearchAsync(root, query, 50, default, snippetTokens)) { var estimate = (int)Math.Ceiling(item.Snippet.Length / 4d); if (used + estimate > budget) continue; used += estimate; Console.WriteLine($"{item.Path}\t{estimate} tokens\tlexical term match, score {item.Score:F3}\n{item.Snippet}"); } Console.WriteLine($"\nEstimated total: {used}"); }
@@ -166,5 +185,5 @@ internal static class Cli
         var execution = await orchestrator.ExecuteAsync(root, new LlmRequest(args[2], prompt), Option(args, "--claim") ?? "CLAIM-UNASSIGNED");
         Console.WriteLine($"{execution.Route.Response.Text}\n\nProvider: {execution.Route.Response.ProviderId}\nModel: {execution.Route.Response.Model}\nTokens: {execution.Route.Response.Usage.TotalTokens}\nEstimated cost: {execution.Route.EstimatedCost:0.########}\nEvidence: {execution.Evidence.Id}");
     }
-    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, codegraph build|query, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, trust refresh, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, llm review, llm benchmark, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
+    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, codegraph build|query, contract create|status, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, trust refresh, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, llm review, llm benchmark, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
 }

@@ -216,6 +216,30 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Change_contract_reuses_claim_lifecycle_and_collects_impact_history_and_tests()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        var tests = Path.Combine(root, "tests"); Directory.CreateDirectory(tests);
+        await File.WriteAllTextAsync(Path.Combine(source, "PaymentService.cs"), "public sealed class PaymentService { public decimal Calculate(decimal value) { return value; } }");
+        await File.WriteAllTextAsync(Path.Combine(source, "InvoiceService.cs"), "public sealed class InvoiceService { public decimal Create(PaymentService payment) { return payment.Calculate(10); } }");
+        await File.WriteAllTextAsync(Path.Combine(tests, "PaymentServiceTests.cs"), "public sealed class PaymentServiceTests { [Fact] public void Calculate_returns_value() { new PaymentService().Calculate(10); } }");
+        await Service.CreateDecisionAsync(root, "Calculate rounding", "Calculate must preserve financial rounding", "Customer invoices depend on it");
+        await new CodeGraphStore().BuildAsync(root);
+
+        var contract = await Service.CreateChangeContractAsync(root, "Calculate", RiskLevel.High, ["Financial rounding remains unchanged"]);
+        Assert.StartsWith("CONTRACT-", contract.Id);
+        Assert.StartsWith("CLAIM-", contract.ClaimId);
+        Assert.Contains(contract.PotentialImpact, item => item.Path.EndsWith("InvoiceService.cs", StringComparison.Ordinal));
+        Assert.Contains(contract.RelatedTests, item => item.Path.EndsWith("PaymentServiceTests.cs", StringComparison.Ordinal));
+        Assert.Contains(contract.HistoricalRecords, path => path.StartsWith("decisions/", StringComparison.Ordinal));
+        Assert.Contains("Financial rounding remains unchanged", contract.Invariants);
+        Assert.Contains(contract.RequiredVerification, item => item.Contains("BUILD", StringComparison.Ordinal));
+        Assert.Contains(contract.RequiredVerification, item => item.Contains("independent review", StringComparison.Ordinal));
+        Assert.NotNull(await Service.GetClaimAsync(root, contract.ClaimId));
+    }
+
+    [Fact]
     public void Command_evidence_parser_extracts_localized_test_and_build_metrics()
     {
         var tests = CommandEvidenceParser.Parse("dotnet test", "Başarısız: 1, Başarılı: 7, Atlanan: 2, Toplam: 10");

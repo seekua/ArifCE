@@ -29,6 +29,8 @@ public sealed record ReviewRecord(int SchemaVersion, string Id, string ClaimId, 
 public sealed record VerificationRequirements(bool Build, bool Tests, bool IndependentReview, bool HumanApproval);
 public sealed record JournalEvent(int SchemaVersion, string EventId, string Type, DateTimeOffset OccurredAtUtc, string EntityId, object Data);
 public sealed record TrustRefreshResult(int ClaimsStaled, int AcceptancesFlagged, IReadOnlyList<string> Warnings);
+public sealed record ChangeImpactItem(string Kind, string Name, string Path, string Confidence);
+public sealed record ChangeContractRecord(int SchemaVersion, string Id, string Target, RiskLevel Risk, WorkStatus Status, string ClaimId, IReadOnlyList<ChangeImpactItem> PotentialImpact, IReadOnlyList<ChangeImpactItem> RelatedTests, IReadOnlyList<string> HistoricalRecords, IReadOnlyList<string> Invariants, IReadOnlyList<string> RequiredVerification, GitSnapshot Snapshot, DateTimeOffset CreatedAtUtc);
 
 public interface ISemanticReviewAdapter
 {

@@ -254,6 +254,33 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (!File.Exists(resolved)) throw new ArgumentException($"Path '{path}' does not exist."); return resolved;
     }
 
+    public async Task<ChangeContractRecord> CreateChangeContractAsync(string root, string target, RiskLevel risk, IReadOnlyList<string>? invariants = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(target)) throw new ArgumentException("A change target is required.", nameof(target));
+        var graphResult = await new CodeGraphStore().QueryAsync(root, target, cancellationToken);
+        if (graphResult.Matches.Count == 0) throw new InvalidOperationException($"No code-graph symbol matches '{target}'. Build the graph and use an exact symbol name.");
+        var impact = graphResult.RelatedNodes.Where(node => node.Kind is not ("TEST" or "TEST_FILE"))
+            .Select(node => new ChangeImpactItem(node.Kind, node.Name, node.Path, node.Confidence)).Distinct().OrderBy(item => item.Path, StringComparer.Ordinal).ToArray();
+        var tests = graphResult.RelatedNodes.Where(node => node.Kind is "TEST" or "TEST_FILE")
+            .Select(node => new ChangeImpactItem(node.Kind, node.Name, node.Path, node.Confidence)).Distinct().OrderBy(item => item.Path, StringComparer.Ordinal).ToArray();
+        var history = (await index.SearchAsync(root, target, 20, cancellationToken)).Where(hit => hit.Path.StartsWith("decisions/", StringComparison.OrdinalIgnoreCase) || hit.Path.StartsWith("attempts/", StringComparison.OrdinalIgnoreCase) || hit.Path.StartsWith("findings/", StringComparison.OrdinalIgnoreCase) || hit.Path.StartsWith("refactors/", StringComparison.OrdinalIgnoreCase) || hit.Path.StartsWith("claims/", StringComparison.OrdinalIgnoreCase)).Select(hit => hit.Path).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var policy = VerificationPolicy.For(risk);
+        var required = new List<string> { "Rebuild the deterministic code graph and review every impact candidate." };
+        if (policy.Build) required.Add("Attach successful BUILD evidence to the linked claim.");
+        if (policy.Tests) required.Add("Attach successful TEST_RUN evidence to the linked claim.");
+        if (policy.IndependentReview) required.Add("Record an agreeing independent review for the linked claim.");
+        if (policy.HumanApproval) required.Add("Record explicit human acceptance with rationale.");
+        required.AddRange(tests.Select(test => $"Run related test candidate: {test.Path}."));
+        var claim = await CreateClaimAsync(root, $"Change contract for {target} is satisfied", risk, cancellationToken);
+        var id = canonical.NextId(root, "contracts", "CONTRACT");
+        var contract = new ChangeContractRecord(1, id, target, risk, WorkStatus.Open, claim.Id, impact, tests, history, invariants ?? [], required.Distinct(StringComparer.Ordinal).ToArray(), await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow);
+        await canonical.WriteAsync(root, "contracts", id, contract, cancellationToken);
+        await RecordAsync(root, "contract.created", id, contract, cancellationToken);
+        return contract;
+    }
+
+    public Task<ChangeContractRecord?> GetChangeContractAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<ChangeContractRecord>(root, "contracts", id, cancellationToken);
+
     public async Task<TrustRefreshResult> RefreshTrustAsync(string root, CancellationToken cancellationToken = default)
     {
         var current = await git.CaptureAsync(root, cancellationToken);
