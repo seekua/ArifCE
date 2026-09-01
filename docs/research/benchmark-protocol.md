@@ -12,4 +12,6 @@ The repository's engineering suite is defined in `benchmarks/engineering-tasks.j
 
 `benchmarks/evaluators.json` provides the one-to-one independent scoring registry. Every task pins the full source commit and regression-test method that introduced its proof. The evaluator source is withheld from the candidate arm and is injected only after completion; merely adding a candidate-authored test with a matching name cannot affect scoring.
 
+`scripts/run-engineering-task-evaluator.ps1` materializes the pinned methods in a separate project after provenance completion and derives `taskPassed` from the independent test process exit code. The result records hashes for the registry, injected source, and evaluator output. The candidate repository retains no remote and never receives access to the trusted source repository.
+
 `scripts/validate-engineering-benchmark.ps1` validates manifest coverage and matched raw arm results. A normalized report is evidence only after every task has a real recorded execution. Empty values, invented measurements, unmatched tasks, and silently removed failures are invalid. Negative results remain in the published report.

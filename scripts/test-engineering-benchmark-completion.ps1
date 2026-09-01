@@ -23,6 +23,14 @@ try {
     $result = Get-Content -LiteralPath (Join-Path $trial 'result.json') -Raw | ConvertFrom-Json
     if ($null -ne $result.PSObject.Properties['success']) { throw 'Completion must not emit a hand-authored task-success field.' }
     if (-not $result.evaluation.checksPassed -or $result.evaluation.exitCode -ne 0) { throw 'Deterministic evaluator did not pass.' }
+    $registry = Get-Content -LiteralPath (Join-Path $repo 'benchmarks/evaluators.json') -Raw | ConvertFrom-Json
+    $registry.evaluators = @($registry.evaluators | Where-Object taskId -eq 'trust-dirty-content')
+    $registry.evaluators[0].sourceCommit = $manifest.fixtureCommit
+    $registryPath = Join-Path $root 'smoke-evaluators.json'
+    $registry | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $registryPath -Encoding utf8
+    & (Join-Path $PSScriptRoot 'run-engineering-task-evaluator.ps1') -TrialRoot $trial -EvaluatorRegistry $registryPath -SourceRepository $repo | Out-Null
+    $result = Get-Content -LiteralPath (Join-Path $trial 'result.json') -Raw | ConvertFrom-Json
+    if (-not $result.independentEvaluation.taskPassed -or $result.independentEvaluation.exitCode -ne 0) { throw 'Independent trusted evaluator did not pass.' }
     Add-Content -LiteralPath (Join-Path $trial 'agent.log') -Value 'tamper'
     $tamperRejected = $false
     try { & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null } catch { $tamperRejected = $true }
