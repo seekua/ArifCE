@@ -34,6 +34,9 @@ try {
     & (Join-Path $PSScriptRoot 'run-engineering-task-evaluator.ps1') -TrialRoot $trial -EvaluatorRegistry $registryPath -SourceRepository $repo | Out-Null
     $result = Get-Content -LiteralPath (Join-Path $trial 'result.json') -Raw | ConvertFrom-Json
     if (-not $result.independentEvaluation.taskPassed -or $result.independentEvaluation.exitCode -ne 0) { throw 'Independent trusted evaluator did not pass.' }
+    $evaluatorProject = Join-Path $trial 'independent-evaluator/IndependentEvaluator.csproj'
+    $projectHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $evaluatorProject).Hash.ToLowerInvariant()
+    if ($result.independentEvaluation.projectSha256 -ne $projectHash) { throw 'Independent evaluator project provenance is missing or invalid.' }
     Add-Content -LiteralPath (Join-Path $trial 'agent.log') -Value 'tamper'
     $tamperRejected = $false
     try { & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null } catch { $tamperRejected = $true }

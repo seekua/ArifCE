@@ -102,7 +102,7 @@ if ($entry.fixture -eq 'mcp') { $projectReferences += '../checkout/src/ArifCE.Mc
 $referenceXml = $projectReferences | ForEach-Object { "    <ProjectReference Include=`"$_`" />" }
 $project = @"
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><IsTestProject>true</IsTestProject></PropertyGroup>
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><IsTestProject>true</IsTestProject><NoWarn>`$(NoWarn);xUnit1051</NoWarn></PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageReference Include="xunit.v3" Version="3.2.2" />
@@ -124,6 +124,7 @@ $evaluation = [ordered]@{
     sourceFile = $entry.sourceFile
     methods = @($entry.methods)
     injectedSourceSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $sourcePath).Hash.ToLowerInvariant()
+    projectSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $projectPath).Hash.ToLowerInvariant()
     outputSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $outputPath).Hash.ToLowerInvariant()
     exitCode = $exitCode
     taskPassed = ($exitCode -eq 0)

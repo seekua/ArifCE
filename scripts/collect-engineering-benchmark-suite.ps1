@@ -25,8 +25,9 @@ foreach ($task in $definition.tasks) {
         if ($null -eq $result.independentEvaluation) { throw "Independent evaluation missing: $($task.id)/$arm" }
         if ($result.independentEvaluation.registrySha256 -ne $registryHash) { throw "Evaluator registry mismatch: $($task.id)/$arm" }
         $sourcePath = Join-Path $trial 'independent-evaluator/IndependentTests.cs'
+        $projectPath = Join-Path $trial 'independent-evaluator/IndependentEvaluator.csproj'
         $logPath = Join-Path $trial 'independent-evaluator/evaluator.log'
-        if ((Hash $sourcePath) -ne $result.independentEvaluation.injectedSourceSha256 -or (Hash $logPath) -ne $result.independentEvaluation.outputSha256) { throw "Independent evaluator artifact mismatch: $($task.id)/$arm" }
+        if ((Hash $sourcePath) -ne $result.independentEvaluation.injectedSourceSha256 -or (Hash $projectPath) -ne $result.independentEvaluation.projectSha256 -or (Hash $logPath) -ne $result.independentEvaluation.outputSha256) { throw "Independent evaluator artifact mismatch: $($task.id)/$arm" }
         if ([bool]$result.independentEvaluation.taskPassed -ne ([int]$result.independentEvaluation.exitCode -eq 0)) { throw "Independent evaluator outcome mismatch: $($task.id)/$arm" }
         $rows.Add($result)
     }
