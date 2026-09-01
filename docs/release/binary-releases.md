@@ -17,3 +17,9 @@ Before attaching an archive, verify its integrity locally:
 ```
 
 The .NET global tool remains the supported fallback. Release signing, additional architectures, package-manager manifests, and NativeAOT remain separate follow-up work.
+
+## Verification evidence
+
+Remote CI run [#319](https://github.com/seekua/ArifCE/actions/runs/33490587568) passed at commit `d26131f` on 2026-09-01. It completed the three-OS build/test/package matrix and all five native self-contained smoke jobs. The release-bundle script was also exercised locally with five archive fixtures, including archive-internal and release-level checksum validation.
+
+The revised tag workflow has not yet been exercised by a new version tag. GitHub Release attachment remains maintainer-controlled; neither the existing `v0.7.0` tag nor its source archive is rewritten to contain binaries built from later commits.

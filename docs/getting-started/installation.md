@@ -8,7 +8,7 @@ For a machine that should not install the .NET runtime separately, maintainers c
 ./scripts/publish-self-contained.ps1 -Runtime win-x64
 ```
 
-This packaging path is experimental until each platform has completed the smoke matrix. NativeAOT remains a separate, currently blocked compatibility track; see the [distribution plan](../release/native-aot-distribution.md).
+The five-platform self-contained matrix is verified in remote CI for Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Until a new version tag publishes the corresponding immutable archives, these builds remain CI artifacts rather than advertised `v0.7.0` release assets. NativeAOT remains a separate, currently blocked compatibility track; see the [distribution plan](../release/native-aot-distribution.md).
 
 ## Run from source
 
