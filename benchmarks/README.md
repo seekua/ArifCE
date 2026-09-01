@@ -29,6 +29,8 @@ After the agent commits its candidate and the agent host writes a raw activity l
 
 Completion runs a fixed `dotnet test` evaluator and binds the preparation manifest, prompt, raw log, candidate patch, final commit/tree, and evaluator output with SHA-256 hashes. It refuses dirty, unchanged, or previously completed trials. The result deliberately contains no user-authored task-success field: passing repository tests is evidence, but task correctness still requires the independent evaluator introduced by the next phase.
 
+`evaluators.json` pins each task to the full commit, trusted test source, fixture type, and regression-test method that first proved the requested behavior. Candidate-authored tests or a method with the same name are never scoring evidence. The Phase 51 runner must extract and hash the trusted evaluator only after the candidate run has ended.
+
 ```json
 {
   "taskId": "trust-dirty-content",

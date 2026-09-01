@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "policy": "Independent evaluator sources are extracted after the candidate run. Candidate-authored tests and matching method names are not scoring evidence.",
+  "evaluators": [
+    {
+      "taskId": "trust-dirty-content",
+      "sourceCommit": "1b5de55ecc0e6e97a34d5ec18b80c204d0e7a3ce",
+      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
+      "fixture": "behavior",
+      "methods": ["Claim_verification_and_git_freshness_are_snapshot_scoped"]
+    },
+    {
+      "taskId": "acceptance-risk-policy",
+      "sourceCommit": "1b5de55ecc0e6e97a34d5ec18b80c204d0e7a3ce",
+      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
+      "fixture": "behavior",
+      "methods": ["High_risk_acceptance_requires_build_tests_and_review"]
+    },
+    {
+      "taskId": "llm-secret-boundary",
+      "sourceCommit": "1b5de55ecc0e6e97a34d5ec18b80c204d0e7a3ce",
+      "sourceFile": "tests/ArifCE.Tests/LlmProviderTests.cs",
+      "fixture": "llm",
+      "methods": ["Orchestrator_blocks_secret_prompts_before_provider_call"]
+    },
+    {
+      "taskId": "canonical-concurrency",
+      "sourceCommit": "1b5de55ecc0e6e97a34d5ec18b80c204d0e7a3ce",
+      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
+      "fixture": "behavior",
+      "methods": ["Concurrent_updates_preserve_every_claim_evidence_link"]
+    },
+    {
+      "taskId": "stale-propagation",
+      "sourceCommit": "9eb36641ba9ca99fc5567bdddc5e895cfe86f11f",
+      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
+      "fixture": "behavior",
+      "methods": ["Stale_evidence_propagates_to_claim_acceptance_and_handoff"]
+    },
+    {
+      "taskId": "deterministic-code-graph",
+      "sourceCommit": "03700da8407ea340ea4202908be6b54f12c3d916",
+      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
+      "fixture": "behavior",
+      "methods": ["Deterministic_code_graph_links_symbols_references_tests_and_projects"]
+    },
+    {
+      "taskId": "change-impact-contract",
+      "sourceCommit": "49f38055f4c012e1533d5b6db8a8445c2c4659d0",
+      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
+      "fixture": "behavior",
+      "methods": ["Change_contract_reuses_claim_lifecycle_and_collects_impact_history_and_tests"]
+    },
+    {
+      "taskId": "structured-flight-recorder",
+      "sourceCommit": "cbf39ba0862d4ecc2316820d4a8c21107cb49c2d",
+      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
+      "fixture": "behavior",
+      "methods": ["Flight_recorder_keeps_structured_redacted_steps_and_promotes_failed_attempts"]
+    },
+    {
+      "taskId": "mcp-validation",
+      "sourceCommit": "f81342ca61eea211d66ca0394fa6d324ff90063c",
+      "sourceFile": "tests/ArifCE.Tests/McpProtocolTests.cs",
+      "fixture": "mcp",
+      "methods": ["Tool_calls_reject_invalid_enums_unknown_arguments_and_path_like_ids", "Oversized_mcp_request_is_rejected_before_json_processing"]
+    },
+    {
+      "taskId": "unfinished-verification-policy",
+      "sourceCommit": "46c61c891408c518a971d6c2698551c2d33a7ea5",
+      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
+      "fixture": "behavior",
+      "methods": ["Verification_commands_are_named_or_require_explicit_unsafe_approval"]
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$Manifest = 'benchmarks/engineering-tasks.json',
+    [string]$EvaluatorRegistry = 'benchmarks/evaluators.json',
     [string]$Baseline,
     [string]$Arifce,
     [string]$Output = 'docs/evidence/engineering-ab-run.json',
@@ -22,7 +23,22 @@ if (($ids | Sort-Object -Unique).Count -ne $ids.Count) { throw 'Benchmark task I
 $categories = @($definition.tasks | ForEach-Object category | Sort-Object -Unique)
 foreach ($category in $definition.requiredCategories) { if ($category -notin $categories) { throw "Required category '$category' is missing." } }
 foreach ($task in $definition.tasks) { foreach ($name in @('id','category','instruction','verification')) { Require-Property $task $name "Task $($task.id)" } }
-if ($ValidateManifestOnly) { Write-Output "Validated engineering benchmark manifest with $($definition.tasks.Count) tasks."; return }
+$evaluatorPath = Resolve-RepoPath $EvaluatorRegistry
+$evaluatorDefinition = Get-Content -LiteralPath $evaluatorPath -Raw | ConvertFrom-Json
+foreach ($name in @('schemaVersion','policy','evaluators')) { Require-Property $evaluatorDefinition $name 'Evaluator registry' }
+if ($evaluatorDefinition.schemaVersion -ne 1) { throw 'Unsupported evaluator registry schema.' }
+$evaluatorRows = @($evaluatorDefinition.evaluators)
+if ($evaluatorRows.Count -ne $definition.tasks.Count) { throw 'Evaluator registry must contain exactly one evaluator per task.' }
+$evaluatorIds = @($evaluatorRows | ForEach-Object taskId | Sort-Object)
+if (($evaluatorIds -join "`n") -ne (($ids | Sort-Object) -join "`n")) { throw 'Evaluator task IDs do not match the benchmark manifest.' }
+foreach ($evaluator in $evaluatorRows) {
+    foreach ($name in @('taskId','sourceCommit','sourceFile','fixture','methods')) { Require-Property $evaluator $name "Evaluator $($evaluator.taskId)" }
+    if ($evaluator.sourceCommit -notmatch '^[0-9a-f]{40}$') { throw "Evaluator $($evaluator.taskId) must pin a full Git commit." }
+    if ($evaluator.sourceFile -notmatch '^tests/ArifCE\.Tests/[A-Za-z0-9.]+\.cs$') { throw "Evaluator $($evaluator.taskId) has an unsafe source file." }
+    if ($evaluator.fixture -notin @('behavior','llm','mcp')) { throw "Evaluator $($evaluator.taskId) has an unknown fixture." }
+    if (@($evaluator.methods).Count -eq 0 -or @($evaluator.methods | Where-Object { $_ -notmatch '^[A-Za-z][A-Za-z0-9_]+$' }).Count -gt 0) { throw "Evaluator $($evaluator.taskId) has invalid method names." }
+}
+if ($ValidateManifestOnly) { Write-Output "Validated engineering benchmark manifest and independent evaluator registry with $($definition.tasks.Count) tasks."; return }
 if ([string]::IsNullOrWhiteSpace($Baseline) -or [string]::IsNullOrWhiteSpace($Arifce)) { throw '-Baseline and -Arifce are required unless -ValidateManifestOnly is used.' }
 
 function Read-Arm([string]$Path, [string]$ExpectedArm) {

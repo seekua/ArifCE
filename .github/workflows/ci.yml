@@ -41,7 +41,9 @@ jobs:
         run: ./scripts/check-version-consistency.ps1
       - name: Engineering benchmark manifest
         shell: pwsh
-        run: ./scripts/validate-engineering-benchmark.ps1 -ValidateManifestOnly
+        run: |
+          ./scripts/validate-engineering-benchmark.ps1 -ValidateManifestOnly
+          ./scripts/test-engineering-benchmark-registry.ps1
       - name: Engineering benchmark isolation
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-trial.ps1

@@ -10,4 +10,6 @@ The repository's engineering suite is defined in `benchmarks/engineering-tasks.j
 
 `scripts/complete-engineering-benchmark-trial.ps1` records a committed candidate, runs the fixed repository test evaluator, and hashes every raw provenance artifact. `-VerifyOnly` detects later changes to the manifest, prompt, agent log, patch, evaluator output, final commit, or final tree. Its output intentionally reports deterministic check status rather than task success; a green existing test suite alone does not prove that the requested behavior was implemented.
 
+`benchmarks/evaluators.json` provides the one-to-one independent scoring registry. Every task pins the full source commit and regression-test method that introduced its proof. The evaluator source is withheld from the candidate arm and is injected only after completion; merely adding a candidate-authored test with a matching name cannot affect scoring.
+
 `scripts/validate-engineering-benchmark.ps1` validates manifest coverage and matched raw arm results. A normalized report is evidence only after every task has a real recorded execution. Empty values, invented measurements, unmatched tasks, and silently removed failures are invalid. Negative results remain in the published report.
