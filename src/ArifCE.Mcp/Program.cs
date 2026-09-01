@@ -1,12 +1,15 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using ArifCE.Core;
 using ArifCE.Infrastructure;
 
 var server = new McpServer();
 await server.RunAsync(Console.In, Console.Out);
 
-internal sealed class McpServer
+internal sealed partial class McpServer
 {
+    private const int MaxRequestCharacters = 262_144;
+    private const int MaxArgumentCharacters = 100_000;
     private readonly ProjectLocator locator = new();
     private readonly CanonicalStore canonical = new();
     private readonly JournalStore journal = new();
@@ -28,6 +31,7 @@ internal sealed class McpServer
         JsonDocument? document = null;
         try
         {
+            if (line.Length > MaxRequestCharacters) throw new McpException(-32600, $"Request exceeds the {MaxRequestCharacters}-character limit.");
             document = JsonDocument.Parse(line);
             var root = document.RootElement;
             var method = root.TryGetProperty("method", out var methodValue) ? methodValue.GetString() : null;
@@ -90,8 +94,12 @@ internal sealed class McpServer
 
     private async Task<object> CallToolAsync(JsonElement parameters)
     {
+        if (parameters.ValueKind != JsonValueKind.Object) throw new McpException(-32602, "Tool parameters must be an object.");
         var name = parameters.TryGetProperty("name", out var nameValue) ? nameValue.GetString() : null;
-        var arguments = parameters.TryGetProperty("arguments", out var args) ? args : default;
+        if (string.IsNullOrWhiteSpace(name)) throw new McpException(-32602, "Tool name is required.");
+        var arguments = parameters.TryGetProperty("arguments", out var args) ? args : JsonSerializer.Deserialize<JsonElement>("{}");
+        if (arguments.ValueKind != JsonValueKind.Object) throw new McpException(-32602, "Tool arguments must be an object.");
+        ValidateArguments(name, arguments);
         var root = ProjectRoot();
         var service = new ProjectService(canonical, journal, index, git);
         var text = name switch
@@ -133,7 +141,8 @@ internal sealed class McpServer
     private async Task<string> SearchAsync(string root, JsonElement arguments)
     {
         var query = Required(arguments, "query");
-        var limit = arguments.TryGetProperty("limit", out var value) && value.TryGetInt32(out var parsed) ? Math.Clamp(parsed, 1, 50) : 20;
+        var limit = 20;
+        if (arguments.TryGetProperty("limit", out var value) && (!value.TryGetInt32(out limit) || limit is < 1 or > 50)) throw new McpException(-32602, "limit must be an integer from 1 to 50.");
         var hits = await index.SearchAsync(root, query, limit);
         return string.Join(Environment.NewLine, hits.Select(x => $"{x.Path}\t{x.Score:F3}\t{x.Snippet.Replace(Environment.NewLine, " ")}"));
     }
@@ -141,7 +150,8 @@ internal sealed class McpServer
     private static async Task<string> ContextAsync(string root, JsonElement arguments)
     {
         var task = Required(arguments, "task");
-        var budget = arguments.TryGetProperty("budget", out var value) && value.TryGetInt32(out var parsed) ? Math.Clamp(parsed, 1, 20000) : 4000;
+        var budget = 4000;
+        if (arguments.TryGetProperty("budget", out var value) && (!value.TryGetInt32(out budget) || budget is < 1 or > 20000)) throw new McpException(-32602, "budget must be an integer from 1 to 20000.");
         var context = await new LlmContextComposer(new IndexStore()).ComposeAsync(root, task, budget);
         return JsonSerializer.Serialize(new { context.Task, context.Content, context.EstimatedTokens, context.Sources });
     }
@@ -176,9 +186,57 @@ internal sealed class McpServer
     }
 
     private string ProjectRoot() => locator.FindRoot(Environment.GetEnvironmentVariable("ARIFCE_PROJECT_ROOT") ?? Environment.CurrentDirectory);
-    private static string Required(JsonElement value, string name) => value.ValueKind == JsonValueKind.Object && value.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(property.GetString()) ? property.GetString()! : throw new McpException(-32602, $"Missing required argument: {name}");
-    private static string? Optional(JsonElement value, string name) => value.ValueKind == JsonValueKind.Object && value.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String ? property.GetString() : null;
-    private static T Enum<T>(JsonElement value, string name, T fallback) where T : struct, System.Enum => Optional(value, name) is { } text && System.Enum.TryParse<T>(text, true, out var parsed) ? parsed : fallback;
+    private static string Required(JsonElement value, string name)
+    {
+        if (value.ValueKind != JsonValueKind.Object || !value.TryGetProperty(name, out var property) || property.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(property.GetString())) throw new McpException(-32602, $"Missing required argument: {name}");
+        var text = property.GetString()!;
+        if (text.Length > MaxArgumentCharacters || text.Contains('\0')) throw new McpException(-32602, $"Argument {name} is too large or contains a null character.");
+        return text;
+    }
+    private static string? Optional(JsonElement value, string name)
+    {
+        if (!value.TryGetProperty(name, out var property)) return null;
+        if (property.ValueKind != JsonValueKind.String) throw new McpException(-32602, $"Argument {name} must be a string.");
+        var text = property.GetString();
+        if (text is { Length: > MaxArgumentCharacters } || text?.Contains('\0') == true) throw new McpException(-32602, $"Argument {name} is too large or contains a null character.");
+        return text;
+    }
+    private static T Enum<T>(JsonElement value, string name, T fallback) where T : struct, System.Enum
+    {
+        var text = Optional(value, name);
+        if (text is null) return fallback;
+        return System.Enum.TryParse<T>(text, true, out var parsed) && System.Enum.IsDefined(parsed) ? parsed : throw new McpException(-32602, $"Invalid {name} value: {text}");
+    }
+    private static void ValidateArguments(string tool, JsonElement arguments)
+    {
+        var allowed = tool switch
+        {
+            "arifce_status" or "arifce_handoff" or "arifce_llm_providers" => Array.Empty<string>(),
+            "arifce_search" => ["query", "limit"],
+            "arifce_context" => ["task", "budget"],
+            "arifce_checkpoint" => ["summary"],
+            "arifce_task_create" => ["title", "risk"],
+            "arifce_decision_create" => ["title", "decision", "historicalRationale"],
+            "arifce_attempt_record" => ["taskId", "approach", "result", "reason"],
+            "arifce_claim_create" => ["statement", "risk"],
+            "arifce_finding_create" => ["title", "description", "severity", "taskId", "path"],
+            "arifce_review_record" => ["claimId", "reviewer", "verdict", "summary"],
+            "arifce_acceptance_create" => ["claimId", "actor", "rationale"],
+            "arifce_llm_run" => ["task", "prompt", "claimId", "approved"],
+            "arifce_llm_review" => ["claimId", "prompt", "reviewer", "rationale", "approved"],
+            "arifce_refactor_status" or "arifce_refactor_verify" => ["id"],
+            _ => throw new McpException(-32602, $"Unknown tool: {tool}")
+        };
+        var allowedSet = allowed.ToHashSet(StringComparer.Ordinal);
+        foreach (var property in arguments.EnumerateObject()) if (!allowedSet.Contains(property.Name)) throw new McpException(-32602, $"Unknown argument for {tool}: {property.Name}");
+        foreach (var property in arguments.EnumerateObject())
+        {
+            if (property.Value.ValueKind == JsonValueKind.String && property.Value.GetString() is { Length: > MaxArgumentCharacters }) throw new McpException(-32602, $"Argument {property.Name} exceeds the size limit.");
+            if ((property.Name is "id" or "taskId" or "claimId") && property.Value.ValueKind == JsonValueKind.String && !SafeId().IsMatch(property.Value.GetString() ?? string.Empty)) throw new McpException(-32602, $"Argument {property.Name} is not a valid repository entity ID.");
+        }
+    }
+    [GeneratedRegex(@"^[A-Za-z]+-[A-Za-z0-9][A-Za-z0-9-]{0,63}$", RegexOptions.CultureInvariant)]
+    private static partial Regex SafeId();
     private static object Tool(string name, string description, object schema) => new { name, description, inputSchema = schema };
     private static object Error(JsonElement? id, int code, string message) => new { jsonrpc = "2.0", id, error = new { code, message } };
     private static async Task WriteAsync(TextWriter output, object value) { await output.WriteLineAsync(JsonSerializer.Serialize(value)); await output.FlushAsync(); }
