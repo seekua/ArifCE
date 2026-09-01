@@ -77,6 +77,12 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 47: verify self-contained binaries on five native targets and enforce immutable release assets.
 - [x] Phase 48: publish V0.8.0 and record the tag workflow, checksums, assets, and release evidence.
 
+## V0.9 measured-value phases
+
+- [x] Phase 49: enforce history-free, matched benchmark trial isolation with reproducible fixture trees and cross-platform smoke coverage.
+- [ ] Phase 50: capture tamper-evident raw run provenance and deterministic evaluator outcomes without accepting hand-authored success claims.
+- [ ] Phase 51: execute and publish the first complete matched engineering benchmark, including negative results and limitations.
+
 ## Explicit deferrals
 
 - **Self-contained distribution:** the repeatable CLI packaging script, dependency policy, five-target native smoke matrix, archive-level checksums, and immutable release publication are proven by [`v0.8.0`](https://github.com/seekua/ArifCE/releases/tag/v0.8.0). [Tag CI run 33496418909](https://github.com/seekua/ArifCE/actions/runs/33496418909) and [release workflow run 33496418947](https://github.com/seekua/ArifCE/actions/runs/33496418947) passed. The five public archives were downloaded and verified against the release-level and archive-internal checksums. Signing, package-manager manifests, and NativeAOT compatibility remain deferred.

@@ -9,6 +9,15 @@ Run each task twice from a fresh isolated checkout of the fixture commit:
 
 Do not expose later commits, previous-arm output, or another agent's workspace to either arm. Record one JSON object per task with these fields:
 
+Prepare a history-free trial instead of using a worktree from the current repository:
+
+```text
+./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm baseline -Model model-and-version -TokenBudget 50000
+./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm arifce -Model model-and-version -TokenBudget 50000
+```
+
+The preparer exports only the fixture tree, creates a new one-commit repository with no remotes, and refuses to overwrite an existing trial. Each arm receives the same snapshot and a separate prompt. The ArifCE arm is permitted to use only the canonical memory already present in that snapshot; the baseline arm is explicitly prohibited from using ArifCE retrieval. This prevents later solution commits and other-arm output from leaking through shared Git history.
+
 ```json
 {
   "taskId": "trust-dirty-content",
