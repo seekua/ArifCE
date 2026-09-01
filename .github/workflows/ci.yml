@@ -50,7 +50,9 @@ jobs:
       - name: Engineering benchmark completion provenance
         if: runner.os == 'Linux'
         shell: pwsh
-        run: ./scripts/test-engineering-benchmark-completion.ps1
+        run: |
+          ./scripts/test-engineering-benchmark-completion.ps1
+          ./scripts/test-engineering-benchmark-suite.ps1
       - name: Release workflow policy
         shell: pwsh
         run: ./scripts/check-release-workflow-policy.ps1

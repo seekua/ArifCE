@@ -33,6 +33,8 @@ Completion runs a fixed `dotnet test` evaluator and binds the preparation manife
 
 `run-engineering-task-evaluator.ps1` performs that post-run injection. It first verifies the completed provenance bundle, extracts only the pinned `[Fact]` methods from the trusted Git object, builds a separate test project referencing the candidate projects, records the injected source/output/registry hashes, and derives `taskPassed` solely from its exit code. It refuses a second evaluation. The trusted source repository must contain the pinned commits; it is never exposed as a remote to the candidate checkout.
 
+`new-engineering-benchmark-suite.ps1` prepares all twenty matched trial directories without invoking an agent. After every candidate has been completed and independently evaluated, `collect-engineering-benchmark-suite.ps1` emits a report only if the set is complete, matched, and hash-consistent. Partial runs are not aggregated.
+
 ```json
 {
   "taskId": "trust-dirty-content",
