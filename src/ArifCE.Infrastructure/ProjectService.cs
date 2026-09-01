@@ -254,6 +254,52 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (!File.Exists(resolved)) throw new ArgumentException($"Path '{path}' does not exist."); return resolved;
     }
 
+    public async Task<AgentRunRecord> StartAgentRunAsync(string root, string provider, string agent, string goal, string? taskId = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(provider) || string.IsNullOrWhiteSpace(agent) || string.IsNullOrWhiteSpace(goal)) throw new ArgumentException("Provider, agent, and goal are required.");
+        if (!string.IsNullOrWhiteSpace(taskId) && await GetTaskAsync(root, taskId, cancellationToken) is null) throw new InvalidOperationException($"Task {taskId} was not found.");
+        var safeGoal = new SecretRedactor().Redact(goal).Text;
+        var id = canonical.NextId(root, "runs", "RUN");
+        var run = new AgentRunRecord(1, id, provider.Trim().ToLowerInvariant(), agent.Trim(), Truncate(safeGoal, 1000), taskId, AgentRunStatus.Running, [], await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow);
+        await canonical.WriteAsync(root, "runs", id, run, cancellationToken);
+        await RecordAsync(root, "run.started", id, new { run.Provider, run.Agent, run.Goal, run.TaskId }, cancellationToken);
+        return run;
+    }
+
+    public Task<AgentRunRecord?> GetAgentRunAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<AgentRunRecord>(root, "runs", id, cancellationToken);
+
+    public async Task<AgentRunRecord> RecordAgentRunStepAsync(string root, string id, AgentStepKind kind, string summary, string? outcome = null, int? exitCode = null, IReadOnlyList<string>? relatedIds = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(summary)) throw new ArgumentException("A structured step summary is required.", nameof(summary));
+        var safeSummary = Truncate(new SecretRedactor().Redact(summary).Text, 1000);
+        var run = await GetAgentRunAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Run {id} was not found.");
+        if (run.Status != AgentRunStatus.Running) throw new InvalidOperationException($"Run {id} is already {run.Status}.");
+        var links = (relatedIds ?? []).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (kind == AgentStepKind.Attempt && IsFailedOutcome(outcome, exitCode) && !string.IsNullOrWhiteSpace(run.TaskId))
+        {
+            var attempt = await RecordAttemptAsync(root, run.TaskId, safeSummary, outcome ?? "FAILED", $"Agent run {id} recorded a failed attempt.", links, cancellationToken);
+            links.Add(attempt.Id);
+        }
+        var step = new AgentRunStep(Guid.NewGuid().ToString("N"), kind, safeSummary, outcome, exitCode, links.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), DateTimeOffset.UtcNow);
+        var updated = await canonical.UpdateAsync<AgentRunRecord>(root, "runs", id, current =>
+        {
+            if (current.Status != AgentRunStatus.Running) throw new InvalidOperationException($"Run {id} is already {current.Status}.");
+            return current with { Steps = current.Steps.Append(step).ToArray() };
+        }, cancellationToken);
+        await RecordAsync(root, "run.step-recorded", id, new { step.Id, step.Kind, step.Outcome, step.ExitCode, step.RelatedIds }, cancellationToken);
+        return updated;
+    }
+
+    public async Task<AgentRunRecord> FinishAgentRunAsync(string root, string id, string summary, bool succeeded, CancellationToken cancellationToken = default)
+    {
+        await RecordAgentRunStepAsync(root, id, AgentStepKind.Result, summary, succeeded ? "PASSED" : "FAILED", succeeded ? 0 : 1, cancellationToken: cancellationToken);
+        var updated = await canonical.UpdateAsync<AgentRunRecord>(root, "runs", id, current => current with { Status = succeeded ? AgentRunStatus.Completed : AgentRunStatus.Failed, CompletedAtUtc = DateTimeOffset.UtcNow }, cancellationToken);
+        await RecordAsync(root, succeeded ? "run.completed" : "run.failed", id, new { updated.Status, updated.CompletedAtUtc }, cancellationToken);
+        return updated;
+    }
+
+    private static bool IsFailedOutcome(string? outcome, int? exitCode) => exitCode is not null and not 0 || outcome?.Equals("FAILED", StringComparison.OrdinalIgnoreCase) == true || outcome?.Equals("REJECTED", StringComparison.OrdinalIgnoreCase) == true;
+
     public async Task<ChangeContractRecord> CreateChangeContractAsync(string root, string target, RiskLevel risk, IReadOnlyList<string>? invariants = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(target)) throw new ArgumentException("A change target is required.", nameof(target));

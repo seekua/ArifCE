@@ -33,6 +33,7 @@ internal static class Cli
                 case "trust": Require(args, 2, "trust refresh"); if (!args[1].Equals("refresh", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Unknown trust action."); var trust = await service.RefreshTrustAsync(root); Console.WriteLine($"Claims staled: {trust.ClaimsStaled}\nAcceptances flagged: {trust.AcceptancesFlagged}\n{string.Join(Environment.NewLine, trust.Warnings)}"); break;
                 case "codegraph": await CodeGraphCommand(new CodeGraphStore(), root, args); break;
                 case "contract": await ChangeContractCommand(service, root, args); break;
+                case "run": await AgentRunCommand(service, root, args); break;
                 case "verify": Require(args, 2, "verify <claim-id> --command <command>"); var verified = await service.VerifyAsync(root, args[1], Option(args, "--command") ?? throw new ArgumentException("--command is required.")); Console.WriteLine($"{verified.Claim.Id}: {verified.Claim.Status} ({verified.Evidence.Id})"); break;
                 case "architecture": await ArchitectureCommand(service, root, args); break;
                 case "api": await ApiCommand(service, root, args); break;
@@ -80,6 +81,25 @@ internal static class Cli
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { contract, claimStatus = claim.Status }, JsonDefaults.Options)); return;
         }
         throw new ArgumentException("Unknown contract action.");
+    }
+    private static async Task AgentRunCommand(ProjectService service, string root, string[] args)
+    {
+        Require(args, 3, "run start <goal> --provider <name> --agent <name> [--task <id>] | run event <id> --kind <kind> --summary <text> [--outcome <value>] [--exit-code <n>] [--related <id>] | run finish <id> --summary <text> [--failed] | run status <id>");
+        switch (args[1].ToLowerInvariant())
+        {
+            case "start":
+                Console.WriteLine((await service.StartAgentRunAsync(root, Option(args, "--provider") ?? throw new ArgumentException("--provider is required."), Option(args, "--agent") ?? throw new ArgumentException("--agent is required."), args[2], Option(args, "--task"))).Id); return;
+            case "event":
+                if (!Enum.TryParse<AgentStepKind>(Option(args, "--kind"), true, out var kind)) throw new ArgumentException("--kind must be INVESTIGATION, ATTEMPT, EVIDENCE, DECISION, or RESULT.");
+                var exitCode = int.TryParse(Option(args, "--exit-code"), out var parsedExitCode) ? parsedExitCode : (int?)null;
+                var run = await service.RecordAgentRunStepAsync(root, args[2], kind, Option(args, "--summary") ?? throw new ArgumentException("--summary is required."), Option(args, "--outcome"), exitCode, Options(args, "--related"));
+                Console.WriteLine($"{run.Id}: {run.Steps.Count} structured step(s)"); return;
+            case "finish":
+                Console.WriteLine((await service.FinishAgentRunAsync(root, args[2], Option(args, "--summary") ?? throw new ArgumentException("--summary is required."), !args.Contains("--failed", StringComparer.OrdinalIgnoreCase))).Status); return;
+            case "status":
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetAgentRunAsync(root, args[2]) ?? throw new InvalidOperationException("Agent run not found."), JsonDefaults.Options)); return;
+            default: throw new ArgumentException("Unknown run action.");
+        }
     }
     private static async Task JournalCommand(JournalStore journal, string root, string[] args) { Require(args, 2, "journal rotate [--max-bytes N]"); if (args[1] != "rotate") throw new ArgumentException("Unknown journal action."); var marker = Array.IndexOf(args, "--max-bytes"); var max = marker >= 0 && marker + 1 < args.Length && long.TryParse(args[marker + 1], out var parsed) && parsed > 0 ? parsed : 5_000_000; var archive = await journal.RotateAsync(root, max); Console.WriteLine(archive is null ? "Journal is below the rotation threshold." : $"Journal archived: {archive}"); }
     private static async Task Context(IndexStore index, string root, string[] args) { var marker = Array.IndexOf(args, "--budget"); var budget = marker >= 0 && marker + 1 < args.Length && int.TryParse(args[marker + 1], out var n) && n > 0 ? n : 8000; var task = string.Join(' ', args.Skip(1).Take(marker < 0 ? args.Length - 1 : marker - 1)); var terms = System.Text.RegularExpressions.Regex.Matches(task, "[A-Za-z0-9_]+", System.Text.RegularExpressions.RegexOptions.CultureInvariant).Select(x => x.Value).Distinct(StringComparer.OrdinalIgnoreCase).Take(12).ToArray(); if (terms.Length == 0) throw new ArgumentException("Context task must contain searchable terms."); var query = string.Join(" OR ", terms.Select(x => $"\"{x}\"")); var used = 0; var snippetTokens = Math.Clamp(budget / Math.Max(terms.Length, 1), 20, 120); Console.WriteLine($"Context Budget: {budget}\n\nIncluded"); foreach (var item in await index.SearchAsync(root, query, 50, default, snippetTokens)) { var estimate = (int)Math.Ceiling(item.Snippet.Length / 4d); if (used + estimate > budget) continue; used += estimate; Console.WriteLine($"{item.Path}\t{estimate} tokens\tlexical term match, score {item.Score:F3}\n{item.Snippet}"); } Console.WriteLine($"\nEstimated total: {used}"); }
@@ -185,5 +205,5 @@ internal static class Cli
         var execution = await orchestrator.ExecuteAsync(root, new LlmRequest(args[2], prompt), Option(args, "--claim") ?? "CLAIM-UNASSIGNED");
         Console.WriteLine($"{execution.Route.Response.Text}\n\nProvider: {execution.Route.Response.ProviderId}\nModel: {execution.Route.Response.Model}\nTokens: {execution.Route.Response.Usage.TotalTokens}\nEstimated cost: {execution.Route.EstimatedCost:0.########}\nEvidence: {execution.Evidence.Id}");
     }
-    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, codegraph build|query, contract create|status, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, trust refresh, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, llm review, llm benchmark, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
+    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, codegraph build|query, contract create|status, run start|event|finish|status, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, trust refresh, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, llm review, llm benchmark, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
 }

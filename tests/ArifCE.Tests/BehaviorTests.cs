@@ -240,6 +240,28 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Flight_recorder_keeps_structured_redacted_steps_and_promotes_failed_attempts()
+    {
+        await Service.InitializeAsync(root, false);
+        var task = await Service.CreateTaskAsync(root, "Fix payment regression", RiskLevel.High);
+        var run = await Service.StartAgentRunAsync(root, "codex", "builder", "Investigate payment calculation", task.Id);
+        await Service.RecordAgentRunStepAsync(root, run.Id, AgentStepKind.Investigation, "Traced the calculation call path");
+        var updated = await Service.RecordAgentRunStepAsync(root, run.Id, AgentStepKind.Attempt, "Tried cached totals password=hunter2", "FAILED", 1);
+        Assert.Equal(2, updated.Steps.Count);
+        Assert.DoesNotContain("hunter2", updated.Steps[1].Summary);
+        Assert.Contains(updated.Steps[1].RelatedIds, id => id.StartsWith("ATTEMPT-", StringComparison.Ordinal));
+        var attempt = await Service.GetAttemptAsync(root, updated.Steps[1].RelatedIds.Single(id => id.StartsWith("ATTEMPT-", StringComparison.Ordinal)));
+        Assert.NotNull(attempt);
+        Assert.Contains("cached totals", attempt.Approach);
+        var finished = await Service.FinishAgentRunAsync(root, run.Id, "Fallback implementation passed", true);
+        Assert.Equal(AgentRunStatus.Completed, finished.Status);
+        Assert.Equal(AgentStepKind.Result, finished.Steps[^1].Kind);
+        var handoff = await Service.HandoffAsync(root);
+        Assert.Contains(attempt.Id, handoff.Markdown);
+        Assert.DoesNotContain("hunter2", handoff.Markdown);
+    }
+
+    [Fact]
     public void Command_evidence_parser_extracts_localized_test_and_build_metrics()
     {
         var tests = CommandEvidenceParser.Parse("dotnet test", "Başarısız: 1, Başarılı: 7, Atlanan: 2, Toplam: 10");

@@ -7,6 +7,8 @@ public enum RiskLevel { Low, Medium, High, Critical }
 public enum ReviewPhase { IndependentInspection, Reconciliation }
 public enum ReviewVerdict { Agree, PartiallyAgree, Disagree, Inconclusive }
 public enum AcceptanceStatus { Pending, Accepted, Rejected, Revoked, NeedsReview }
+public enum AgentRunStatus { Running, Completed, Failed }
+public enum AgentStepKind { Investigation, Attempt, Evidence, Decision, Result }
 
 public sealed record GitSnapshot(string? Commit, string? Branch, bool IsDirty, IReadOnlyList<string> ChangedFiles, string Digest);
 public sealed record TaskRecord(int SchemaVersion, string Id, string Title, string? Description, WorkStatus Status, RiskLevel Risk, DateTimeOffset CreatedAtUtc);
@@ -31,6 +33,8 @@ public sealed record JournalEvent(int SchemaVersion, string EventId, string Type
 public sealed record TrustRefreshResult(int ClaimsStaled, int AcceptancesFlagged, IReadOnlyList<string> Warnings);
 public sealed record ChangeImpactItem(string Kind, string Name, string Path, string Confidence);
 public sealed record ChangeContractRecord(int SchemaVersion, string Id, string Target, RiskLevel Risk, WorkStatus Status, string ClaimId, IReadOnlyList<ChangeImpactItem> PotentialImpact, IReadOnlyList<ChangeImpactItem> RelatedTests, IReadOnlyList<string> HistoricalRecords, IReadOnlyList<string> Invariants, IReadOnlyList<string> RequiredVerification, GitSnapshot Snapshot, DateTimeOffset CreatedAtUtc);
+public sealed record AgentRunStep(string Id, AgentStepKind Kind, string Summary, string? Outcome, int? ExitCode, IReadOnlyList<string> RelatedIds, DateTimeOffset OccurredAtUtc);
+public sealed record AgentRunRecord(int SchemaVersion, string Id, string Provider, string Agent, string Goal, string? TaskId, AgentRunStatus Status, IReadOnlyList<AgentRunStep> Steps, GitSnapshot StartedAt, DateTimeOffset CreatedAtUtc, DateTimeOffset? CompletedAtUtc = null);
 
 public interface ISemanticReviewAdapter
 {

@@ -40,6 +40,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Local project workspace](architecture/local-project-workspace.md)
 - [Deterministic code graph](architecture/code-graph.md)
 - [Change Impact Contracts](concepts/change-contracts.md)
+- [Agent Flight Recorder](concepts/agent-flight-recorder.md)
 - [Context retrieval](architecture/context-retrieval.md)
 - [Agent adapters](architecture/agent-adapters.md)
 - [MCP integration](getting-started/mcp.md)

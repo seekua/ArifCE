@@ -98,6 +98,16 @@ arifce contract status CONTRACT-0001
 
 The contract collects impact candidates, related tests, matching historical records, invariants, and risk-derived verification requirements. It creates and references a normal claim; evidence, review, freshness, and acceptance continue through the existing claim lifecycle.
 
+Record a bounded agent engineering run:
+
+```text
+arifce run start "Investigate payment calculation" --provider codex --agent builder --task TASK-0001
+arifce run event RUN-0001 --kind ATTEMPT --summary "Tried cached totals" --outcome FAILED --exit-code 1
+arifce run finish RUN-0001 --summary "Fallback implementation passed"
+```
+
+The recorder stores structured, redacted summaries rather than transcripts. A failed attempt linked to a task also becomes a canonical failed-attempt record so search and handoff can surface it later.
+
 `architecture check` is a V0.2 deterministic evidence adapter. It scans only the explicitly supplied repository-local source paths (`.cs`, project, props, and targets files), excludes derived and raw directories, and records matching forbidden references with file and line numbers. A clean check proves only that the selected paths do not contain the supplied text references.
 
 `api baseline <assembly-path> --baseline <path>` writes a normalized public API baseline for one selected .NET assembly. `api compare <assembly-path> --baseline <path>` reports added and removed public entries and exits non-zero when the selected baseline is not compatible. These commands inspect only the explicitly named assembly and baseline paths.
