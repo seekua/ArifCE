@@ -43,7 +43,9 @@ try {
 
         $claimId = (& $executable claim create 'The packaged CLI can execute a deterministic command' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $claimId -notmatch '^CLAIM-\d{4}$') { throw "Claim creation failed: $claimId" }
-        $verificationOutput = (& $executable verify $claimId --command 'dotnet --version' | Out-String)
+        # `dotnet --version` is intentionally outside the named build/test allowlist.
+        # The smoke fixture opts in explicitly so packaging tests the guarded unsafe-command path.
+        $verificationOutput = (& $executable verify $claimId --command 'dotnet --version' --allow-unsafe-command | Out-String)
         if ($LASTEXITCODE -ne 0 -or $verificationOutput -notmatch "${claimId}: Supported \(EVIDENCE-\d{4}\)") { throw 'Deterministic claim verification failed.' }
         New-Item -ItemType Directory -Force -Path (Join-Path $repositoryDirectory 'src') | Out-Null
         Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\Boundary.cs') -Value 'namespace PackageFixture;'
@@ -106,7 +108,7 @@ try {
         if ($taskRecord.status -ne 'COMPLETED') { throw 'Canonical task state is not completed.' }
         if ($decisionRecord.historicalRationale -ne 'Unknown.') { throw 'Decision did not preserve unknown historical rationale.' }
         if ($attemptRecord.taskId -ne $taskId -or $attemptRecord.result -ne 'rejected') { throw 'Canonical failed-attempt state is incomplete.' }
-        if ($claimRecord.status -ne 'SUPPORTED' -or $claimRecord.evidence.Count -lt 1) { throw 'Canonical claim/evidence state is incomplete.' }
+        if ($claimRecord.status -ne 'STALE' -or $claimRecord.evidence.Count -lt 1) { throw 'Repository changes did not preserve evidence while invalidating the stale claim.' }
         if ($architectureClaimRecord.evidence.Count -ne 1) { throw 'Canonical architecture-boundary state is incomplete.' }
         if ($apiClaimRecord.evidence.Count -ne 1) { throw 'Canonical API evidence state is incomplete.' }
         $schemaClaimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($schemaClaimId.ToLowerInvariant()).json") | ConvertFrom-Json
