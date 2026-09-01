@@ -52,8 +52,11 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     {
         var item = await GetTaskAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Task {id} was not found.");
         if (item.Status is WorkStatus.Abandoned or WorkStatus.Completed) throw new InvalidOperationException($"Task {id} is already {item.Status}.");
-        var updated = item with { Status = WorkStatus.Completed };
-        await canonical.WriteAsync(root, "tasks", id, updated, cancellationToken);
+        var updated = await canonical.UpdateAsync<TaskRecord>(root, "tasks", id, current =>
+        {
+            if (current.Status is WorkStatus.Abandoned or WorkStatus.Completed) throw new InvalidOperationException($"Task {id} is already {current.Status}.");
+            return current with { Status = WorkStatus.Completed };
+        }, cancellationToken);
         await RecordAsync(root, "task.completed", id, updated, cancellationToken); return updated;
     }
 
@@ -89,7 +92,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     {
         var item = await GetFindingAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Finding {id} was not found.");
         if (item.Status == WorkStatus.Completed) throw new InvalidOperationException($"Finding {id} is already resolved.");
-        var updated = item with { Status = WorkStatus.Completed }; await canonical.WriteAsync(root, "findings", id, updated, cancellationToken); await RecordAsync(root, "finding.resolved", id, updated, cancellationToken); return updated;
+        var updated = await canonical.UpdateAsync<FindingRecord>(root, "findings", id, current => current with { Status = WorkStatus.Completed }, cancellationToken); await RecordAsync(root, "finding.resolved", id, updated, cancellationToken); return updated;
     }
 
     public async Task<ReviewRecord> RecordReviewAsync(string root, string claimId, string reviewer, ReviewVerdict verdict, string summary, IReadOnlyList<string> findingIds, CancellationToken cancellationToken = default)
@@ -98,7 +101,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         foreach (var findingId in findingIds) if (await GetFindingAsync(root, findingId, cancellationToken) is null) throw new InvalidOperationException($"Finding {findingId} was not found.");
         var id = canonical.NextId(root, "reviews", "REVIEW"); var item = new ReviewRecord(1, id, claimId, reviewer, verdict, summary, findingIds, await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow);
         await canonical.WriteAsync(root, "reviews", id, item, cancellationToken);
-        if (verdict == ReviewVerdict.Disagree && ClaimTransitions.IsAllowed(claim.Status, ClaimStatus.Disputed)) await canonical.WriteAsync(root, "claims", claim.Id, claim with { Status = ClaimStatus.Disputed }, cancellationToken);
+        if (verdict == ReviewVerdict.Disagree && ClaimTransitions.IsAllowed(claim.Status, ClaimStatus.Disputed)) await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, current => ClaimTransitions.IsAllowed(current.Status, ClaimStatus.Disputed) ? current with { Status = ClaimStatus.Disputed } : current, cancellationToken);
         await RecordAsync(root, "review.created", id, item, cancellationToken); return item;
     }
 
@@ -136,6 +139,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
             if (EvidenceEvaluator.Evaluate(item.Snapshot, current) != EvidenceFreshness.Current) throw new InvalidOperationException($"Evidence {evidenceId} is stale.");
             evidence.Add(evidenceId);
         }
+        await ValidateAcceptancePolicyAsync(root, claim, evidence, cancellationToken);
         var findings = Path.Combine(root, ".arifce", "findings");
         if (Directory.Exists(findings)) foreach (var path in Directory.EnumerateFiles(findings, "*.json"))
         {
@@ -147,13 +151,43 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         await canonical.WriteAsync(root, "acceptances", id, record, cancellationToken); await RecordAsync(root, "acceptance.accepted", id, record, cancellationToken); return record;
     }
 
+    private static async Task ValidateAcceptancePolicyAsync(string root, ClaimRecord claim, IReadOnlyList<string> evidenceIds, CancellationToken cancellationToken)
+    {
+        var requirements = VerificationPolicy.For(claim.Risk);
+        if (!requirements.Build && !requirements.Tests && !requirements.IndependentReview) return;
+
+        var evidenceDirectory = Path.Combine(root, ".arifce", "evidence");
+        var evidence = new List<EvidenceRecord>();
+        foreach (var id in evidenceIds)
+        {
+            var path = Path.Combine(evidenceDirectory, id.ToLowerInvariant() + ".json");
+            if (!File.Exists(path)) throw new InvalidOperationException($"Evidence {id} is missing.");
+            var item = JsonSerializer.Deserialize<EvidenceRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options)
+                ?? throw new InvalidOperationException($"Evidence {id} is invalid.");
+            evidence.Add(item);
+        }
+
+        if (requirements.Build && !evidence.Any(item => item.Kind.Equals("BUILD", StringComparison.OrdinalIgnoreCase) && item.ExitCode == 0 && (item.Metrics?.Errors is null or 0)))
+            throw new InvalidOperationException("High-risk acceptance requires a successful BUILD evidence record.");
+        if (requirements.Tests && !evidence.Any(item => item.Kind.Equals("TEST_RUN", StringComparison.OrdinalIgnoreCase) && item.ExitCode == 0 && (item.Metrics?.Failed is null or 0)))
+            throw new InvalidOperationException("High-risk acceptance requires a successful TEST_RUN evidence record.");
+        if (requirements.IndependentReview)
+        {
+            var reviewDirectory = Path.Combine(root, ".arifce", "reviews");
+            var hasReview = Directory.Exists(reviewDirectory) && Directory.EnumerateFiles(reviewDirectory, "*.json")
+                .Select(path => JsonSerializer.Deserialize<ReviewRecord>(File.ReadAllText(path), JsonDefaults.Options))
+                .Any(review => review is not null && review.ClaimId.Equals(claim.Id, StringComparison.OrdinalIgnoreCase) && review.Verdict is ReviewVerdict.Agree or ReviewVerdict.PartiallyAgree);
+            if (!hasReview) throw new InvalidOperationException("High-risk acceptance requires an agreeing independent review.");
+        }
+    }
+
     public Task<AcceptanceRecord?> GetAcceptanceAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<AcceptanceRecord>(root, "acceptances", id, cancellationToken);
 
     public async Task<AcceptanceRecord> RevokeAcceptanceAsync(string root, string id, CancellationToken cancellationToken = default)
     {
         var record = await GetAcceptanceAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Acceptance {id} was not found.");
-        var updated = record with { Status = AcceptanceStatus.Revoked, RevokedAtUtc = DateTimeOffset.UtcNow };
-        await canonical.WriteAsync(root, "acceptances", id, updated, cancellationToken); await RecordAsync(root, "acceptance.revoked", id, updated, cancellationToken); return updated;
+        var updated = await canonical.UpdateAsync<AcceptanceRecord>(root, "acceptances", id, current => current with { Status = AcceptanceStatus.Revoked, RevokedAtUtc = DateTimeOffset.UtcNow }, cancellationToken);
+        await RecordAsync(root, "acceptance.revoked", id, updated, cancellationToken); return updated;
     }
 
     public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyAsync(string root, string claimId, string commandText, CancellationToken cancellationToken = default)
@@ -167,8 +201,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var evidence = new EvidenceRecord(1, evidenceId, claim.Id, evidenceKind, commandText, result.ExitCode, Truncate(result.Output, 1000), before, DateTimeOffset.UtcNow, parsed.Metrics);
         await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
         var status = result.ExitCode == 0 ? (parsed.Kind == "COMMAND" ? ClaimStatus.Supported : claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
-        var updated = claim with { Status = status, Evidence = claim.Evidence.Concat([evidenceId]).ToArray() };
-        await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken);
+        var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, current => current with { Status = status, Evidence = current.Evidence.Append(evidenceId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken);
         await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
     }
 
@@ -187,8 +220,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var evidence = new EvidenceRecord(1, evidenceId, claim.Id, "ARCHITECTURE_BOUNDARY", command, scan.Violations.Count == 0 ? 0 : 1, summary, before, DateTimeOffset.UtcNow, new EvidenceMetrics(scan.FilesScanned, scan.FilesScanned - scan.ViolatingFiles, scan.Violations.Count, null));
         await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
         var status = scan.Violations.Count == 0 ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
-        var updated = claim with { Status = status, Evidence = claim.Evidence.Concat([evidenceId]).ToArray() };
-        await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken);
+        var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, current => current with { Status = status, Evidence = current.Evidence.Append(evidenceId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken);
         await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken);
         return (updated, evidence);
     }
@@ -203,7 +235,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var evidence = new EvidenceRecord(1, evidenceId, claim.Id, "PUBLIC_API_SURFACE", $"arifce api compare {assemblyPath} --baseline {baselinePath}", diff.IsCompatible ? 0 : 1, summary, await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow, new EvidenceMetrics(current.Count, diff.Added.Count, diff.Removed.Count, diff.Changed.Count));
         await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
         var status = diff.IsCompatible ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
-        var updated = claim with { Status = status, Evidence = claim.Evidence.Concat([evidenceId]).ToArray() }; await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken); await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
+        var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, currentClaim => currentClaim with { Status = status, Evidence = currentClaim.Evidence.Append(evidenceId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken); await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
     }
 
     public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifySqliteSchemaAsync(string root, string claimId, string databasePath, string baselinePath, CancellationToken cancellationToken = default)
@@ -212,7 +244,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var database = ResolveRepositoryPath(root, databasePath); var baseline = ResolveRepositoryPath(root, baselinePath); var current = await SqliteSchemaAnalyzer.ReadAsync(database, cancellationToken); var diff = SqliteSchemaAnalyzer.Compare(await SqliteSchemaAnalyzer.ReadBaselineAsync(baseline, cancellationToken), current);
         var id = canonical.NextId(root, "evidence", "EVIDENCE"); var summary = $"SQLite schema compatibility {(diff.IsCompatible ? "passed" : "failed")}. Added: {diff.Added.Count}; removed: {diff.Removed.Count}; changed: {diff.Changed.Count}.";
         var evidence = new EvidenceRecord(1, id, claim.Id, "SQLITE_SCHEMA", $"arifce schema compare {databasePath} --baseline {baselinePath}", diff.IsCompatible ? 0 : 1, summary, await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow, new EvidenceMetrics(current.Count, diff.Added.Count, diff.Removed.Count, diff.Changed.Count));
-        await canonical.WriteAsync(root, "evidence", id, evidence, cancellationToken); var updated = claim with { Status = diff.IsCompatible ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted, Evidence = claim.Evidence.Concat([id]).ToArray() }; await canonical.WriteAsync(root, "claims", claim.Id, updated, cancellationToken); await RecordAsync(root, "evidence.recorded", id, evidence, cancellationToken); return (updated, evidence);
+        await canonical.WriteAsync(root, "evidence", id, evidence, cancellationToken); var status = diff.IsCompatible ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted; var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, currentClaim => currentClaim with { Status = status, Evidence = currentClaim.Evidence.Append(id).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken); await RecordAsync(root, "evidence.recorded", id, evidence, cancellationToken); return (updated, evidence);
     }
 
     private static string ResolveRepositoryPath(string root, string path)
@@ -241,10 +273,13 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     public async Task<RefactorCampaign> ResolveRefactorInventoryAsync(string root, string id, string inventoryItem, CancellationToken cancellationToken = default)
     {
         var item = await canonical.ReadAsync<RefactorCampaign>(root, "refactors", id, cancellationToken) ?? throw new InvalidOperationException($"Refactor {id} was not found.");
-        var remaining = item.Inventory.Where(x => !string.Equals(x, inventoryItem, StringComparison.Ordinal)).ToArray();
-        if (remaining.Length == item.Inventory.Count) throw new InvalidOperationException($"Inventory item '{inventoryItem}' was not found in {id}.");
-        var updated = item with { Inventory = remaining };
-        await canonical.WriteAsync(root, "refactors", id, updated, cancellationToken); await RecordAsync(root, "refactor.inventory-resolved", id, new { inventoryItem, remaining = remaining.Length }, cancellationToken); return updated;
+        var updated = await canonical.UpdateAsync<RefactorCampaign>(root, "refactors", id, current =>
+        {
+            var remaining = current.Inventory.Where(x => !string.Equals(x, inventoryItem, StringComparison.Ordinal)).ToArray();
+            if (remaining.Length == current.Inventory.Count) throw new InvalidOperationException($"Inventory item '{inventoryItem}' was not found in {id}.");
+            return current with { Inventory = remaining };
+        }, cancellationToken);
+        await RecordAsync(root, "refactor.inventory-resolved", id, new { inventoryItem, remaining = updated.Inventory.Count }, cancellationToken); return updated;
     }
 
     public async Task<RefactorCampaign> AddRefactorWorkstreamAsync(string root, string id, string name, string owner, IReadOnlyList<string> paths, CancellationToken cancellationToken = default)
@@ -252,10 +287,14 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var item = await canonical.ReadAsync<RefactorCampaign>(root, "refactors", id, cancellationToken) ?? throw new InvalidOperationException($"Refactor {id} was not found.");
         if (item.Status is WorkStatus.Completed or WorkStatus.Abandoned) throw new InvalidOperationException($"Refactor {id} is terminal.");
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(owner) || paths.Count == 0) throw new ArgumentException("Workstream name, owner, and at least one path are required.");
-        var workstreams = item.Workstreams ?? [];
-        if (workstreams.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException($"Workstream '{name}' already exists.");
-        var updated = item with { Workstreams = workstreams.Concat([new RefactorWorkstream(name, owner, paths, WorkStatus.Open)]).ToArray() };
-        await canonical.WriteAsync(root, "refactors", id, updated, cancellationToken); await RecordAsync(root, "refactor.workstream-added", id, new { name, owner, paths }, cancellationToken); return updated;
+        var updated = await canonical.UpdateAsync<RefactorCampaign>(root, "refactors", id, current =>
+        {
+            if (current.Status is WorkStatus.Completed or WorkStatus.Abandoned) throw new InvalidOperationException($"Refactor {id} is terminal.");
+            var workstreams = current.Workstreams ?? [];
+            if (workstreams.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException($"Workstream '{name}' already exists.");
+            return current with { Workstreams = workstreams.Concat([new RefactorWorkstream(name, owner, paths, WorkStatus.Open)]).ToArray() };
+        }, cancellationToken);
+        await RecordAsync(root, "refactor.workstream-added", id, new { name, owner, paths }, cancellationToken); return updated;
     }
 
     public async Task<RefactorCampaign> AddRefactorSafePointAsync(string root, string id, string name, string? notes, CancellationToken cancellationToken = default)
@@ -263,11 +302,15 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var item = await canonical.ReadAsync<RefactorCampaign>(root, "refactors", id, cancellationToken) ?? throw new InvalidOperationException($"Refactor {id} was not found.");
         if (item.Status is WorkStatus.Completed or WorkStatus.Abandoned) throw new InvalidOperationException($"Refactor {id} is terminal.");
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Safe point name is required.");
-        var safePoints = item.SafePoints ?? [];
-        if (safePoints.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException($"Safe point '{name}' already exists.");
         var safePoint = new RefactorSafePoint(name, await git.CaptureAsync(root, cancellationToken), notes, DateTimeOffset.UtcNow);
-        var updated = item with { SafePoints = safePoints.Concat([safePoint]).ToArray() };
-        await canonical.WriteAsync(root, "refactors", id, updated, cancellationToken); await RecordAsync(root, "refactor.safe-point-added", id, safePoint, cancellationToken); return updated;
+        var updated = await canonical.UpdateAsync<RefactorCampaign>(root, "refactors", id, current =>
+        {
+            if (current.Status is WorkStatus.Completed or WorkStatus.Abandoned) throw new InvalidOperationException($"Refactor {id} is terminal.");
+            var safePoints = current.SafePoints ?? [];
+            if (safePoints.Any(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException($"Safe point '{name}' already exists.");
+            return current with { SafePoints = safePoints.Concat([safePoint]).ToArray() };
+        }, cancellationToken);
+        await RecordAsync(root, "refactor.safe-point-added", id, safePoint, cancellationToken); return updated;
     }
 
     public async Task<RefactorCampaign> FinishRefactorAsync(string root, string id, CancellationToken cancellationToken = default)
@@ -275,15 +318,23 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var item = await canonical.ReadAsync<RefactorCampaign>(root, "refactors", id, cancellationToken) ?? throw new InvalidOperationException($"Refactor {id} was not found.");
         var failures = await VerifyRefactorAsync(root, id, cancellationToken);
         if (failures.Count > 0) throw new InvalidOperationException(string.Join(" ", failures));
-        var completed = item with { Status = WorkStatus.Completed }; await canonical.WriteAsync(root, "refactors", id, completed, cancellationToken); await RecordAsync(root, "refactor.completed", id, completed, cancellationToken); return completed;
+        var completed = await canonical.UpdateAsync<RefactorCampaign>(root, "refactors", id, current =>
+        {
+            if (current.Inventory.Count > 0) throw new InvalidOperationException($"Inventory remaining: {current.Inventory.Count}.");
+            return current with { Status = WorkStatus.Completed };
+        }, cancellationToken); await RecordAsync(root, "refactor.completed", id, completed, cancellationToken); return completed;
     }
 
     public async Task<RefactorCampaign> AbandonRefactorAsync(string root, string id, CancellationToken cancellationToken = default)
     {
         var item = await canonical.ReadAsync<RefactorCampaign>(root, "refactors", id, cancellationToken) ?? throw new InvalidOperationException($"Refactor {id} was not found.");
         if (item.Status == WorkStatus.Completed) throw new InvalidOperationException($"Completed refactor {id} cannot be abandoned.");
-        var abandoned = item with { Status = WorkStatus.Abandoned };
-        await canonical.WriteAsync(root, "refactors", id, abandoned, cancellationToken); await RecordAsync(root, "refactor.abandoned", id, abandoned, cancellationToken); return abandoned;
+        var abandoned = await canonical.UpdateAsync<RefactorCampaign>(root, "refactors", id, current =>
+        {
+            if (current.Status == WorkStatus.Completed) throw new InvalidOperationException($"Completed refactor {id} cannot be abandoned.");
+            return current with { Status = WorkStatus.Abandoned };
+        }, cancellationToken);
+        await RecordAsync(root, "refactor.abandoned", id, abandoned, cancellationToken); return abandoned;
     }
 
     public async Task<IReadOnlyList<string>> VerifyRefactorAsync(string root, string id, CancellationToken cancellationToken = default)

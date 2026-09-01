@@ -101,6 +101,20 @@ public sealed class LlmProviderTests
     }
 
     [Fact]
+    public async Task Orchestrator_blocks_secret_prompts_before_provider_call()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-llm-secret-");
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(root.FullName, ".git"));
+            var provider = new StubProvider("local", false);
+            var orchestrator = new LlmOrchestrator(new LlmRouter(new[] { (provider.Provider, provider.Profile) }), new CanonicalStore(), new JournalStore(), new GitInspector());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => orchestrator.ExecuteAsync(root.FullName, new LlmRequest("review", "password=hunter2"), "CLAIM-0001"));
+        }
+        finally { root.Delete(true); }
+    }
+
+    [Fact]
     public void Local_policy_blocks_unapproved_provider_and_cost()
     {
         var engine = new LocalPolicyEngine(new[] { new ApprovalPolicy("default", "safe", true, 10, new[] { "local" }) });

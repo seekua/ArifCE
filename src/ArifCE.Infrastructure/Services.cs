@@ -45,8 +45,33 @@ public sealed class GitInspector
         var changed = lines.Where(x => !x.StartsWith("## ", StringComparison.Ordinal)).Select(x => x.Length > 3 ? x[3..].Trim() : x.Trim()).Order(StringComparer.Ordinal).ToArray();
         var head = await RunAsync(root, "rev-parse HEAD", cancellationToken);
         var commit = head.ExitCode == 0 ? head.Output.Trim() : null;
-        var normalized = $"{commit}\n{branch}\n{string.Join('\n', changed)}";
+        // A path-only fingerprint misses edits made in a dirty worktree. Include the
+        // bytes of every changed path (and an explicit missing marker) so evidence
+        // cannot remain current after an in-place edit, delete, or rename.
+        var content = changed.SelectMany(path => SnapshotPath(root, path)).Order(StringComparer.Ordinal).ToArray();
+        var normalized = $"{commit}\n{branch}\n{string.Join('\n', content)}";
         return new GitSnapshot(commit, branch, changed.Length > 0, changed, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized))).ToLowerInvariant());
+    }
+
+    private static IEnumerable<string> SnapshotPath(string root, string statusPath)
+    {
+        var paths = statusPath.Contains(" -> ", StringComparison.Ordinal)
+            ? statusPath.Split(" -> ", 2, StringSplitOptions.None)
+            : [statusPath];
+        foreach (var path in paths)
+        {
+            var relative = path.Trim().Trim('"');
+            if (string.IsNullOrWhiteSpace(relative)) continue;
+            var full = Path.GetFullPath(Path.Combine(root, relative));
+            if (!File.Exists(full))
+            {
+                yield return $"{relative}\n<MISSING>";
+                continue;
+            }
+
+            var hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(full))).ToLowerInvariant();
+            yield return $"{relative}\n{hash}";
+        }
     }
 
     private static async Task<(int ExitCode, string Output)> RunAsync(string root, string arguments, CancellationToken cancellationToken)
@@ -68,6 +93,7 @@ public sealed class JournalStore
         var path = Path.Combine(root, ".arifce", "journal", "events.jsonl");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var line = JsonSerializer.Serialize(value, JournalOptions) + Environment.NewLine;
+        await using var mutationLock = await FileMutationLock.AcquireAsync(root, "journal", "events", cancellationToken);
         await using var stream = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, useAsync: true);
         var bytes = Encoding.UTF8.GetBytes(line);
         await stream.WriteAsync(bytes, cancellationToken);
@@ -146,14 +172,17 @@ public sealed class CanonicalStore
 
     public async Task WriteAsync<T>(string root, string directory, string id, T value, CancellationToken cancellationToken = default)
     {
-        var folder = Path.Combine(root, ".arifce", directory);
-        Directory.CreateDirectory(folder);
-        var target = Path.Combine(folder, id.ToLowerInvariant() + ".json");
-        var reservation = target + ".reserve";
-        var temporary = target + $".{Guid.NewGuid():N}.tmp";
-        await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(value, JsonDefaults.Options), new UTF8Encoding(false), cancellationToken);
-        try { File.Move(temporary, target, true); if (File.Exists(reservation)) File.Delete(reservation); }
-        finally { if (File.Exists(temporary)) File.Delete(temporary); }
+        await using var mutationLock = await FileMutationLock.AcquireAsync(root, directory, id, cancellationToken);
+        await WriteCoreAsync(root, directory, id, value, cancellationToken);
+    }
+
+    public async Task<T> UpdateAsync<T>(string root, string directory, string id, Func<T, T> update, CancellationToken cancellationToken = default)
+    {
+        await using var mutationLock = await FileMutationLock.AcquireAsync(root, directory, id, cancellationToken);
+        var current = await ReadAsync<T>(root, directory, id, cancellationToken) ?? throw new InvalidOperationException($"{id} was not found.");
+        var updated = update(current);
+        await WriteCoreAsync(root, directory, id, updated, cancellationToken);
+        return updated;
     }
 
     public async Task<T?> ReadAsync<T>(string root, string directory, string id, CancellationToken cancellationToken = default)
@@ -178,6 +207,37 @@ public sealed class CanonicalStore
             var reservation = Path.Combine(folder, id.ToLowerInvariant() + ".json.reserve");
             try { using var _ = new FileStream(reservation, FileMode.CreateNew, FileAccess.Write, FileShare.None); return id; }
             catch (IOException) { }
+        }
+    }
+
+    private static async Task WriteCoreAsync<T>(string root, string directory, string id, T value, CancellationToken cancellationToken)
+    {
+        var folder = Path.Combine(root, ".arifce", directory);
+        Directory.CreateDirectory(folder);
+        var target = Path.Combine(folder, id.ToLowerInvariant() + ".json");
+        var reservation = target + ".reserve";
+        var temporary = target + $".{Guid.NewGuid():N}.tmp";
+        await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(value, JsonDefaults.Options), new UTF8Encoding(false), cancellationToken);
+        try { File.Move(temporary, target, true); if (File.Exists(reservation)) File.Delete(reservation); }
+        finally { if (File.Exists(temporary)) File.Delete(temporary); }
+    }
+}
+
+internal static class FileMutationLock
+{
+    public static async Task<FileStream> AcquireAsync(string root, string category, string id, CancellationToken cancellationToken)
+    {
+        var directory = Path.Combine(root, ".arifce", "cache", "locks", category);
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, id.ToLowerInvariant() + ".lock");
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(15);
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, useAsync: true); }
+            catch (IOException) when (DateTimeOffset.UtcNow < deadline) { await Task.Delay(25, cancellationToken); }
+            catch (UnauthorizedAccessException) when (DateTimeOffset.UtcNow < deadline) { await Task.Delay(25, cancellationToken); }
+            if (DateTimeOffset.UtcNow >= deadline) throw new IOException($"Timed out waiting for the canonical mutation lock '{category}/{id}'.");
         }
     }
 }

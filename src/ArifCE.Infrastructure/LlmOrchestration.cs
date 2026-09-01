@@ -25,14 +25,21 @@ public sealed class LlmOrchestrator
 
     public async Task<LlmExecutionResult> ExecuteAsync(string root, LlmRequest request, string claimId, CancellationToken cancellationToken = default)
     {
+        var redactor = new SecretRedactor();
+        var outbound = redactor.Redact(request.Prompt);
+        if (outbound.Count > 0)
+            throw new InvalidOperationException("LLM execution blocked: the prompt contains a detectable secret. Remove or redact it before sending to a provider.");
         var preferred = _taskRouter?.Select(request.Task);
         var route = await _router.CompleteAsync(request, preferred, cancellationToken);
         var snapshot = await _git.CaptureAsync(root, cancellationToken);
         var evidenceId = _canonical.NextId(root, "evidence", "EVIDENCE");
-        var summary = $"Provider {route.Response.ProviderId} / model {route.Response.Model} / estimated cost {route.EstimatedCost:0.########}: {route.Response.Text.Replace("\r", " ").Replace("\n", " ").Trim()}";
+        var response = redactor.Redact(route.Response.Text);
+        var safeResponse = route.Response with { Text = response.Text, RawResponse = string.Empty };
+        var safeRoute = route with { Response = safeResponse };
+        var summary = $"Provider {safeRoute.Response.ProviderId} / model {safeRoute.Response.Model} / estimated cost {safeRoute.EstimatedCost:0.########}: {safeResponse.Text.Replace("\r", " ").Replace("\n", " ").Trim()}";
         var evidence = new EvidenceRecord(1, evidenceId, claimId, "llm-response", $"llm:{route.Response.ProviderId}/{route.Response.Model}", 0, summary, snapshot, DateTimeOffset.UtcNow, new EvidenceMetrics(route.Response.Usage.TotalTokens, null, null, null));
         await _canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
         await _journal.AppendAsync(root, new JournalEvent(1, Guid.NewGuid().ToString("N"), "llm.completed", evidence.CreatedAtUtc, evidenceId, new { provider = route.Response.ProviderId, model = route.Response.Model, claimId, tokens = route.Response.Usage.TotalTokens, estimatedCost = route.EstimatedCost }), cancellationToken);
-        return new(route, evidence);
+        return new(safeRoute, evidence);
     }
 }

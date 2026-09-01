@@ -71,6 +71,21 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Concurrent_updates_preserve_every_claim_evidence_link()
+    {
+        await Service.InitializeAsync(root, false);
+        var claim = await Service.CreateClaimAsync(root, "Concurrent evidence survives", RiskLevel.Medium);
+        var evidenceIds = Enumerable.Range(1, 20).Select(index => $"EVIDENCE-{index:0000}").ToArray();
+        await Task.WhenAll(evidenceIds.Select(evidenceId => canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, current => current with
+        {
+            Evidence = current.Evidence.Append(evidenceId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+        })));
+        var updated = await Service.GetClaimAsync(root, claim.Id);
+        Assert.NotNull(updated);
+        Assert.Equal(evidenceIds.Order(StringComparer.Ordinal), updated.Evidence.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
     public async Task Adoption_reports_observation_without_inventing_rationale()
     {
         await File.WriteAllTextAsync(Path.Combine(root, "README.md"), "Existing"); await Service.InitializeAsync(root, true);
@@ -113,7 +128,8 @@ public sealed class BehaviorTests : IDisposable
     {
         await Service.InitializeAsync(root, false); var claim = await Service.CreateClaimAsync(root, "Command succeeds", RiskLevel.Low); var result = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
         Assert.Equal(ClaimStatus.Supported, result.Claim.Status); Assert.Equal("UNVERIFIED_COMMAND", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
-        await File.WriteAllTextAsync(Path.Combine(root, "changed.txt"), "change"); var after = await git.CaptureAsync(root); Assert.NotEqual(result.Evidence.Snapshot.Digest, after.Digest);
+        var changedPath = Path.Combine(root, "changed.txt"); await File.WriteAllTextAsync(changedPath, "change"); var after = await git.CaptureAsync(root); Assert.NotEqual(result.Evidence.Snapshot.Digest, after.Digest);
+        await File.WriteAllTextAsync(changedPath, "different content in the same path"); var afterInPlaceEdit = await git.CaptureAsync(root); Assert.NotEqual(after.Digest, afterInPlaceEdit.Digest);
         Assert.Equal(EvidenceFreshness.Stale, EvidenceEvaluator.Evaluate(result.Evidence.Snapshot, after));
     }
 
@@ -147,6 +163,15 @@ public sealed class BehaviorTests : IDisposable
         var revoked = await Service.RevokeAcceptanceAsync(root, acceptance.Id);
         Assert.Equal(AcceptanceStatus.Revoked, revoked.Status);
         Assert.Equal(ClaimStatus.Supported, verified.Claim.Status);
+    }
+
+    [Fact]
+    public async Task High_risk_acceptance_requires_build_tests_and_review()
+    {
+        await Service.InitializeAsync(root, false);
+        var claim = await Service.CreateClaimAsync(root, "High risk change is safe", RiskLevel.High);
+        await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CreateAcceptanceAsync(root, claim.Id, "product-owner", "Reviewed"));
     }
 
     [Fact]
