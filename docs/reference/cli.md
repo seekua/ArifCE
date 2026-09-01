@@ -80,6 +80,15 @@ Verification executes the user-supplied command in the project root and records 
 
 Run `arifce trust refresh` after repository changes or before a handoff. It compares current repository content with recorded evidence snapshots, moves affected claims to `STALE`, and marks linked accepted records as `NEEDS_REVIEW`. Handoff generation performs the same refresh and prints trust warnings. Changes under `.arifce/` are excluded from the code-state fingerprint so recording evidence does not invalidate itself.
 
+Build and query the disposable deterministic code graph:
+
+```text
+arifce codegraph build
+arifce codegraph query Calculate
+```
+
+Project-reference edges are exact, declarations are structural, and identifier-based references or related-test candidates are explicitly heuristic. Code-graph output identifies possible impact; it is not verification evidence by itself.
+
 `architecture check` is a V0.2 deterministic evidence adapter. It scans only the explicitly supplied repository-local source paths (`.cs`, project, props, and targets files), excludes derived and raw directories, and records matching forbidden references with file and line numbers. A clean check proves only that the selected paths do not contain the supplied text references.
 
 `api baseline <assembly-path> --baseline <path>` writes a normalized public API baseline for one selected .NET assembly. `api compare <assembly-path> --baseline <path>` reports added and removed public entries and exits non-zero when the selected baseline is not compatible. These commands inspect only the explicitly named assembly and baseline paths.

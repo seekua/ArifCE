@@ -196,6 +196,26 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Deterministic_code_graph_links_symbols_references_tests_and_projects()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src", "Payments"); Directory.CreateDirectory(source);
+        var tests = Path.Combine(root, "tests", "Payments.Tests"); Directory.CreateDirectory(tests);
+        await File.WriteAllTextAsync(Path.Combine(source, "PaymentService.cs"), "public sealed class PaymentService { public decimal Calculate(decimal value) { return value; } }");
+        await File.WriteAllTextAsync(Path.Combine(source, "InvoiceService.cs"), "public sealed class InvoiceService { public decimal Create(PaymentService payment) { return payment.Calculate(10); } }");
+        await File.WriteAllTextAsync(Path.Combine(tests, "PaymentServiceTests.cs"), "public sealed class PaymentServiceTests { [Fact] public void Calculate_returns_value() { new PaymentService().Calculate(10); } }");
+        await File.WriteAllTextAsync(Path.Combine(source, "Payments.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"></Project>");
+        await File.WriteAllTextAsync(Path.Combine(tests, "Payments.Tests.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><ProjectReference Include=\"../../src/Payments/Payments.csproj\" /></ItemGroup></Project>");
+
+        var store = new CodeGraphStore(); var graph = await store.BuildAsync(root); var result = await store.QueryAsync(root, "Calculate");
+        Assert.Contains(graph.Nodes, node => node.Kind == "METHOD" && node.Name == "Calculate");
+        Assert.Contains(result.Edges, edge => edge.Kind == "REFERENCES");
+        Assert.Contains(result.Edges, edge => edge.Kind == "RELATED_TEST");
+        Assert.Contains(graph.Edges, edge => edge.Kind == "PROJECT_REFERENCE" && edge.Confidence == "EXACT");
+        Assert.True(File.Exists(Path.Combine(root, ".arifce", "index", "code-graph.json")));
+    }
+
+    [Fact]
     public void Command_evidence_parser_extracts_localized_test_and_build_metrics()
     {
         var tests = CommandEvidenceParser.Parse("dotnet test", "Başarısız: 1, Başarılı: 7, Atlanan: 2, Toplam: 10");
