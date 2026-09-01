@@ -23,4 +23,6 @@ For each task, keep the repository snapshot, model, prompt, and token budget con
 - A result is evidence about the tested workflow and repository snapshot; it is not a guarantee for every project or model.
 - If ArifCE does not improve a measure, keep that result and use it to narrow the product scope.
 
-The repository now includes `scripts/run-ab-benchmark.ps1`, a strict normalizer that accepts two caller-produced raw JSON arms and refuses to write a report unless both contain the same 20 task identifiers. It does not fabricate scores or claim effectiveness. No real experiment has been run yet.
+The repository includes `scripts/run-ab-benchmark.ps1`, a strict normalizer that accepts two caller-produced raw JSON arms and refuses to write a report unless both contain the same 20 task identifiers. It does not fabricate scores or claim effectiveness.
+
+The newer engineering suite completed its first ten matched task pairs on 2026-09-02. The [published result](evidence/engineering-benchmark-results-2026-09-02.md) is explicitly inconclusive: a write-permission confound determined the only differing pass, token telemetry was unavailable, and the run count remains below the threshold for an aggregate product claim.

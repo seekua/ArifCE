@@ -81,7 +81,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 - [x] Phase 49: enforce history-free, matched benchmark trial isolation with reproducible fixture trees and cross-platform smoke coverage.
 - [x] Phase 50: capture tamper-evident raw run provenance and deterministic evaluator outcomes without accepting hand-authored success claims.
-- [ ] Phase 51: execute and publish the first complete matched engineering benchmark, including negative results and limitations.
+- [x] Phase 51: execute and publish the first complete matched engineering benchmark, including negative results and limitations. The first run is inconclusive and makes no effectiveness claim because its only differing pass was permission-confounded.
 
 ## Explicit deferrals
 
@@ -108,7 +108,7 @@ Remote validation after the audit passed on Ubuntu, macOS, and Windows in [Actio
 - **Advanced MCP surface:** the local stdio MCP server is implemented in V0.3. Shell-backed verification and broad mutation tools remain deferred until a stronger command policy exists.
 - **A2A and multi-worktree coordination:** local sequential A2A handoffs and multi-project workspace switching are implemented; autonomous worktree creation, assignment, merging, and rollback remain deferred.
 - **Vector search, cloud service, full IDE extension, and autonomous swarms:** explicit future-phase scope. A local dashboard and IDE connection manifest are implemented; a full IDE-native experience is not yet shipped.
-- **Benchmark results:** only the benchmark protocol is defined until repeatable experiments are run; no effectiveness percentages will be claimed.
+- **Benchmark results:** the first complete ten-pair execution is [published with all negative outcomes and limitations](docs/evidence/engineering-benchmark-results-2026-09-02.md). Its raw independent pass count was baseline 3/10 and ArifCE 4/10, but the only differing pass was caused by write-permission variance. Tokens were unavailable and elapsed durations included queue/approval delay. No effectiveness percentage is claimed; repeated, pre-authorized runs with provider telemetry remain deferred.
 - **Manual evidence authoring:** decision, failed-attempt, finding, and review commands persist canonical records. Deterministic command evidence remains available through `verify`; arbitrary manual evidence waits for a provenance and trust policy.
 - **Autonomous refactor coordination:** CLI metadata now covers invariants, inventory, forbidden-reference guards, workstream ownership/path scopes, and Git-snapshot safe points. Creating worktrees, assigning agents, merging, and rollback execution remain explicit post-V0.1 orchestration work.
 - **Additional automated evidence kinds:** .NET test/build commands are classified and localized summary counts are stored as structured metrics. Architecture-boundary, public API, and SQLite schema evidence are implemented in V0.2. Future evidence kinds require a new owner-approved scope.

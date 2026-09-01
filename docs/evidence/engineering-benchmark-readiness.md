@@ -1,12 +1,12 @@
-# Engineering benchmark execution readiness
+# Engineering benchmark execution status
 
-Status: **runner ready; real matched execution not started**.
+Status: **runner proven; first complete matched run recorded**.
 
-The repository can prepare twenty history-free trials, bind completed candidates to raw provenance, inject task-specific trusted evaluators after each run, and collect only a complete matched result set. It cannot manufacture an agent run or infer missing provider usage.
+On 2026-09-02 the repository completed ten matched task pairs with history-free trials, hash-bound candidate provenance, and withheld task-specific evaluators. The raw independent pass counts were three baseline and four ArifCE-assisted candidates, but a write-permission confound determined the only differing pass. No effectiveness claim is made.
 
-On 2026-09-01 the execution environment contained no ArifCE LLM provider profile and none of the supported provider API-key environment variables were configured. A Codex desktop executable was present but could not be invoked as a headless CLI from the benchmark process. Therefore no baseline or ArifCE task result was recorded, and no effectiveness claim was made.
+See the [complete result, negative outcomes, and limitations](engineering-benchmark-results-2026-09-02.md).
 
-Once one fixed agent/model/version is callable for all trials:
+The repeatable workflow remains:
 
 ```text
 ./scripts/new-engineering-benchmark-suite.ps1 -Model exact-model-and-version -TokenBudget 50000
@@ -15,4 +15,4 @@ Once one fixed agent/model/version is callable for all trials:
 ./scripts/collect-engineering-benchmark-suite.ps1
 ```
 
-The collector refuses missing arms, mismatched models or budgets, duplicate run IDs, altered provenance, evaluator-registry drift, changed evaluator artifacts, and hand-authored evaluator outcomes.
+The collector refuses missing arms, mismatched models or budgets, duplicate run IDs, altered provenance, evaluator-registry drift, changed evaluator artifacts, and hand-authored evaluator outcomes. The next run must also remove approval variance and capture host-reported token and active-time telemetry before aggregate comparison is meaningful.
