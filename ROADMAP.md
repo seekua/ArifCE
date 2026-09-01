@@ -80,7 +80,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 ## V0.9 measured-value phases
 
 - [x] Phase 49: enforce history-free, matched benchmark trial isolation with reproducible fixture trees and cross-platform smoke coverage.
-- [ ] Phase 50: capture tamper-evident raw run provenance and deterministic evaluator outcomes without accepting hand-authored success claims.
+- [x] Phase 50: capture tamper-evident raw run provenance and deterministic evaluator outcomes without accepting hand-authored success claims.
 - [ ] Phase 51: execute and publish the first complete matched engineering benchmark, including negative results and limitations.
 
 ## Explicit deferrals

@@ -20,6 +20,15 @@ The preparer exports only the fixture tree, creates a new one-commit repository 
 
 The pinned fixture commit must exist in the local Git object database. A shallow clone must fetch that exact commit before preparing a trial; the preparer never fetches implicitly or accepts a different snapshot.
 
+After the agent commits its candidate and the agent host writes a raw activity log, complete and verify the trial:
+
+```text
+./scripts/complete-engineering-benchmark-trial.ps1 -TrialRoot artifacts/engineering-benchmark/trust-dirty-content/baseline -RawLog ./agent.log -TokensConsumed 12000 -TokenSource provider
+./scripts/complete-engineering-benchmark-trial.ps1 -TrialRoot artifacts/engineering-benchmark/trust-dirty-content/baseline -VerifyOnly
+```
+
+Completion runs a fixed `dotnet test` evaluator and binds the preparation manifest, prompt, raw log, candidate patch, final commit/tree, and evaluator output with SHA-256 hashes. It refuses dirty, unchanged, or previously completed trials. The result deliberately contains no user-authored task-success field: passing repository tests is evidence, but task correctness still requires the independent evaluator introduced by the next phase.
+
 ```json
 {
   "taskId": "trust-dirty-content",
