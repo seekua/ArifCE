@@ -42,7 +42,7 @@ public sealed class GitInspector
         var branchLine = lines.FirstOrDefault(x => x.StartsWith("## ", StringComparison.Ordinal));
         var branch = branchLine?[3..].Split("...", StringSplitOptions.None)[0];
         if (branch?.StartsWith("No commits yet on ", StringComparison.Ordinal) == true) branch = branch[18..];
-        var changed = lines.Where(x => !x.StartsWith("## ", StringComparison.Ordinal)).Select(x => x.Length > 3 ? x[3..].Trim() : x.Trim()).Order(StringComparer.Ordinal).ToArray();
+        var changed = lines.Where(x => !x.StartsWith("## ", StringComparison.Ordinal)).Select(x => x.Length > 3 ? x[3..].Trim() : x.Trim()).Where(path => !IsInternalArifcePath(path)).Order(StringComparer.Ordinal).ToArray();
         var head = await RunAsync(root, "rev-parse HEAD", cancellationToken);
         var commit = head.ExitCode == 0 ? head.Output.Trim() : null;
         // A path-only fingerprint misses edits made in a dirty worktree. Include the
@@ -73,6 +73,9 @@ public sealed class GitInspector
             yield return $"{relative}\n{hash}";
         }
     }
+
+    private static bool IsInternalArifcePath(string statusPath) => statusPath.Split(" -> ", StringSplitOptions.None)
+        .All(path => path.Trim().Trim('"').Replace('\\', '/').StartsWith(".arifce/", StringComparison.OrdinalIgnoreCase));
 
     private static async Task<(int ExitCode, string Output)> RunAsync(string root, string arguments, CancellationToken cancellationToken)
     {

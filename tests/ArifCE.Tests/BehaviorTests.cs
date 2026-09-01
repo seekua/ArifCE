@@ -175,6 +175,27 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Stale_evidence_propagates_to_claim_acceptance_and_handoff()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "service.cs");
+        await File.WriteAllTextAsync(source, "before");
+        var claim = await Service.CreateClaimAsync(root, "Service remains correct", RiskLevel.Low);
+        await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        var acceptance = await Service.CreateAcceptanceAsync(root, claim.Id, "product-owner", "Current evidence reviewed");
+
+        await File.WriteAllTextAsync(source, "after");
+        var refresh = await Service.RefreshTrustAsync(root);
+        Assert.Equal(1, refresh.ClaimsStaled);
+        Assert.Equal(1, refresh.AcceptancesFlagged);
+        Assert.Equal(ClaimStatus.Stale, (await Service.GetClaimAsync(root, claim.Id))!.Status);
+        Assert.Equal(AcceptanceStatus.NeedsReview, (await Service.GetAcceptanceAsync(root, acceptance.Id))!.Status);
+        var handoff = await Service.HandoffAsync(root);
+        Assert.Contains("Trust Warnings", handoff.Markdown);
+        Assert.Contains("requires re-verification", handoff.Markdown);
+    }
+
+    [Fact]
     public void Command_evidence_parser_extracts_localized_test_and_build_metrics()
     {
         var tests = CommandEvidenceParser.Parse("dotnet test", "Başarısız: 1, Başarılı: 7, Atlanan: 2, Toplam: 10");

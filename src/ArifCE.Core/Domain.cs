@@ -6,7 +6,7 @@ public enum WorkStatus { Open, InProgress, Blocked, Completed, Abandoned }
 public enum RiskLevel { Low, Medium, High, Critical }
 public enum ReviewPhase { IndependentInspection, Reconciliation }
 public enum ReviewVerdict { Agree, PartiallyAgree, Disagree, Inconclusive }
-public enum AcceptanceStatus { Pending, Accepted, Rejected, Revoked }
+public enum AcceptanceStatus { Pending, Accepted, Rejected, Revoked, NeedsReview }
 
 public sealed record GitSnapshot(string? Commit, string? Branch, bool IsDirty, IReadOnlyList<string> ChangedFiles, string Digest);
 public sealed record TaskRecord(int SchemaVersion, string Id, string Title, string? Description, WorkStatus Status, RiskLevel Risk, DateTimeOffset CreatedAtUtc);
@@ -28,6 +28,7 @@ public sealed record FindingRecord(int SchemaVersion, string Id, string Title, s
 public sealed record ReviewRecord(int SchemaVersion, string Id, string ClaimId, string Reviewer, ReviewVerdict Verdict, string Summary, IReadOnlyList<string> FindingIds, GitSnapshot Snapshot, DateTimeOffset CreatedAtUtc);
 public sealed record VerificationRequirements(bool Build, bool Tests, bool IndependentReview, bool HumanApproval);
 public sealed record JournalEvent(int SchemaVersion, string EventId, string Type, DateTimeOffset OccurredAtUtc, string EntityId, object Data);
+public sealed record TrustRefreshResult(int ClaimsStaled, int AcceptancesFlagged, IReadOnlyList<string> Warnings);
 
 public interface ISemanticReviewAdapter
 {

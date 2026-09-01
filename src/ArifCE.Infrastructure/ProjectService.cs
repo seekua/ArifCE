@@ -254,12 +254,70 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (!File.Exists(resolved)) throw new ArgumentException($"Path '{path}' does not exist."); return resolved;
     }
 
+    public async Task<TrustRefreshResult> RefreshTrustAsync(string root, CancellationToken cancellationToken = default)
+    {
+        var current = await git.CaptureAsync(root, cancellationToken);
+        var warnings = new List<string>();
+        var staleClaims = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var claimsStaled = 0;
+        var claimDirectory = Path.Combine(root, ".arifce", "claims");
+        if (Directory.Exists(claimDirectory))
+        {
+            foreach (var path in Directory.EnumerateFiles(claimDirectory, "*.json").Order(StringComparer.Ordinal))
+            {
+                ClaimRecord? claim;
+                try { claim = JsonSerializer.Deserialize<ClaimRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options); }
+                catch (JsonException) { warnings.Add($"Malformed claim record: {Path.GetFileName(path)}."); continue; }
+                if (claim is null || claim.Status is not (ClaimStatus.Supported or ClaimStatus.PartiallyVerified or ClaimStatus.Verified or ClaimStatus.Stale)) continue;
+                var isStale = claim.Status == ClaimStatus.Stale || claim.Evidence.Count == 0;
+                foreach (var evidenceId in claim.Evidence)
+                {
+                    var evidencePath = Path.Combine(root, ".arifce", "evidence", evidenceId.ToLowerInvariant() + ".json");
+                    try
+                    {
+                        var evidence = File.Exists(evidencePath) ? JsonSerializer.Deserialize<EvidenceRecord>(await File.ReadAllTextAsync(evidencePath, cancellationToken), JsonDefaults.Options) : null;
+                        if (evidence is null || EvidenceEvaluator.Evaluate(evidence.Snapshot, current) != EvidenceFreshness.Current) isStale = true;
+                    }
+                    catch (JsonException) { isStale = true; }
+                }
+                if (!isStale) continue;
+                staleClaims.Add(claim.Id);
+                warnings.Add($"Claim {claim.Id} is stale and requires re-verification.");
+                if (claim.Status == ClaimStatus.Stale) continue;
+                await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, value => value with { Status = ClaimStatus.Stale }, cancellationToken);
+                claimsStaled++;
+            }
+        }
+
+        var acceptancesFlagged = 0;
+        var acceptanceDirectory = Path.Combine(root, ".arifce", "acceptances");
+        if (Directory.Exists(acceptanceDirectory))
+        {
+            foreach (var path in Directory.EnumerateFiles(acceptanceDirectory, "*.json").Order(StringComparer.Ordinal))
+            {
+                AcceptanceRecord? acceptance;
+                try { acceptance = JsonSerializer.Deserialize<AcceptanceRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options); }
+                catch (JsonException) { warnings.Add($"Malformed acceptance record: {Path.GetFileName(path)}."); continue; }
+                if (acceptance is null || acceptance.Status != AcceptanceStatus.Accepted || !staleClaims.Contains(acceptance.ClaimId)) continue;
+                await canonical.UpdateAsync<AcceptanceRecord>(root, "acceptances", acceptance.Id, value => value.Status == AcceptanceStatus.Accepted ? value with { Status = AcceptanceStatus.NeedsReview } : value, cancellationToken);
+                warnings.Add($"Acceptance {acceptance.Id} needs review because claim {acceptance.ClaimId} is stale.");
+                acceptancesFlagged++;
+            }
+        }
+
+        if (claimsStaled > 0 || acceptancesFlagged > 0)
+            await RecordAsync(root, "trust.refreshed", "TRUST", new { claimsStaled, acceptancesFlagged, warnings }, cancellationToken);
+        return new TrustRefreshResult(claimsStaled, acceptancesFlagged, warnings);
+    }
+
     public async Task<HandoffRecord> HandoffAsync(string root, CancellationToken cancellationToken = default)
     {
+        var trust = await RefreshTrustAsync(root, cancellationToken);
         var snapshot = await git.CaptureAsync(root, cancellationToken);
         var current = await BoundedCurrentAsync(root, cancellationToken);
         var tasks = await LatestJsonAsync(root, "tasks", cancellationToken); var decisions = await LatestJsonAsync(root, "decisions", cancellationToken); var attempts = await LatestJsonAsync(root, "attempts", cancellationToken); var checkpoints = await LatestJsonAsync(root, "checkpoints", cancellationToken); var claims = await LatestJsonAsync(root, "claims", cancellationToken); var evidence = await LatestJsonAsync(root, "evidence", cancellationToken); var findings = await LatestJsonAsync(root, "findings", cancellationToken); var reviews = await LatestJsonAsync(root, "reviews", cancellationToken);
-        var markdown = $"# Handoff\n\n## Current State\n\n{current}\n\n## Latest Task\n\n{tasks}\n\n## Latest Decision\n\n{decisions}\n\n## Latest Failed Attempt\n\n{attempts}\n\n## Latest Checkpoint\n\n{checkpoints}\n\n## Latest Claim\n\n{claims}\n\n## Latest Evidence\n\n{evidence}\n\n## Latest Finding\n\n{findings}\n\n## Latest Review\n\n{reviews}\n\n## Git State\n\n- Branch: {snapshot.Branch ?? "unknown"}\n- Commit: {snapshot.Commit ?? "none"}\n- Dirty: {snapshot.IsDirty}\n- Modified files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles))}\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n";
+        var trustWarnings = trust.Warnings.Count == 0 ? "No stale trust relationships detected." : string.Join('\n', trust.Warnings.Select(warning => $"- WARNING: {warning}"));
+        var markdown = $"# Handoff\n\n## Trust Warnings\n\n{trustWarnings}\n\n## Current State\n\n{current}\n\n## Latest Task\n\n{tasks}\n\n## Latest Decision\n\n{decisions}\n\n## Latest Failed Attempt\n\n{attempts}\n\n## Latest Checkpoint\n\n{checkpoints}\n\n## Latest Claim\n\n{claims}\n\n## Latest Evidence\n\n{evidence}\n\n## Latest Finding\n\n{findings}\n\n## Latest Review\n\n{reviews}\n\n## Git State\n\n- Branch: {snapshot.Branch ?? "unknown"}\n- Commit: {snapshot.Commit ?? "none"}\n- Dirty: {snapshot.IsDirty}\n- Modified files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles))}\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n";
         var id = canonical.NextId(root, "handoffs", "HANDOFF"); var item = new HandoffRecord(1, id, markdown, snapshot, DateTimeOffset.UtcNow);
         await canonical.WriteAsync(root, "handoffs", id, item, cancellationToken); await RecordAsync(root, "handoff.created", id, item, cancellationToken); return item;
     }
