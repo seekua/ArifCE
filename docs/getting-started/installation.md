@@ -1,14 +1,19 @@
 # Installation
 
-ArifCE V0.7.0 requires the .NET 10 SDK and Git. The published NuGet tool is available from the GitHub release.
+ArifCE V0.8.0 ships as self-contained archives for Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Git is required; the .NET SDK is required only when building from source.
 
-For a machine that should not install the .NET runtime separately, maintainers can build a self-contained CLI binary for a supported runtime:
+1. Download the matching `arifce-<runtime>.zip` from the [V0.8.0 release](https://github.com/seekua/ArifCE/releases/tag/v0.8.0).
+2. Verify the archive against the release-level `SHA256SUMS` file.
+3. Extract the archive and place `arifce` (or `arifce.exe` on Windows) on your `PATH`.
+4. Run `arifce help`.
+
+Maintainers can reproduce a self-contained binary locally:
 
 ```powershell
 ./scripts/publish-self-contained.ps1 -Runtime win-x64
 ```
 
-The five-platform self-contained matrix is verified in remote CI for Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Until a new version tag publishes the corresponding immutable archives, these builds remain CI artifacts rather than advertised `v0.7.0` release assets. NativeAOT remains a separate, currently blocked compatibility track; see the [distribution plan](../release/native-aot-distribution.md).
+The five-platform self-contained matrix is verified in remote CI for Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. NativeAOT remains a separate, currently blocked compatibility track; see the [distribution plan](../release/native-aot-distribution.md).
 
 ## Run from source
 
@@ -22,7 +27,7 @@ dotnet run --project src/ArifCE.Cli -- help
 
 ```bash
 dotnet pack src/ArifCE.Cli/ArifCE.Cli.csproj --configuration Release --output ./artifacts/packages
-dotnet tool install --global ArifCE.Cli --version 0.7.0
+dotnet tool install --global ArifCE.Cli --version 0.8.0 --add-source ./artifacts/packages
 arifce help
 ```
 
@@ -36,4 +41,4 @@ The smoke script installs into a temporary tool path and deletes that temporary 
 
 ## Platform status
 
-The current local evidence is Windows/net10.0. CI is configured for Windows, Ubuntu, and macOS, but remote results must exist before those platforms are marked verified.
+Remote CI verifies the source build/package flow on Windows, Ubuntu, and macOS and executes each self-contained binary on a runner with the same architecture. See [binary release evidence](../release/binary-releases.md).

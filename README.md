@@ -84,7 +84,7 @@ The core separates domain rules, canonical storage and indexing, Git observation
 
 ## Installation and quick start
 
-V0.7.0 is published as a cross-platform .NET global tool. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+V0.8.0 is the current release. Download the self-contained archive for your platform from [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.0), extract it, and place the `arifce` executable on your `PATH`. No separate .NET, Node, Python, Docker, or database installation is required. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
 
 ```bash
 git clone https://github.com/seekua/ArifCE.git
@@ -101,7 +101,8 @@ For a complete installation and feature walkthrough, see the [User Guide](docs/U
 ### 60-second quick start
 
 ```bash
-dotnet tool install --global ArifCE.Cli --version 0.7.0
+# After extracting the matching V0.8.0 release archive and adding it to PATH:
+arifce help
 mkdir my-project && cd my-project
 git init
 arifce init

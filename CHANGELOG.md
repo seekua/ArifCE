@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0 - 2026-09-01
+
+- Harden canonical mutations with cross-process locks, atomic replacement, and content-aware repository snapshots.
+- Propagate stale evidence into claim, acceptance, and handoff trust warnings.
+- Add deterministic code-relationship indexing, change impact contracts, and structured agent flight-recorder records.
+- Enforce MCP validation boundaries, secret-safe provider flows, and explicit approval for non-allowlisted verification commands.
+- Add a ten-category matched engineering benchmark protocol without claiming unmeasured effectiveness.
+- Ship five native self-contained distribution targets with executable smoke tests, two-level SHA-256 validation, and immutable GitHub Release asset publication.
+
 - Prepare V0.7.0 with cross-platform self-contained CLI artifacts, checksum verification, and organized localized README documentation.
 
 - Start V0.2 with an explicit deterministic verification-adapter contract covering architecture, API surface, and SQLite schema compatibility.

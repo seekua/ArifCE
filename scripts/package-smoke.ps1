@@ -9,13 +9,17 @@ $smokeRoot = Join-Path $temporaryBase ('arifce-package-smoke-' + [Guid]::NewGuid
 $packageDirectory = Join-Path $smokeRoot 'packages'
 $toolDirectory = Join-Path $smokeRoot 'tools'
 $repositoryDirectory = Join-Path $smokeRoot 'repository'
+$projectPath = Join-Path $PSScriptRoot '..\src\ArifCE.Cli\ArifCE.Cli.csproj'
+$projectXml = Get-Content -Raw -LiteralPath $projectPath
+$packageVersion = [regex]::Match($projectXml, '<Version>(?<v>[^<]+)</Version>').Groups['v'].Value
+if ([string]::IsNullOrWhiteSpace($packageVersion)) { throw 'CLI package version was not found.' }
 
 try {
     New-Item -ItemType Directory -Force -Path $packageDirectory, $toolDirectory, $repositoryDirectory | Out-Null
-    dotnet pack (Join-Path $PSScriptRoot '..\src\ArifCE.Cli\ArifCE.Cli.csproj') -c $Configuration --no-restore -o $packageDirectory
+    dotnet pack $projectPath -c $Configuration --no-restore -o $packageDirectory
     if ($LASTEXITCODE -ne 0) { throw 'dotnet pack failed.' }
 
-    dotnet tool install --tool-path $toolDirectory --add-source $packageDirectory --ignore-failed-sources ArifCE.Cli --version 0.7.0
+    dotnet tool install --tool-path $toolDirectory --add-source $packageDirectory --ignore-failed-sources ArifCE.Cli --version $packageVersion
     if ($LASTEXITCODE -ne 0) { throw 'Tool installation failed.' }
 
     git -C $repositoryDirectory init | Out-Null

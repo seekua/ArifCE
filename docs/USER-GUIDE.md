@@ -4,12 +4,15 @@ ArifCE is a local-first continuity layer for software projects worked on by peop
 
 ## Install
 
-Requirements: Git and the .NET 10 SDK.
+Requirements: Git. The self-contained release binary does not require a separate .NET SDK.
 
 ```bash
-dotnet tool install --global ArifCE.Cli --version 0.7.0
+# Download and extract the matching archive first.
+# Example release URL: https://github.com/seekua/ArifCE/releases/download/v0.8.0/arifce-linux-x64.zip
 arifce help
 ```
+
+Building or installing the local NuGet package from source requires the .NET 10 SDK; see the [installation guide](getting-started/installation.md).
 
 Optional local dashboard:
 

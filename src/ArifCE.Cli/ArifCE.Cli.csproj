@@ -5,7 +5,8 @@
     <ToolCommandName>arifce</ToolCommandName>
     <PackageId>ArifCE.Cli</PackageId>
     <Title>ArifCE Project Intelligence CLI</Title>
-    <Version>0.7.0</Version>
+    <Version>0.8.0</Version>
+    <AssemblyName>arifce</AssemblyName>
     <Authors>ArifCE Contributors</Authors>
     <Description>Local-first project intelligence, continuity, evidence, handoff, and refactor tracking for software engineering agents.</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

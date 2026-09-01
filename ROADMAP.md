@@ -67,6 +67,16 @@ This roadmap distinguishes implemented behavior from planned work. Nothing liste
 
 V0.7 starts with documentation integrity. No language is marked reviewed until its complete canonical content has been translated and checked by a human.
 
+## V0.8 trust and distribution phases
+
+- [x] Phase 42: harden evidence freshness, acceptance rules, secret boundaries, and atomic canonical mutations.
+- [x] Phase 43: propagate stale trust state into claims, acceptances, and handoffs.
+- [x] Phase 44: add deterministic code relationships and change impact contracts without introducing a graph database.
+- [x] Phase 45: add structured agent flight-recorder records and strict MCP/verification boundaries.
+- [x] Phase 46: add a matched ten-category engineering benchmark protocol without unmeasured effectiveness claims.
+- [x] Phase 47: verify self-contained binaries on five native targets and enforce immutable release assets.
+- [ ] Phase 48: publish V0.8.0 and record the tag workflow, checksums, assets, and release evidence.
+
 ## Explicit deferrals
 
 - **Self-contained distribution:** the repeatable CLI packaging script, dependency policy, five-target native smoke matrix, downloadable CI artifacts, archive-level checksums, and release-bundle verification are present. Remote CI run [33490587568](https://github.com/seekua/ArifCE/actions/runs/33490587568) passed all three build/test/package jobs and five native binary jobs. The release job now has narrowly scoped write permission, rejects tag/version mismatches, and refuses asset replacement. A new version tag is still required to exercise this publishing path against immutable release sources; signing, package-manager manifests, and NativeAOT compatibility remain deferred rather than attributed to the older `v0.7.0` tag.
