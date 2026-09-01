@@ -21,3 +21,5 @@ Use a multi-file migration fixture with invariants and forbidden references. Mea
 Every result must name fixture commit, environment, commands, budgets, and failures. Inconclusive runs remain visible.
 
 The V0.7 smoke fixture can be regenerated with `./scripts/run-example-benchmark.ps1`. Its output is stored in `docs/evidence/ab-run-v0.7.json` and contains 20 matched tasks. It records raw command metadata only; it is not an effectiveness, quality, or token-saving claim.
+
+The realistic engineering-task manifest and strict matched-arm validator now live under `benchmarks/` and `scripts/validate-engineering-benchmark.ps1`. The manifest is CI-validated, but no effectiveness result is claimed until real baseline and ArifCE-assisted agent runs fill every required measurement. The earlier V0.7 retrieval smoke evidence remains separate and must not be presented as this experiment.

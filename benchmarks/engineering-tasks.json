@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/seekua/ArifCE.git",
+  "fixtureCommit": "be05904",
+  "minimumTasks": 10,
+  "requiredCategories": ["BUG_FIX", "FEATURE", "REFACTOR", "REGRESSION", "API_CHANGE", "DATABASE_MIGRATION", "CONTINUATION", "HANDOFF", "OLD_DECISION", "KNOWN_FAILED_APPROACH"],
+  "tasks": [
+    { "id": "trust-dirty-content", "category": "BUG_FIX", "instruction": "Make evidence freshness change when the bytes of an already-dirty file change without changing its path.", "verification": "A regression test demonstrates different GitSnapshot digests for two contents at the same dirty path." },
+    { "id": "acceptance-risk-policy", "category": "REGRESSION", "instruction": "Prevent high-risk claims from being accepted without current build, test, and independent-review evidence.", "verification": "Acceptance fails closed until every risk-policy requirement exists." },
+    { "id": "llm-secret-boundary", "category": "KNOWN_FAILED_APPROACH", "instruction": "Prevent detectable secrets from leaving through LLM prompts or entering canonical evidence through model output.", "verification": "A secret prompt never calls the provider and a secret response is redacted before persistence." },
+    { "id": "canonical-concurrency", "category": "DATABASE_MIGRATION", "instruction": "Preserve every evidence link when multiple processes update one canonical claim concurrently without making SQLite authoritative.", "verification": "Concurrent updates retain all links and the index remains disposable." },
+    { "id": "stale-propagation", "category": "OLD_DECISION", "instruction": "Propagate stale evidence to its claim, accepted record, and handoff warning without self-invalidating on .arifce metadata writes.", "verification": "The claim becomes STALE, acceptance needs review, and handoff names the warning." },
+    { "id": "deterministic-code-graph", "category": "FEATURE", "instruction": "Add a dependency-light deterministic C# graph for declarations, references, project dependencies, and related-test candidates.", "verification": "Derived graph rebuilds from source and labels heuristic relationships separately from exact ones." },
+    { "id": "change-impact-contract", "category": "API_CHANGE", "instruction": "Create a pre-change contract for a code symbol using impact candidates, tests, history, invariants, and the existing claim lifecycle.", "verification": "No duplicate evidence or acceptance lifecycle is introduced." },
+    { "id": "structured-flight-recorder", "category": "HANDOFF", "instruction": "Record bounded agent investigations, attempts, evidence, decisions, and results without storing raw transcripts.", "verification": "A failed task-linked attempt becomes searchable canonical memory and appears in handoff." },
+    { "id": "mcp-validation", "category": "REFACTOR", "instruction": "Make MCP schemas enforceable at runtime and reject oversized input, invalid enums, unknown fields, and path-like IDs.", "verification": "Malformed calls return typed JSON-RPC errors before canonical access." },
+    { "id": "unfinished-verification-policy", "category": "CONTINUATION", "instruction": "Continue the unfinished verification hardening by separating named dotnet checks from explicitly approved shell commands.", "verification": "Named checks avoid a shell; unsafe success never produces VERIFIED." }
+  ]
+}
