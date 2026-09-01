@@ -50,7 +50,7 @@ jobs:
           $source = "artifacts/self-contained/${{ matrix.rid }}"
           $archive = "artifacts/arifce-${{ matrix.rid }}.zip"
           Compress-Archive -Path "$source/*" -DestinationPath $archive -Force
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: arifce-${{ matrix.rid }}
           path: artifacts/arifce-${{ matrix.rid }}.zip
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           pattern: arifce-*
           path: artifacts/release
@@ -71,7 +71,7 @@ jobs:
         shell: pwsh
         run: ./scripts/write-release-checksums.ps1 -ArchiveDirectory ./artifacts/release -VerifyArchives
       - name: Upload verified release bundle
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: arifce-release-bundle
           path: |
