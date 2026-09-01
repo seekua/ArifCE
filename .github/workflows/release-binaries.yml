@@ -4,6 +4,11 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to build and publish (for example v0.8.0)
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -27,6 +32,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+      - name: Verify release tag matches package version
+        shell: pwsh
+        env:
+          ARIFCE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          if ($env:ARIFCE_TAG -notmatch '^v\d+\.\d+\.\d+$') { throw "Invalid release tag: $env:ARIFCE_TAG" }
+          $project = Get-Content ./src/ArifCE.Cli/ArifCE.Cli.csproj -Raw
+          $version = [regex]::Match($project, '<Version>(?<v>[^<]+)</Version>').Groups['v'].Value
+          if ("v$version" -ne $env:ARIFCE_TAG) { throw "Tag $env:ARIFCE_TAG does not match CLI package version $version." }
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
@@ -57,11 +73,15 @@ jobs:
           if-no-files-found: error
 
   bundle:
-    name: Verify release bundle
+    name: Verify and publish release bundle
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - uses: actions/download-artifact@v7
         with:
           pattern: arifce-*
@@ -78,3 +98,28 @@ jobs:
             artifacts/release/*.zip
             artifacts/release/SHA256SUMS
           if-no-files-found: error
+      - name: Publish immutable GitHub Release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARIFCE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          git rev-parse --verify "refs/tags/$env:ARIFCE_TAG"
+          if ($LASTEXITCODE -ne 0) { throw "Tag does not exist: $env:ARIFCE_TAG" }
+
+          $assets = @(Get-ChildItem -LiteralPath artifacts/release -File | Where-Object { $_.Extension -eq '.zip' -or $_.Name -eq 'SHA256SUMS' } | Sort-Object Name)
+          if ($assets.Count -ne 6) { throw "Expected five archives and SHA256SUMS, found $($assets.Count) assets." }
+
+          $releaseExists = $true
+          $existingNames = @(gh release view $env:ARIFCE_TAG --repo $env:GITHUB_REPOSITORY --json assets --jq '.assets[].name' 2>$null)
+          if ($LASTEXITCODE -ne 0) { $releaseExists = $false; $existingNames = @() }
+          $conflicts = @($assets.Name | Where-Object { $existingNames -contains $_ })
+          if ($conflicts.Count -gt 0) { throw "Release asset conflict; refusing to overwrite: $($conflicts -join ', ')" }
+
+          if (-not $releaseExists) {
+            gh release create $env:ARIFCE_TAG --repo $env:GITHUB_REPOSITORY --verify-tag --generate-notes --title $env:ARIFCE_TAG
+            if ($LASTEXITCODE -ne 0) { throw "Unable to create release $env:ARIFCE_TAG." }
+          }
+
+          gh release upload $env:ARIFCE_TAG @($assets.FullName) --repo $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) { throw "Unable to upload release assets for $env:ARIFCE_TAG." }

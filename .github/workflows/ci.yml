@@ -42,6 +42,9 @@ jobs:
       - name: Engineering benchmark manifest
         shell: pwsh
         run: ./scripts/validate-engineering-benchmark.ps1 -ValidateManifestOnly
+      - name: Release workflow policy
+        shell: pwsh
+        run: ./scripts/check-release-workflow-policy.ps1
       - name: Package smoke test
         shell: pwsh
         run: ./scripts/package-smoke.ps1 -Configuration Release
