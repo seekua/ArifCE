@@ -1,8 +1,14 @@
 # Self-contained binary releases
 
-Tagged releases prepare downloadable CLI archives for Windows, Linux, and macOS through `.github/workflows/release-binaries.yml`.
+Tagged releases build downloadable, self-contained CLI archives through `.github/workflows/release-binaries.yml` for:
 
-Each archive contains the self-contained executable and `SHA256SUMS`. Download the three artifacts from the completed Actions run and attach them to the corresponding GitHub Release. The workflow intentionally has read-only repository permissions; release publication and overwrite remain a deliberate maintainer action.
+- Windows x64 (`win-x64`)
+- Linux x64 (`linux-x64`)
+- Linux ARM64 (`linux-arm64`)
+- macOS Intel (`osx-x64`)
+- macOS Apple Silicon (`osx-arm64`)
+
+Each matrix job runs the produced executable on a runner with the same architecture, then packages it with a checksum for the executable. The bundle job verifies all five archives, creates a release-level `SHA256SUMS`, and publishes one verified Actions artifact containing the six files. The workflow intentionally retains read-only repository permissions; publishing or replacing GitHub Release assets remains an explicit maintainer action.
 
 Before attaching an archive, verify its integrity locally:
 

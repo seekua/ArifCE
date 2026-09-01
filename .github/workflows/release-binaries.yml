@@ -18,6 +18,10 @@ jobs:
             rid: win-x64
           - os: ubuntu-latest
             rid: linux-x64
+          - os: ubuntu-24.04-arm
+            rid: linux-arm64
+          - os: macos-15-intel
+            rid: osx-x64
           - os: macos-latest
             rid: osx-arm64
     runs-on: ${{ matrix.os }}
@@ -33,6 +37,13 @@ jobs:
         run: ./scripts/publish-self-contained.ps1 -Runtime $env:ARIFCE_RID -Configuration Release
         env:
           ARIFCE_RID: ${{ matrix.rid }}
+      - name: Run binary smoke check
+        shell: pwsh
+        run: |
+          $binary = Get-ChildItem -LiteralPath "artifacts/self-contained/${{ matrix.rid }}" -File | Where-Object { $_.Name -notlike 'SHA256SUMS' -and $_.Extension -notin @('.dll', '.json', '.pdb') } | Select-Object -First 1
+          if ($null -eq $binary) { throw 'Published executable not found' }
+          & $binary.FullName help
+          if ($LASTEXITCODE -ne 0) { throw "Binary smoke check failed with exit code $LASTEXITCODE" }
       - name: Package binary
         shell: pwsh
         run: |
@@ -43,4 +54,27 @@ jobs:
         with:
           name: arifce-${{ matrix.rid }}
           path: artifacts/arifce-${{ matrix.rid }}.zip
+          if-no-files-found: error
+
+  bundle:
+    name: Verify release bundle
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: arifce-*
+          path: artifacts/release
+          merge-multiple: true
+      - name: Verify archives and write release checksums
+        shell: pwsh
+        run: ./scripts/write-release-checksums.ps1 -ArchiveDirectory ./artifacts/release -VerifyArchives
+      - name: Upload verified release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: arifce-release-bundle
+          path: |
+            artifacts/release/*.zip
+            artifacts/release/SHA256SUMS
           if-no-files-found: error
