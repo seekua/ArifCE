@@ -16,7 +16,7 @@ Prepare a history-free trial instead of using a worktree from the current reposi
 ./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm arifce -Model model-and-version -TokenBudget 50000
 ```
 
-The preparer exports only the fixture tree, creates a new one-commit repository with no remotes, and refuses to overwrite an existing trial. Each arm receives the same snapshot and a separate prompt. The ArifCE arm is permitted to use only the canonical memory already present in that snapshot; the baseline arm is explicitly prohibited from using ArifCE retrieval. This prevents later solution commits and other-arm output from leaking through shared Git history.
+The preparer exports only the fixture tree, replaces the product repository's ArifCE-requiring `AGENTS.md` with identical neutral participant instructions in both arms, creates a new one-commit repository with no remotes, and refuses to overwrite an existing trial. The session preserves both the source tree and the neutralized fixture tree. Each arm receives that same neutralized snapshot and a separate prompt. The ArifCE arm is permitted to use only the canonical memory already present in that snapshot; the baseline arm is explicitly prohibited from reading `.arifce` or using ArifCE retrieval. This makes the prompt the sole treatment switch and prevents mandatory repository instructions, later solution commits, and other-arm output from contaminating the comparison.
 
 The pinned fixture commit must exist in the local Git object database. A shallow clone must fetch that exact commit before preparing a trial; the preparer never fetches implicitly or accepts a different snapshot.
 
@@ -27,7 +27,9 @@ After the agent commits its candidate and the agent host writes a raw activity l
 ./scripts/complete-engineering-benchmark-trial.ps1 -TrialRoot artifacts/engineering-benchmark/trust-dirty-content/baseline -VerifyOnly
 ```
 
-Completion runs a fixed `dotnet test` evaluator and binds the preparation manifest, prompt, raw log, candidate patch, final commit/tree, and evaluator output with SHA-256 hashes. It refuses dirty, unchanged, or previously completed trials. The result deliberately contains no user-authored task-success field: passing repository tests is evidence, but task correctness still requires the independent evaluator introduced by the next phase.
+Completion runs a fixed, single-worker `dotnet test --no-restore` evaluator with reusable build servers disabled, then binds the preparation manifest, prompt, raw log, candidate patch, final commit/tree, and evaluator output with SHA-256 hashes. It refuses dirty, implicitly unchanged, or previously completed trials. The evaluator measures the checkout the agent actually left behind: it cannot download packages or repair missing restore state after the run. The bounded build topology prevents concurrent benchmark arms from multiplying persistent MSBuild workers. The result deliberately contains no user-authored task-success field: passing repository tests is evidence, but task correctness still requires the independent evaluator introduced by the next phase.
+
+If an agent produces no candidate, preserve the negative run with `-AllowNoCandidate`. This explicit path still requires a clean checkout and raw log, records `candidateChanged: false`, and remains subject to independent evaluation. It must never be used to turn an absent solution into success.
 
 `evaluators.json` pins each task to the full commit, trusted test source, fixture type, and regression-test method that first proved the requested behavior. Candidate-authored tests or a method with the same name are never scoring evidence. The Phase 51 runner must extract and hash the trusted evaluator only after the candidate run has ended.
 

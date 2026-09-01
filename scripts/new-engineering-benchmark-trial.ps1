@@ -63,6 +63,16 @@ finally {
     if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }
 }
 
+# The product repository's AGENTS.md requires every participant to consume ArifCE
+# memory. Keeping it would contaminate the baseline arm. Both arms therefore get
+# the same neutral participant instructions; only prompt.md selects the treatment.
+$neutralAgentInstructions = @'
+# Engineering benchmark participant instructions
+
+Follow the adjacent benchmark prompt exactly. Work only inside this isolated checkout. Do not inspect parent or sibling directories, external history, remotes, the network, or another participant's output. Report failed attempts and verification failures honestly.
+'@
+Set-Content -LiteralPath (Join-Path $checkout 'AGENTS.md') -Value $neutralAgentInstructions -Encoding utf8
+
 Invoke-Git @('-C', $checkout, 'init', '--quiet') | Out-Null
 Invoke-Git @('-C', $checkout, 'config', 'user.name', 'ArifCE Benchmark') | Out-Null
 Invoke-Git @('-C', $checkout, 'config', 'user.email', 'benchmark@arifce.local') | Out-Null
@@ -85,13 +95,12 @@ $sourceTree = (Invoke-Git @('-C', $repo, 'rev-parse', "${fixtureCommit}^{tree}")
 $checkoutTree = (Invoke-Git @('-C', $checkout, 'rev-parse', 'HEAD^{tree}') | Select-Object -First 1).Trim()
 $historyCount = [int]((Invoke-Git @('-C', $checkout, 'rev-list', '--count', 'HEAD') | Select-Object -First 1).Trim())
 $remotes = @((Invoke-Git @('-C', $checkout, 'remote')) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-if ($sourceTree -ne $checkoutTree) { throw 'The isolated checkout tree does not match the fixture tree.' }
 if ($historyCount -ne 1 -or $remotes.Count -ne 0) { throw 'The isolated checkout exposed Git history or a remote.' }
 
 $armGuidance = if ($Arm -eq 'arifce') {
     'Before changing code, follow .arifce/PROTOCOL.md and use only ArifCE context available inside this isolated repository. Do not inspect or fetch any external branch, commit, patch, or prior-arm output.'
 } else {
-    'Work from repository source and tests without running ArifCE context, search, handoff, status, or memory commands. Do not inspect or fetch any external branch, commit, patch, or other-arm output.'
+    'Work from repository source and tests without reading any path under .arifce and without running ArifCE context, search, handoff, status, or memory commands. Do not inspect or fetch any external branch, commit, patch, or other-arm output.'
 }
 $prompt = @"
 # Engineering benchmark trial
@@ -125,7 +134,8 @@ $session = [ordered]@{
     category = $task[0].category
     arm = $Arm
     fixtureCommit = $fixtureCommit
-    fixtureTree = $sourceTree
+    sourceFixtureTree = $sourceTree
+    fixtureTree = $checkoutTree
     isolatedCommit = (Invoke-Git @('-C', $checkout, 'rev-parse', 'HEAD') | Select-Object -First 1).Trim()
     isolatedHistoryCount = $historyCount
     remoteCount = $remotes.Count

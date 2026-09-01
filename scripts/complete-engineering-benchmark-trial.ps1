@@ -7,6 +7,7 @@ param(
     [long]$TokensConsumed = 0,
     [ValidateSet('provider', 'agent-host', 'unavailable')]
     [string]$TokenSource = 'unavailable',
+    [switch]$AllowNoCandidate,
     [switch]$VerifyOnly
 )
 
@@ -61,18 +62,34 @@ if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect the trial checkout.' }
 if ($status.Count -ne 0) { throw 'Commit all trial changes before completion; dirty results are rejected.' }
 $finalCommit = Git-One @('rev-parse', 'HEAD')
 $finalTree = Git-One @('rev-parse', 'HEAD^{tree}')
-if ($finalCommit -eq $session.isolatedCommit -or $finalTree -eq $session.fixtureTree) { throw 'The trial contains no committed candidate change.' }
+$candidateChanged = $finalCommit -ne $session.isolatedCommit -and $finalTree -ne $session.fixtureTree
+if (-not $candidateChanged -and -not $AllowNoCandidate) { throw 'The trial contains no committed candidate change. Use -AllowNoCandidate only to preserve an honest failed run.' }
 
 $resolvedRawLog = [IO.Path]::GetFullPath($RawLog)
 if ($resolvedRawLog -ne $agentLogPath) { Copy-Item -LiteralPath $resolvedRawLog -Destination $agentLogPath }
-@(& git -C $checkout diff --binary $session.isolatedCommit $finalCommit -- .) | Set-Content -LiteralPath $patchPath -Encoding utf8
-if ($LASTEXITCODE -ne 0 -or (Get-Item -LiteralPath $patchPath).Length -eq 0) { throw 'Unable to capture a non-empty candidate patch.' }
+$patchLines = @(& git -C $checkout diff --binary $session.isolatedCommit $finalCommit -- .)
+if ($LASTEXITCODE -ne 0) { throw 'Unable to capture the candidate patch.' }
+[IO.File]::WriteAllText($patchPath, ($patchLines -join [Environment]::NewLine), [Text.UTF8Encoding]::new($false))
+if ($candidateChanged -and (Get-Item -LiteralPath $patchPath).Length -eq 0) { throw 'Unable to capture a non-empty candidate patch.' }
 
-$started = [DateTimeOffset]::Parse([string]$session.preparedAtUtc)
+$preparedValue = $session.preparedAtUtc
+$started = if ($preparedValue -is [DateTime]) {
+    [DateTimeOffset]([DateTime]$preparedValue).ToUniversalTime()
+}
+elseif ($preparedValue -is [DateTimeOffset]) {
+    [DateTimeOffset]$preparedValue
+}
+else {
+    [DateTimeOffset]::ParseExact(
+        [string]$preparedValue,
+        'O',
+        [Globalization.CultureInfo]::InvariantCulture,
+        [Globalization.DateTimeStyles]::RoundtripKind)
+}
 $testStarted = [DateTimeOffset]::UtcNow
 Push-Location $checkout
 try {
-    & dotnet test ArifCE.slnx --configuration Release *> $evaluatorLogPath
+    & dotnet test ArifCE.slnx --configuration Release --no-restore --disable-build-servers --maxcpucount:1 *> $evaluatorLogPath
     $exitCode = $LASTEXITCODE
 }
 finally { Pop-Location }
@@ -89,6 +106,7 @@ $result = [ordered]@{
     durationMs = [Math]::Max(0, [long]($completed - $started).TotalMilliseconds)
     tokensConsumed = $TokensConsumed
     tokenSource = $TokenSource
+    candidateChanged = $candidateChanged
     provenance = [ordered]@{
         sessionSha256 = Hash-File $sessionPath
         promptSha256 = Hash-File $promptPath
@@ -100,14 +118,14 @@ $result = [ordered]@{
     }
     evaluation = [ordered]@{
         kind = 'dotnet-test'
-        command = 'dotnet test ArifCE.slnx --configuration Release'
+        command = 'dotnet test ArifCE.slnx --configuration Release --no-restore --disable-build-servers --maxcpucount:1'
         startedAtUtc = $testStarted.ToString('O')
         completedAtUtc = $completed.ToString('O')
         exitCode = $exitCode
         checksPassed = ($exitCode -eq 0)
         outputSha256 = Hash-File $evaluatorLogPath
     }
-    interpretation = 'Deterministic repository checks only. This is not an independently scored task-success claim.'
+    interpretation = if ($candidateChanged) { 'Deterministic repository checks only. This is not an independently scored task-success claim.' } else { 'No candidate change was produced. The failed run is preserved for independent evaluation rather than omitted.' }
 }
 $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $resultPath -Encoding utf8
 & $PSCommandPath -TrialRoot $trial -VerifyOnly

@@ -17,6 +17,9 @@ try {
     & git -C $checkout add BENCHMARK-SMOKE.txt
     & git -C $checkout commit --quiet -m 'Benchmark completion smoke candidate'
     if ($LASTEXITCODE -ne 0) { throw 'Unable to commit smoke candidate.' }
+    Push-Location $checkout
+    try { & dotnet restore ArifCE.slnx --disable-build-servers --maxcpucount:1 | Out-Null } finally { Pop-Location }
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to prepare restored assets for the completion smoke candidate.' }
     $rawLog = Join-Path $root 'raw-agent.log'
     Set-Content -LiteralPath $rawLog -Value 'Fixture agent activity log.' -Encoding utf8
     & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -RawLog $rawLog -TokenSource unavailable | Out-Null
@@ -35,6 +38,12 @@ try {
     $tamperRejected = $false
     try { & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null } catch { $tamperRejected = $true }
     if (-not $tamperRejected) { throw 'Tampered provenance was accepted.' }
+
+    & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId 'trust-dirty-content' -Arm arifce -Model fixture-model-v1 -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
+    $unchangedTrial = Join-Path $root 'trust-dirty-content/arifce'
+    & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $unchangedTrial -RawLog $rawLog -TokenSource unavailable -AllowNoCandidate | Out-Null
+    $unchanged = Get-Content -LiteralPath (Join-Path $unchangedTrial 'result.json') -Raw | ConvertFrom-Json
+    if ($unchanged.candidateChanged -ne $false) { throw 'No-candidate run was not recorded honestly.' }
     Write-Output 'Engineering benchmark completion provenance smoke test passed.'
 }
 finally {

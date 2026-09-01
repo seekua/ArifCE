@@ -29,6 +29,13 @@ try {
         if ($LASTEXITCODE -ne 0 -or $historyCount -ne 1 -or $remoteCount -ne 0) { throw "$arm checkout is not isolated." }
         $checkoutTree = (& git -C $checkout rev-parse 'HEAD^{tree}').Trim()
         if ($LASTEXITCODE -ne 0 -or $session.fixtureTree -ne $checkoutTree -or $session.isolatedHistoryCount -ne 1) { throw "$arm isolation metadata is invalid." }
+        $agentInstructions = Get-Content -LiteralPath (Join-Path $checkout 'AGENTS.md') -Raw
+        if ($agentInstructions -notmatch 'Engineering benchmark participant instructions' -or $agentInstructions -match 'PROTOCOL.md') {
+            throw "$arm checkout did not receive neutral participant instructions."
+        }
+        if ([string]::IsNullOrWhiteSpace([string]$session.sourceFixtureTree) -or $session.sourceFixtureTree -eq $session.fixtureTree) {
+            throw "$arm session did not preserve source and neutralized fixture provenance."
+        }
         $status = @(& git -C $checkout status --short)
         if ($LASTEXITCODE -ne 0 -or $status.Count -ne 0) { throw "$arm checkout is not clean." }
     }
@@ -38,6 +45,8 @@ try {
     if ($baseline.fixtureTree -ne $arifce.fixtureTree -or $baseline.isolatedCommit -ne $arifce.isolatedCommit) {
         throw 'Matched arms do not have identical fixture snapshots.'
     }
+    $baselinePrompt = Get-Content -LiteralPath (Join-Path $root 'trust-dirty-content/baseline/prompt.md') -Raw
+    if ($baselinePrompt -notmatch 'without reading any path under \.arifce') { throw 'Baseline prompt does not prohibit ArifCE memory reads.' }
     $duplicateRejected = $false
     try {
         & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId 'trust-dirty-content' -Arm 'baseline' -Model 'fixture-model-v1' -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null

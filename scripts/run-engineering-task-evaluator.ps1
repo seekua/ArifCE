@@ -117,7 +117,7 @@ $outputPath = Join-Path $evaluatorRoot 'evaluator.log'
 Set-Content -LiteralPath $sourcePath -Value $classBody -Encoding utf8
 Set-Content -LiteralPath $projectPath -Value $project -Encoding utf8
 Push-Location $evaluatorRoot
-try { & dotnet test $projectPath --configuration Release *> $outputPath; $exitCode = $LASTEXITCODE } finally { Pop-Location }
+try { & dotnet test $projectPath --configuration Release --disable-build-servers --maxcpucount:1 *> $outputPath; $exitCode = $LASTEXITCODE } finally { Pop-Location }
 $evaluation = [ordered]@{
     registrySha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $registryPath).Hash.ToLowerInvariant()
     sourceCommit = $entry.sourceCommit
