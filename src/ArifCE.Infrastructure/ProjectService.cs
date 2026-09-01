@@ -190,17 +190,24 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         await RecordAsync(root, "acceptance.revoked", id, updated, cancellationToken); return updated;
     }
 
-    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyAsync(string root, string claimId, string commandText, CancellationToken cancellationToken = default)
+    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyAsync(string root, string claimId, string commandText, bool allowUnsafeCommand = false, CancellationToken cancellationToken = default)
     {
         var claim = await canonical.ReadAsync<ClaimRecord>(root, "claims", claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
+        var commandRedaction = new SecretRedactor().Redact(commandText);
+        if (commandRedaction.Count > 0) throw new InvalidOperationException("Verification command contains a detectable secret and was blocked before execution.");
+        var policy = VerificationCommandPolicy.Classify(commandText);
+        if (policy == VerificationCommandKind.UnsafeShell && !allowUnsafeCommand) throw new InvalidOperationException("Unrecognized verification commands require explicit --allow-unsafe-command approval.");
         var before = await git.CaptureAsync(root, cancellationToken);
-        var result = await RunCommandAsync(root, commandText, cancellationToken);
+        var result = policy == VerificationCommandKind.NamedDotNet
+            ? await RunNamedCommandAsync(root, commandText, cancellationToken)
+            : await RunShellCommandAsync(root, commandText, cancellationToken);
         var evidenceId = canonical.NextId(root, "evidence", "EVIDENCE");
         var parsed = CommandEvidenceParser.Parse(commandText, result.Output);
-        var evidenceKind = parsed.Kind == "COMMAND" ? "UNVERIFIED_COMMAND" : parsed.Kind;
-        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, evidenceKind, commandText, result.ExitCode, Truncate(result.Output, 1000), before, DateTimeOffset.UtcNow, parsed.Metrics);
+        var evidenceKind = policy == VerificationCommandKind.UnsafeShell ? "UNSAFE_COMMAND" : parsed.Kind == "COMMAND" ? "UNVERIFIED_COMMAND" : parsed.Kind;
+        var safeOutput = new SecretRedactor().Redact(result.Output).Text;
+        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, evidenceKind, commandText, result.ExitCode, Truncate(safeOutput, 1000), before, DateTimeOffset.UtcNow, parsed.Metrics);
         await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
-        var status = result.ExitCode == 0 ? (parsed.Kind == "COMMAND" ? ClaimStatus.Supported : claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
+        var status = result.ExitCode == 0 ? (policy == VerificationCommandKind.UnsafeShell || parsed.Kind == "COMMAND" ? ClaimStatus.Supported : claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
         var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, current => current with { Status = status, Evidence = current.Evidence.Append(evidenceId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken);
         await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
     }
@@ -551,5 +558,17 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     }
     private static bool IsTextFile(string path) => new[] { ".cs", ".md", ".json", ".xml", ".yml", ".yaml", ".txt" }.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
     private static string Truncate(string value, int length) => value.Length <= length ? value : value[..length] + "…";
-    private static async Task<(int ExitCode, string Output)> RunCommandAsync(string root, string command, CancellationToken ct) { var shell = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh"; var args = OperatingSystem.IsWindows() ? $"/d /s /c \"{command}\"" : $"-c \"{command.Replace("\"", "\\\"")}\""; using var p = new Process { StartInfo = new ProcessStartInfo(shell, args) { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true } }; p.Start(); var stdout = await p.StandardOutput.ReadToEndAsync(ct); var stderr = await p.StandardError.ReadToEndAsync(ct); await p.WaitForExitAsync(ct); return (p.ExitCode, stdout + stderr); }
+    private static async Task<(int ExitCode, string Output)> RunNamedCommandAsync(string root, string command, CancellationToken ct)
+    {
+        var tokens = VerificationCommandPolicy.Tokenize(command);
+        var start = new ProcessStartInfo(tokens[0]) { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
+        foreach (var token in tokens.Skip(1)) start.ArgumentList.Add(token);
+        return await RunProcessAsync(start, ct);
+    }
+    private static async Task<(int ExitCode, string Output)> RunShellCommandAsync(string root, string command, CancellationToken ct)
+    {
+        var shell = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh"; var args = OperatingSystem.IsWindows() ? $"/d /s /c \"{command}\"" : $"-c \"{command.Replace("\"", "\\\"")}\"";
+        return await RunProcessAsync(new ProcessStartInfo(shell, args) { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true }, ct);
+    }
+    private static async Task<(int ExitCode, string Output)> RunProcessAsync(ProcessStartInfo start, CancellationToken ct) { using var p = new Process { StartInfo = start }; p.Start(); var stdout = await p.StandardOutput.ReadToEndAsync(ct); var stderr = await p.StandardError.ReadToEndAsync(ct); await p.WaitForExitAsync(ct); return (p.ExitCode, stdout + stderr); }
 }

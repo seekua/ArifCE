@@ -126,8 +126,8 @@ public sealed class BehaviorTests : IDisposable
     [Fact]
     public async Task Claim_verification_and_git_freshness_are_snapshot_scoped()
     {
-        await Service.InitializeAsync(root, false); var claim = await Service.CreateClaimAsync(root, "Command succeeds", RiskLevel.Low); var result = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
-        Assert.Equal(ClaimStatus.Supported, result.Claim.Status); Assert.Equal("UNVERIFIED_COMMAND", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
+        await Service.InitializeAsync(root, false); var claim = await Service.CreateClaimAsync(root, "Command succeeds", RiskLevel.Low); var result = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true);
+        Assert.Equal(ClaimStatus.Supported, result.Claim.Status); Assert.Equal("UNSAFE_COMMAND", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
         var changedPath = Path.Combine(root, "changed.txt"); await File.WriteAllTextAsync(changedPath, "change"); var after = await git.CaptureAsync(root); Assert.NotEqual(result.Evidence.Snapshot.Digest, after.Digest);
         await File.WriteAllTextAsync(changedPath, "different content in the same path"); var afterInPlaceEdit = await git.CaptureAsync(root); Assert.NotEqual(after.Digest, afterInPlaceEdit.Digest);
         Assert.Equal(EvidenceFreshness.Stale, EvidenceEvaluator.Evaluate(result.Evidence.Snapshot, after));
@@ -156,7 +156,7 @@ public sealed class BehaviorTests : IDisposable
     {
         await Service.InitializeAsync(root, false);
         var claim = await Service.CreateClaimAsync(root, "Deterministic command passes", RiskLevel.Low);
-        var verified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        var verified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true);
         var acceptance = await Service.CreateAcceptanceAsync(root, claim.Id, "product-owner", "Acceptance criteria reviewed");
         Assert.Equal(AcceptanceStatus.Accepted, acceptance.Status);
         Assert.Equal(claim.Id, acceptance.ClaimId);
@@ -170,7 +170,7 @@ public sealed class BehaviorTests : IDisposable
     {
         await Service.InitializeAsync(root, false);
         var claim = await Service.CreateClaimAsync(root, "High risk change is safe", RiskLevel.High);
-        await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true);
         await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CreateAcceptanceAsync(root, claim.Id, "product-owner", "Reviewed"));
     }
 
@@ -181,7 +181,7 @@ public sealed class BehaviorTests : IDisposable
         var source = Path.Combine(root, "service.cs");
         await File.WriteAllTextAsync(source, "before");
         var claim = await Service.CreateClaimAsync(root, "Service remains correct", RiskLevel.Low);
-        await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true);
         var acceptance = await Service.CreateAcceptanceAsync(root, claim.Id, "product-owner", "Current evidence reviewed");
 
         await File.WriteAllTextAsync(source, "after");
@@ -271,6 +271,18 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Verification_commands_are_named_or_require_explicit_unsafe_approval()
+    {
+        Assert.Equal(VerificationCommandKind.NamedDotNet, VerificationCommandPolicy.Classify("dotnet test --no-restore"));
+        Assert.Equal(VerificationCommandKind.UnsafeShell, VerificationCommandPolicy.Classify("dotnet test && echo bypass"));
+        await Service.InitializeAsync(root, false);
+        var claim = await Service.CreateClaimAsync(root, "Explicit command policy", RiskLevel.Low);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.VerifyAsync(root, claim.Id, "echo password=hunter2", true));
+        Assert.Empty(claim.Evidence);
+    }
+
+    [Fact]
     public async Task Architecture_boundary_evidence_is_deterministic_and_confined_to_repository_paths()
     {
         await Service.InitializeAsync(root, false); var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
@@ -325,7 +337,7 @@ public sealed class BehaviorTests : IDisposable
         var task = await Service.CreateTaskAsync(root, "Exercise the continuity flow", RiskLevel.Low);
         await Service.CheckpointAsync(root, "Task represented and checkpointed");
         var claim = await Service.CreateClaimAsync(root, "A deterministic command succeeds", RiskLevel.Low);
-        var verified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true");
+        var verified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true);
         Assert.Equal(ClaimStatus.Supported, verified.Claim.Status);
         var handoff = await Service.HandoffAsync(root); Assert.Contains(task.Id, handoff.Markdown);
         var campaign = await Service.StartRefactorAsync(root, "Fixture refactor", "Prove guarded completion");

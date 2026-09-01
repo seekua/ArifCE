@@ -34,7 +34,7 @@ internal static class Cli
                 case "codegraph": await CodeGraphCommand(new CodeGraphStore(), root, args); break;
                 case "contract": await ChangeContractCommand(service, root, args); break;
                 case "run": await AgentRunCommand(service, root, args); break;
-                case "verify": Require(args, 2, "verify <claim-id> --command <command>"); var verified = await service.VerifyAsync(root, args[1], Option(args, "--command") ?? throw new ArgumentException("--command is required.")); Console.WriteLine($"{verified.Claim.Id}: {verified.Claim.Status} ({verified.Evidence.Id})"); break;
+                case "verify": Require(args, 2, "verify <claim-id> --command <command> [--allow-unsafe-command]"); var verified = await service.VerifyAsync(root, args[1], Option(args, "--command") ?? throw new ArgumentException("--command is required."), args.Contains("--allow-unsafe-command", StringComparer.OrdinalIgnoreCase)); Console.WriteLine($"{verified.Claim.Id}: {verified.Claim.Status} ({verified.Evidence.Id})"); break;
                 case "architecture": await ArchitectureCommand(service, root, args); break;
                 case "api": await ApiCommand(service, root, args); break;
                 case "schema": await SchemaCommand(service, root, args); break;

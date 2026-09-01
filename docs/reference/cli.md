@@ -76,7 +76,14 @@ arifce verify <claim-id> --command <deterministic-command>
 arifce architecture check <claim-id> --forbid <reference> --path <source-path>
 ```
 
-Verification executes the user-supplied command in the project root and records command, exit code, output summary, Git snapshot, and structured .NET build/test metrics when recognized. Medium-risk claims become `SUPPORTED`, not automatically `VERIFIED`, after one successful command.
+Verification runs recognized `dotnet build` and `dotnet test` commands directly without a shell and records command, exit code, redacted output summary, Git snapshot, and structured metrics. Shell metacharacters prevent a command from entering this named path. Any other command is classified as unsafe and requires explicit `--allow-unsafe-command`; its evidence kind is `UNSAFE_COMMAND` and success can only support, never verify, a claim. Commands containing detectable secrets are blocked before execution.
+
+```text
+arifce verify CLAIM-0001 --command "dotnet test --configuration Release"
+arifce verify CLAIM-0001 --command "custom-local-check" --allow-unsafe-command
+```
+
+The unsafe flag is a local execution approval, not evidence that the command is deterministic or trustworthy.
 
 Run `arifce trust refresh` after repository changes or before a handoff. It compares current repository content with recorded evidence snapshots, moves affected claims to `STALE`, and marks linked accepted records as `NEEDS_REVIEW`. Handoff generation performs the same refresh and prints trust warnings. Changes under `.arifce/` are excluded from the code-state fingerprint so recording evidence does not invalidate itself.
 
