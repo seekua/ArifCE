@@ -5,12 +5,20 @@ $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $root = Join-Path ([IO.Path]::GetTempPath()) ('arifce-benchmark-smoke-' + [Guid]::NewGuid().ToString('N'))
 try {
+    New-Item -ItemType Directory -Path $root -Force | Out-Null
+    $fixtureCommit = (& git -C $repo rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or $fixtureCommit -notmatch '^[0-9a-f]{40}$') { throw 'Unable to resolve the CI fixture commit.' }
+    $manifest = Get-Content -LiteralPath (Join-Path $repo 'benchmarks/engineering-tasks.json') -Raw | ConvertFrom-Json
+    $manifest.fixtureCommit = $fixtureCommit
+    $manifestPath = Join-Path $root 'smoke-manifest.json'
+    $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding utf8
     foreach ($arm in @('baseline', 'arifce')) {
         & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') `
             -TaskId 'trust-dirty-content' `
             -Arm $arm `
             -Model 'fixture-model-v1' `
             -TokenBudget 50000 `
+            -Manifest $manifestPath `
             -OutputRoot $root | Out-Null
         $trial = Join-Path (Join-Path $root 'trust-dirty-content') $arm
         $session = Get-Content -LiteralPath (Join-Path $trial 'session.json') -Raw | ConvertFrom-Json
@@ -32,7 +40,7 @@ try {
     }
     $duplicateRejected = $false
     try {
-        & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId 'trust-dirty-content' -Arm 'baseline' -Model 'fixture-model-v1' -TokenBudget 50000 -OutputRoot $root | Out-Null
+        & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId 'trust-dirty-content' -Arm 'baseline' -Model 'fixture-model-v1' -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
     }
     catch { $duplicateRejected = $true }
     if (-not $duplicateRejected) { throw 'An existing trial was overwritten.' }

@@ -18,6 +18,8 @@ Prepare a history-free trial instead of using a worktree from the current reposi
 
 The preparer exports only the fixture tree, creates a new one-commit repository with no remotes, and refuses to overwrite an existing trial. Each arm receives the same snapshot and a separate prompt. The ArifCE arm is permitted to use only the canonical memory already present in that snapshot; the baseline arm is explicitly prohibited from using ArifCE retrieval. This prevents later solution commits and other-arm output from leaking through shared Git history.
 
+The pinned fixture commit must exist in the local Git object database. A shallow clone must fetch that exact commit before preparing a trial; the preparer never fetches implicitly or accepts a different snapshot.
+
 ```json
 {
   "taskId": "trust-dirty-content",
