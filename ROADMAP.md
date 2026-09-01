@@ -75,11 +75,11 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 45: add structured agent flight-recorder records and strict MCP/verification boundaries.
 - [x] Phase 46: add a matched ten-category engineering benchmark protocol without unmeasured effectiveness claims.
 - [x] Phase 47: verify self-contained binaries on five native targets and enforce immutable release assets.
-- [ ] Phase 48: publish V0.8.0 and record the tag workflow, checksums, assets, and release evidence.
+- [x] Phase 48: publish V0.8.0 and record the tag workflow, checksums, assets, and release evidence.
 
 ## Explicit deferrals
 
-- **Self-contained distribution:** the repeatable CLI packaging script, dependency policy, five-target native smoke matrix, downloadable CI artifacts, archive-level checksums, and release-bundle verification are present. Remote CI run [33490587568](https://github.com/seekua/ArifCE/actions/runs/33490587568) passed all three build/test/package jobs and five native binary jobs. The release job now has narrowly scoped write permission, rejects tag/version mismatches, and refuses asset replacement. A new version tag is still required to exercise this publishing path against immutable release sources; signing, package-manager manifests, and NativeAOT compatibility remain deferred rather than attributed to the older `v0.7.0` tag.
+- **Self-contained distribution:** the repeatable CLI packaging script, dependency policy, five-target native smoke matrix, archive-level checksums, and immutable release publication are proven by [`v0.8.0`](https://github.com/seekua/ArifCE/releases/tag/v0.8.0). [Tag CI run 33496418909](https://github.com/seekua/ArifCE/actions/runs/33496418909) and [release workflow run 33496418947](https://github.com/seekua/ArifCE/actions/runs/33496418947) passed. The five public archives were downloaded and verified against the release-level and archive-internal checksums. Signing, package-manager manifests, and NativeAOT compatibility remain deferred.
 - **V0.7 release operations:** the versioned release checklist is prepared; tagging, signing, immutable asset attachment, and external package-manager submissions remain maintainer-controlled steps.
 
 GitHub repository description/topics remain an external account-setting task. No local `GITHUB_TOKEN` is available in this environment, so metadata has not been claimed as updated; repository code and releases continue to be pushed normally. Journal rotation is now implemented with a size threshold and timestamped archive.
