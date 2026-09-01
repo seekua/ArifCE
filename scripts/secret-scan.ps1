@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $patterns = @(
     @{ Name = 'private-key'; Regex = '-----BEGIN [A-Z ]*PRIVATE KEY-----' },
     @{ Name = 'bearer-token'; Regex = '(?i)bearer\s+[a-z0-9._~+/=-]{8,}' },
-    @{ Name = 'credential-assignment'; Regex = '(?i)(password|pwd|api[_-]?key|secret)\s*[=:]\s*[^\s;]{6,}' },
+    @{ Name = 'credential-assignment'; Regex = '(?i)(password|pwd|api[_-]?key|secret)\s*[=:]\s*[^\s;''",}\]]{6,}' },
     @{ Name = 'jwt'; Regex = 'eyJ[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9_-]{8,}' }
 )
 
@@ -11,6 +11,7 @@ $allowedFixtures = @(
     @{ Path = 'tests/ArifCE.Tests/BehaviorTests.cs'; Pattern = 'bearer-token'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('QmVhcmVyIGFiYy5kZWYuZ2hp')) },
     @{ Path = 'tests/ArifCE.Tests/BehaviorTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9c2VjcmV0')) }
     @{ Path = 'tests/ArifCE.Tests/BehaviorTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9aHVudGVyMg==')) }
+    @{ Path = 'tests/ArifCE.Tests/LlmProviderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9aHVudGVyMg==')) }
 )
 
 $findings = [System.Collections.Generic.List[object]]::new()

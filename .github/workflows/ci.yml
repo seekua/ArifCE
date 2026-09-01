@@ -83,7 +83,7 @@ jobs:
           & $binary.FullName help
           if ($LASTEXITCODE -ne 0) { throw "Binary smoke check failed with exit code $LASTEXITCODE" }
       - name: Upload self-contained artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: arifce-${{ matrix.rid }}
           path: artifacts/self-contained/${{ matrix.rid }}
