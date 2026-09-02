@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 is closed at commit `cba9f49`; remote CI run 33619130756 passed. Phase 57 is closed at commit `b9ea930`; remote CI run 33621238337 passed the three-OS build/test/package matrix and five self-contained targets. Phase 58 is locally verified and awaits its remote CI run. Verification may explicitly bind evidence to a change contract, only structural declaration/file relationships plus reverse exact project references can expand its freshness scope, and `task create` now rejects unsupported options rather than storing them in canonical titles.
+Phase 56 is closed at commit `cba9f49`; remote CI run 33619130756 passed. Phase 57 is closed at commit `b9ea930`; remote CI run 33621238337 passed the three-OS build/test/package matrix and five self-contained targets. Phase 58 is closed at commit `542373b`; remote CI run 33625989049 passed the same matrix and five native targets. Verification may explicitly bind evidence to a change contract, only structural declaration/file relationships plus reverse exact project references can expand its freshness scope, and `task create` now rejects unsupported options rather than storing them in canonical titles.
 
 ## Blockers
 
@@ -14,4 +14,4 @@ No implementation or release blocker is known. Heuristic caller/test relationshi
 
 ## Next steps
 
-Observe Phase 58 remote CI, then choose the next owner-approved V0.9 trust objective from the explicit deferrals. Do not expand heuristic edges into automatic trust decisions without a new false-invalidation policy and measured evidence.
+Choose the next owner-approved V0.9 trust objective from the explicit deferrals. Do not expand heuristic edges into automatic trust decisions without a new false-invalidation policy and measured evidence.

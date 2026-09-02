@@ -1,6 +1,6 @@
 # Task-risk parsing integrity evidence
 
-**Status:** implemented and locally verified; remote CI evidence is added after the commit is observed in the three-OS matrix.
+**Status:** implemented and verified locally and remotely.
 
 ## Problem
 
@@ -22,5 +22,6 @@ arifce task create <title> [--risk <LOW|MEDIUM|HIGH|CRITICAL>]
 - `dotnet build ArifCE.slnx -c Release --no-restore -m:1` completed with 0 warnings and 0 errors.
 - `dotnet test ArifCE.slnx -c Release --no-build --disable-build-servers -m:1` passed.
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/package-smoke.ps1` passed, including the valid-risk and rejected-option checks against the packed global tool.
+- [GitHub Actions run 33625989049](https://github.com/seekua/ArifCE/actions/runs/33625989049) passed the Windows, Ubuntu, and macOS build/test/package jobs and all five self-contained native CLI targets for commit `542373b`.
 
 This is command-line parsing integrity, not a new task-domain concept. The canonical record remains the source of truth.
