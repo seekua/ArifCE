@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Preserve graph relationship confidence when creating canonical impact and related-test candidates; heuristic links no longer inherit the certainty of their destination declaration.
 - Add exact structural `CONTAINS` edges for C# types, nested types, methods, and constructors in the disposable graph.
 - Preserve distinct same-line C# declarations and assign invocation candidates to their exact containing declaration; rebuild earlier derived graphs with generator version 6.
 - Add parser-backed heuristic `CALLS` edges to the disposable C# graph for investigation without allowing them to expand evidence freshness or acceptance.

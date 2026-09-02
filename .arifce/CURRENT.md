@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 through 63 are closed with their recorded remote CI evidence. Phase 64 initial commit `5f6772e` passed remote CI run 33687064063. Follow-up same-line declaration identity and call-ownership corrections pass all 82 local tests; corrected remote CI is pending. Graph generator version 6 rebuilds earlier caches. Exact lexical `CONTAINS` edges represent type-member ownership; parser-backed `CALLS` candidates and heuristic references remain outside trusted closure.
+Phase 56 through 64 are closed. Phase 64 correction `297a6a9` passed remote CI run 33687771905 after two adversarial regressions exposed same-line declaration collisions and wrong call ownership. Graph generator version 6 rebuilds earlier caches. Phase 65 corrects canonical impact-candidate confidence to use the graph relationship rather than declaration certainty; all 83 local tests pass, with remote CI pending.
 
 ## Blockers
 
@@ -14,4 +14,4 @@ No implementation or release blocker is known. Heuristic caller/test relationshi
 
 ## Next steps
 
-Await Phase 64 remote CI evidence, then choose the next owner-approved V0.9 trust objective from the explicit deferrals. Do not expand heuristic edges into automatic trust decisions without a new false-invalidation policy and measured evidence.
+Complete Phase 65 packaged and remote validation. Keep heuristic graph relationships outside automatic trust decisions. Historical contracts retain their original snapshots; recreate them to obtain corrected candidate-confidence labels.

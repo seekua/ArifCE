@@ -556,6 +556,25 @@ public sealed class BehaviorTests : IDisposable
         Assert.Contains(contract.RequiredVerification, item => item.Contains("BUILD", StringComparison.Ordinal));
         Assert.Contains(contract.RequiredVerification, item => item.Contains("independent review", StringComparison.Ordinal));
         Assert.NotNull(await Service.GetClaimAsync(root, contract.ClaimId));
+        var persisted = (await Service.GetChangeContractAsync(root, contract.Id))!;
+        Assert.All(persisted.PotentialImpact.Where(item => item.Path.EndsWith("InvoiceService.cs", StringComparison.Ordinal)), item => Assert.Equal("HEURISTIC", item.Confidence));
+        Assert.All(persisted.RelatedTests, item => Assert.Equal("HEURISTIC", item.Confidence));
+        Assert.Contains(persisted.PotentialImpact, item => item.Kind == "TYPE" && item.Name == "PaymentService" && item.Confidence == "STRUCTURAL");
+        Assert.Contains(persisted.PotentialImpact, item => item.Kind == "FILE" && item.Path == "src/PaymentService.cs" && item.Confidence == "STRUCTURAL");
+    }
+
+    [Fact]
+    public async Task Change_contract_retains_exact_confidence_for_project_reference_relationships()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "Library.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+        await File.WriteAllTextAsync(Path.Combine(source, "Consumer.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><ProjectReference Include=\"Library.csproj\" /></ItemGroup></Project>");
+
+        var contract = await Service.CreateChangeContractAsync(root, "Library", RiskLevel.Low);
+        var candidate = Assert.Single(contract.PotentialImpact);
+        Assert.Equal("src/Consumer.csproj", candidate.Path);
+        Assert.Equal("EXACT", candidate.Confidence);
     }
 
     [Fact]

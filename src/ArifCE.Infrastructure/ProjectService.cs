@@ -355,10 +355,18 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (string.IsNullOrWhiteSpace(target)) throw new ArgumentException("A change target is required.", nameof(target));
         var graphResult = await new CodeGraphStore().QueryAsync(root, target, cancellationToken, exactMatch: true);
         if (graphResult.Matches.Count == 0) throw new InvalidOperationException($"No code-graph symbol matches '{target}'. Build the graph and use an exact symbol name.");
-        var impact = graphResult.RelatedNodes.Where(node => node.Kind is not ("TEST" or "TEST_FILE"))
-            .Select(node => new ChangeImpactItem(node.Kind, node.Name, node.Path, node.Confidence)).Distinct().OrderBy(item => item.Path, StringComparer.Ordinal).ToArray();
-        var tests = graphResult.RelatedNodes.Where(node => node.Kind is "TEST" or "TEST_FILE")
-            .Select(node => new ChangeImpactItem(node.Kind, node.Name, node.Path, node.Confidence)).Distinct().OrderBy(item => item.Path, StringComparer.Ordinal).ToArray();
+        var candidates = graphResult.RelatedNodes.Select(node => new ChangeImpactItem(node.Kind, node.Name, node.Path, RelationshipConfidence(node.Id)))
+            .Distinct().OrderBy(item => item.Path, StringComparer.Ordinal).ToArray();
+        var impact = candidates.Where(item => item.Kind is not ("TEST" or "TEST_FILE")).ToArray();
+        var tests = candidates.Where(item => item.Kind is "TEST" or "TEST_FILE").ToArray();
+
+        string RelationshipConfidence(string nodeId)
+        {
+            var links = graphResult.Edges.Where(edge => edge.From == nodeId || edge.To == nodeId).ToArray();
+            if (links.Any(edge => edge.Confidence == "EXACT")) return "EXACT";
+            if (links.Any(edge => edge.Confidence == "STRUCTURAL")) return "STRUCTURAL";
+            return "HEURISTIC";
+        }
         var history = (await index.SearchAsync(root, target, 20, cancellationToken)).Where(hit => hit.Path.StartsWith("decisions/", StringComparison.OrdinalIgnoreCase) || hit.Path.StartsWith("attempts/", StringComparison.OrdinalIgnoreCase) || hit.Path.StartsWith("findings/", StringComparison.OrdinalIgnoreCase) || hit.Path.StartsWith("refactors/", StringComparison.OrdinalIgnoreCase) || hit.Path.StartsWith("claims/", StringComparison.OrdinalIgnoreCase)).Select(hit => hit.Path).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var policy = VerificationPolicy.For(risk);
         var required = new List<string> { "Rebuild the deterministic code graph and review every impact candidate." };

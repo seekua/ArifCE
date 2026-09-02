@@ -30,6 +30,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Fail-closed Git snapshot evidence](evidence/git-snapshot-fail-closed-2026-09-02.md)
 - [Heuristic C# call-candidate evidence](evidence/heuristic-call-candidates-2026-09-03.md)
 - [C# type-member ownership evidence](evidence/type-member-ownership-2026-09-03.md)
+- [Change-contract relationship confidence evidence](evidence/contract-relationship-confidence-2026-09-03.md)
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Dependency policy](architecture/dependency-policy.md)
 - [Binary releases](release/binary-releases.md)

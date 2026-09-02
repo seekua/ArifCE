@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0010",
+  "taskId": "TASK-0015",
+  "approach": "Copy declaration confidence into contract impact entries",
+  "result": "FAILED",
+  "reason": "Regression test read persisted contract entries and found an incidental caller file marked EXACT and its method marked STRUCTURAL instead of HEURISTIC. The fix derives confidence from direct relationships and retains EXACT project references.",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-09-02T22:01:30.2151838+00:00"
+}

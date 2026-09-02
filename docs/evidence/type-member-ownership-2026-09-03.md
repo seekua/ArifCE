@@ -21,4 +21,4 @@ Two additional regression tests first failed against the initial implementation:
 
 The packaged CLI smoke fixture now places an idle method and a caller on the same line and checks the source of the emitted call and its owning type.
 
-Initial commit `5f6772e` passed [CI run 33687064063](https://github.com/seekua/ArifCE/actions/runs/33687064063). This result predates the two adversarial regressions. Corrected remote CI evidence is appended after the follow-up commit is pushed.
+Initial commit `5f6772e` passed [CI run 33687064063](https://github.com/seekua/ArifCE/actions/runs/33687064063). This result predates the two adversarial regressions. Correction `297a6a9` passed [CI run 33687771905](https://github.com/seekua/ArifCE/actions/runs/33687771905): Windows, Ubuntu, and macOS build/test/package jobs and all five self-contained binary targets succeeded. Phase 64 is closed against this corrected implementation.

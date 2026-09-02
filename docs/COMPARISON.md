@@ -15,7 +15,7 @@ The differentiator is the claim lifecycle: a completion statement can remain `UN
 
 ## What other tools may do better
 
-Specialized tools may provide deeper semantic embeddings, automatic session capture, AST-level code graphs, or turnkey hosted collaboration. Those capabilities are outside ArifCE's local-first core and can be evaluated as optional integrations rather than implied guarantees.
+Specialized tools may provide semantic embeddings, automatic session capture, compiler-resolved code relationships, or turnkey hosted collaboration. ArifCE's C# graph currently provides parsed declarations, lexical ownership, and heuristic invocation candidates; it does not resolve compiler symbols or runtime dispatch. The broader capabilities can be evaluated as optional integrations rather than implied guarantees.
 
 ## Positioning
 

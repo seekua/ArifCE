@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "FINDING-0004",
+  "title": "Heuristic impact candidates inherit declaration certainty",
+  "description": "CreateChangeContractAsync copies the related node confidence into canonical impact and test entries. An EXACT file or STRUCTURAL method reached only through REFERENCES, RELATED_TEST, or CALLS is therefore mislabeled. Project relationship confidence into contract candidates while leaving evidence closure unchanged.",
+  "severity": "HIGH",
+  "status": "OPEN",
+  "taskId": "TASK-0015",
+  "path": "src/ArifCE.Infrastructure/ProjectService.cs",
+  "createdAtUtc": "2026-09-02T21:57:39.3593457+00:00"
+}

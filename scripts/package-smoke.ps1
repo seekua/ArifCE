@@ -80,6 +80,12 @@ try {
         if ($callerNode.Count -ne 1 -or $sourceType.Count -ne 1 -or $calls.Count -ne 1 -or $calls[0].from -ne $callerNode[0].id) { throw 'Packaged call candidates were attributed to the wrong same-line declaration.' }
         $containment = @($graphDocument.edges | Where-Object { $_.kind -eq 'CONTAINS' -and $_.confidence -eq 'STRUCTURAL' -and $_.from -eq $sourceType[0].id -and $_.to -eq $callerNode[0].id })
         if ($containment.Count -ne 1) { throw 'Packaged graph did not preserve type-member ownership.' }
+        $candidateContractOutput = (& $executable contract create Target --risk LOW | Out-String)
+        $candidateContractId = [regex]::Match($candidateContractOutput, 'CONTRACT-\d{4}').Value
+        if ($LASTEXITCODE -ne 0 -or $candidateContractId -notmatch '^CONTRACT-\d{4}$') { throw 'Packaged candidate contract creation failed.' }
+        $candidateContract = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/contracts/$($candidateContractId.ToLowerInvariant()).json") | ConvertFrom-Json
+        $heuristicImpact = @($candidateContract.potentialImpact | Where-Object { $_.path -eq 'src/CallCandidateSource.cs' })
+        if ($heuristicImpact.Count -eq 0 -or @($heuristicImpact | Where-Object { $_.confidence -ne 'HEURISTIC' }).Count -ne 0) { throw 'Packaged contract promoted heuristic candidates to declaration confidence.' }
         $contractOutput = (& $executable contract create FreshGraphSymbol --risk LOW | Out-String)
         $contractId = [regex]::Match($contractOutput, 'CONTRACT-\d{4}').Value
         $contractClaimId = [regex]::Match($contractOutput, 'Claim:\s*(CLAIM-\d{4})').Groups[1].Value

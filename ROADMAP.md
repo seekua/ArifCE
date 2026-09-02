@@ -95,9 +95,11 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 62: replace C# declaration regex scanning with a Roslyn syntax adapter and version derived graphs.
 - [x] Phase 63: expose parser-backed C# call candidates for graph exploration while retaining their heuristic, non-trust status.
 - [x] Phase 64: record exact C# type-member ownership in the disposable graph without inferring semantic dependencies.
+- [ ] Phase 65: preserve direct relationship confidence in canonical change-contract impact and related-test entries. Implemented and locally tested; remote CI pending.
 
 ## Explicit deferrals
 
+- **Historical contract confidence:** contracts created before Phase 65 may label heuristic impact candidates with declaration confidence. They remain original canonical snapshots; automatic retroactive rewriting is deferred to preserve audit history. Recreate a contract to obtain corrected labels. Acceptance and freshness continue to use the separate trusted-closure rules, not these candidate labels.
 - **Self-contained distribution:** the repeatable CLI packaging script, dependency policy, five-target native smoke matrix, archive-level checksums, and immutable release publication are proven by [`v0.8.0`](https://github.com/seekua/ArifCE/releases/tag/v0.8.0). [Tag CI run 33496418909](https://github.com/seekua/ArifCE/actions/runs/33496418909) and [release workflow run 33496418947](https://github.com/seekua/ArifCE/actions/runs/33496418947) passed. The five public archives were downloaded and verified against the release-level and archive-internal checksums. Signing, package-manager manifests, and NativeAOT compatibility remain deferred.
 - **V0.7 release operations:** the versioned release checklist is prepared; tagging, signing, immutable asset attachment, and external package-manager submissions remain maintainer-controlled steps.
 - **Semantic contradiction discovery:** Phase 54 detects normalized same-title decisions and equivalent claim statements deterministically. Differently worded semantic contradictions, automatic winner selection, and LLM-authored consolidation remain deferred because they could manufacture false certainty; unresolved cases require explicit review and supersession.
