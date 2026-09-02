@@ -365,6 +365,58 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Code_graph_queries_rebuild_after_source_add_edit_delete_and_rename()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        var servicePath = Path.Combine(source, "PaymentService.cs");
+        var callerPath = Path.Combine(source, "InvoiceService.cs");
+        await File.WriteAllTextAsync(servicePath, "public sealed class PaymentService { public decimal Calculate() => 10; }");
+        var store = new CodeGraphStore();
+        var initial = await store.BuildAsync(root);
+        Assert.False(string.IsNullOrWhiteSpace(initial.SourceDigest));
+
+        await File.WriteAllTextAsync(callerPath, "public sealed class InvoiceService { public decimal Create() => new PaymentService().Calculate(); }");
+        var afterAdd = await store.QueryAsync(root, "Calculate");
+        Assert.Contains(afterAdd.RelatedNodes, node => node.Path.EndsWith("InvoiceService.cs", StringComparison.Ordinal));
+
+        await File.WriteAllTextAsync(servicePath, "public sealed class PaymentService { public decimal Compute() => 10; }");
+        File.Delete(callerPath);
+        Assert.Empty((await store.QueryAsync(root, "Calculate")).Matches);
+        Assert.Contains((await store.QueryAsync(root, "Compute")).Matches, node => node.Path.EndsWith("PaymentService.cs", StringComparison.Ordinal));
+
+        var renamedPath = Path.Combine(source, "BillingService.cs");
+        File.Move(servicePath, renamedPath);
+        var afterRename = await store.QueryAsync(root, "Compute");
+        Assert.Contains(afterRename.Matches, node => node.Path.EndsWith("BillingService.cs", StringComparison.Ordinal));
+        Assert.DoesNotContain(afterRename.Matches, node => node.Path.EndsWith("PaymentService.cs", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Code_graph_recovers_from_corrupt_and_legacy_derived_documents()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "PaymentService.cs"), "public sealed class PaymentService { public decimal Calculate() => 10; }");
+        var store = new CodeGraphStore();
+        var graph = await store.BuildAsync(root);
+        var graphPath = Path.Combine(root, ".arifce", "index", "code-graph.json");
+
+        await File.WriteAllTextAsync(graphPath, "{corrupt");
+        Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
+
+        var legacy = new { graph.SchemaVersion, graph.GeneratedAtUtc, graph.Nodes, graph.Edges };
+        await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(legacy, JsonDefaults.Options));
+        Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
+        var recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
+        Assert.False(string.IsNullOrWhiteSpace(recovered!.SourceDigest));
+
+        var structurallyInvalid = new CodeGraphDocument(1, DateTimeOffset.UtcNow, null!, null!, recovered.SourceDigest);
+        await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(structurallyInvalid, JsonDefaults.Options));
+        Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
+    }
+
+    [Fact]
     public async Task Change_contract_reuses_claim_lifecycle_and_collects_impact_history_and_tests()
     {
         await Service.InitializeAsync(root, false);

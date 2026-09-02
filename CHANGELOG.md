@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Make the disposable deterministic code graph self-invalidating with a source-tree digest, automatic legacy/corrupt recovery, and stable-snapshot rebuild checks.
 - Add deterministic canonical knowledge audits, explicit decision supersession, handoff conflict warnings, and duplicate/conflict-aware context assembly without automatic truth selection.
 - Add backward-compatible file/directory-scoped evidence freshness so unrelated repository changes do not invalidate explicitly bounded verification, while legacy evidence remains repository-snapshot scoped.
 - Unify context assembly across CLI, MCP, and provider prompts with deterministic record priority, trust filtering, budget/rejection telemetry, and `context explain` diagnostics.

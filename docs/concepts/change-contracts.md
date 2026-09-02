@@ -14,6 +14,8 @@ Creating a contract also creates a normal ArifCE claim. The contract does not du
 
 Potential impact and related-test entries preserve the confidence supplied by the code graph. A heuristic relationship is a review candidate, not proof that code is affected. Historical records are lexical matches from canonical decisions, failed attempts, findings, refactors, and claims; they remain links to inspect rather than automatically accepted constraints.
 
+Contract creation verifies the disposable graph's source digest first and automatically rebuilds it after any `.cs` or `.csproj` edit, addition, deletion, or rename. A legacy or malformed derived graph is also rebuilt. This prevents contracts from consuming known-stale graph snapshots; it does not turn heuristic relationships into verified dependencies.
+
 Risk controls required verification:
 
 - `LOW`: inspect impact candidates.

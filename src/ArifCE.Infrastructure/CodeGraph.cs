@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -6,7 +8,7 @@ namespace ArifCE.Infrastructure;
 
 public sealed record CodeGraphNode(string Id, string Kind, string Name, string Path, int? Line, string Confidence);
 public sealed record CodeGraphEdge(string From, string To, string Kind, string Confidence);
-public sealed record CodeGraphDocument(int SchemaVersion, DateTimeOffset GeneratedAtUtc, IReadOnlyList<CodeGraphNode> Nodes, IReadOnlyList<CodeGraphEdge> Edges);
+public sealed record CodeGraphDocument(int SchemaVersion, DateTimeOffset GeneratedAtUtc, IReadOnlyList<CodeGraphNode> Nodes, IReadOnlyList<CodeGraphEdge> Edges, string? SourceDigest = null);
 public sealed record CodeGraphQueryResult(IReadOnlyList<CodeGraphNode> Matches, IReadOnlyList<CodeGraphNode> RelatedNodes, IReadOnlyList<CodeGraphEdge> Edges);
 
 public sealed partial class CodeGraphStore
@@ -14,9 +16,12 @@ public sealed partial class CodeGraphStore
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { ".git", ".arifce", "bin", "obj", "artifacts", "node_modules" };
     private static readonly HashSet<string> ControlWords = new(StringComparer.Ordinal) { "if", "for", "foreach", "while", "switch", "catch", "using", "lock", "return", "new" };
 
-    public async Task<CodeGraphDocument> BuildAsync(string root, CancellationToken cancellationToken = default)
+    public Task<CodeGraphDocument> BuildAsync(string root, CancellationToken cancellationToken = default) => BuildStableAsync(root, 0, cancellationToken);
+
+    private async Task<CodeGraphDocument> BuildStableAsync(string root, int attempt, CancellationToken cancellationToken)
     {
         var fullRoot = Path.GetFullPath(root);
+        var sourceDigest = await ComputeSourceDigestAsync(fullRoot, cancellationToken);
         var nodes = new List<CodeGraphNode>();
         var edges = new List<CodeGraphEdge>();
         var files = Directory.EnumerateFiles(fullRoot, "*.cs", SearchOption.AllDirectories).Where(path => !IsExcluded(fullRoot, path)).Order(StringComparer.Ordinal).ToArray();
@@ -78,7 +83,13 @@ public sealed partial class CodeGraphStore
             }
         }
 
-        var graph = new CodeGraphDocument(1, DateTimeOffset.UtcNow, nodes.DistinctBy(node => node.Id).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray(), edges.Distinct().OrderBy(edge => edge.From, StringComparer.Ordinal).ThenBy(edge => edge.To, StringComparer.Ordinal).ToArray());
+        var finalDigest = await ComputeSourceDigestAsync(fullRoot, cancellationToken);
+        if (!string.Equals(sourceDigest, finalDigest, StringComparison.Ordinal))
+        {
+            if (attempt >= 2) throw new IOException("Source files kept changing while the deterministic code graph was being built.");
+            return await BuildStableAsync(fullRoot, attempt + 1, cancellationToken);
+        }
+        var graph = new CodeGraphDocument(1, DateTimeOffset.UtcNow, nodes.DistinctBy(node => node.Id).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray(), edges.Distinct().OrderBy(edge => edge.From, StringComparer.Ordinal).ThenBy(edge => edge.To, StringComparer.Ordinal).ToArray(), sourceDigest);
         var path = GraphPath(fullRoot); Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var temporary = path + $".{Guid.NewGuid():N}.tmp";
         await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(graph, JsonDefaults.Options), cancellationToken);
@@ -90,7 +101,17 @@ public sealed partial class CodeGraphStore
     {
         var path = GraphPath(root);
         if (!File.Exists(path)) return await BuildAsync(root, cancellationToken);
-        return JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options) ?? throw new InvalidDataException("The derived code graph is invalid.");
+        try
+        {
+            var graph = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options);
+            if (graph is null || graph.SchemaVersion != 1 || graph.Nodes is null || graph.Edges is null || string.IsNullOrWhiteSpace(graph.SourceDigest)) return await BuildAsync(root, cancellationToken);
+            var currentDigest = await ComputeSourceDigestAsync(root, cancellationToken);
+            return string.Equals(graph.SourceDigest, currentDigest, StringComparison.Ordinal) ? graph : await BuildAsync(root, cancellationToken);
+        }
+        catch (JsonException)
+        {
+            return await BuildAsync(root, cancellationToken);
+        }
     }
 
     public async Task<CodeGraphQueryResult> QueryAsync(string root, string symbol, CancellationToken cancellationToken = default)
@@ -110,6 +131,23 @@ public sealed partial class CodeGraphStore
     private static bool IsExcluded(string root, string path) => Relative(root, path).Split('/').Any(ExcludedDirectories.Contains);
     private static bool IsTestMethod(string[] lines, int index) => lines.Skip(Math.Max(0, index - 3)).Take(Math.Min(4, index + 1)).Any(line => line.Contains("[Fact", StringComparison.Ordinal) || line.Contains("[Theory", StringComparison.Ordinal) || line.Contains("[Test", StringComparison.Ordinal));
     private static Regex IdentifierOccurrence(string name) => new($@"\b{Regex.Escape(name)}\b", RegexOptions.CultureInvariant);
+
+    private static async Task<string> ComputeSourceDigestAsync(string root, CancellationToken cancellationToken)
+    {
+        var files = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Where(path => (path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)) && !IsExcluded(root, path))
+            .OrderBy(path => Relative(root, path), StringComparer.Ordinal)
+            .ToArray();
+        using var aggregate = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var file in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            aggregate.AppendData(Encoding.UTF8.GetBytes(Relative(root, file) + "\n"));
+            await using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+            aggregate.AppendData(await SHA256.HashDataAsync(stream, cancellationToken));
+        }
+        return Convert.ToHexString(aggregate.GetHashAndReset()).ToLowerInvariant();
+    }
 
     [GeneratedRegex(@"\b(?:class|interface|record|struct|enum)\s+([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.CultureInvariant)]
     private static partial Regex TypeDeclaration();

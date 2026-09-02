@@ -123,6 +123,16 @@ arifce schema compare .arifce/index/arifce.db --baseline schema-baseline.json --
 
 These checks inspect only explicitly selected inputs and do not claim application-level compatibility beyond their evidence scope.
 
+## Code impact and change contracts
+
+```bash
+arifce codegraph build
+arifce codegraph query Calculate
+arifce contract create Calculate --risk HIGH --invariant "Financial rounding remains unchanged"
+```
+
+The code graph is disposable and deterministic. Queries and contract creation verify its digest against current `.cs` and `.csproj` paths and contents, then automatically rebuild it after an edit, addition, deletion, or rename. Corrupt and legacy graph files are rebuilt rather than trusted. Structural and heuristic relationships are impact candidates, not verification evidence.
+
 ## Refactor campaigns
 
 ```bash

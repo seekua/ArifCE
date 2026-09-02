@@ -60,6 +60,12 @@ try {
         if ($LASTEXITCODE -ne 0 -or $verificationOutput -notmatch "${claimId}: Supported \(EVIDENCE-\d{4}\)") { throw 'Deterministic claim verification failed.' }
         New-Item -ItemType Directory -Force -Path (Join-Path $repositoryDirectory 'src') | Out-Null
         Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\Boundary.cs') -Value 'namespace PackageFixture;'
+        Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\GraphFixture.cs') -Value 'public sealed class GraphFixture { public void InitialGraphSymbol() { } }'
+        $graphBuild = (& $executable codegraph build | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $graphBuild -notmatch 'Code graph built:') { throw 'Packaged code-graph build failed.' }
+        Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\GraphFixture.cs') -Value 'public sealed class GraphFixture { public void FreshGraphSymbol() { } }'
+        $graphQuery = (& $executable codegraph query FreshGraphSymbol | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $graphQuery -notmatch 'METHOD\s+FreshGraphSymbol') { throw 'Packaged code-graph query did not rebuild after a source edit.' }
         $architectureClaimId = (& $executable claim create 'The packaged CLI verifies an architecture boundary' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
         $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)

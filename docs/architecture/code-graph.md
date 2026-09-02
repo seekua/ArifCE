@@ -2,6 +2,8 @@
 
 ArifCE builds a disposable structural graph at `.arifce/index/code-graph.json`. Canonical project intelligence never depends on this file; deleting it and running `arifce codegraph build` recreates it from repository source and project files.
 
+The derived document records a SHA-256 digest over normalized `.cs` and `.csproj` paths and contents. Every graph read recomputes that digest. Source edits, additions, deletions, and renames trigger an automatic atomic rebuild before a query or change contract can consume the graph. Legacy documents without a digest and malformed derived JSON are rebuilt rather than trusted. A build compares the source digest before and after scanning and retries a bounded number of times; continuously changing input fails explicitly instead of publishing a mixed snapshot.
+
 The first implementation deliberately uses the .NET base class library and adds no parser or embedding dependency. It records C# files, test files, type and method declarations, projects, project references, symbol references, and related-test candidates.
 
 Every relationship carries a confidence label:
@@ -13,3 +15,5 @@ Every relationship carries a confidence label:
 Heuristic edges are impact candidates, not proof. They must not independently verify a claim or accept a change. Future language-specific adapters may replace heuristic edges with parser-backed caller, callee, symbol-reference, and test-discovery relationships while preserving the derived graph contract.
 
 Use `arifce codegraph query <symbol>` to inspect matching declarations and their incoming or outgoing relationships. The output remains explainable and names its confidence level.
+
+Graph freshness does not make heuristic edges proof. ArifCE does not yet use heuristic graph closure to expand evidence scope or invalidate claims transitively; that requires an explicit policy so false-positive identifier matches cannot silently invalidate accepted knowledge.
