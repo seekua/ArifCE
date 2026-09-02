@@ -97,6 +97,8 @@ arifce review record CLAIM-0001 --reviewer "agent-a" --verdict INCONCLUSIVE --su
 
 Verification records command, exit code, bounded output, metrics, Git snapshot, and optional dependency paths supplied with repeated `--path` arguments. Scoped evidence ignores unrelated repository edits but becomes stale after any selected file/directory content change. Evidence without a scope retains conservative repository-wide freshness. A review is evidence, not automatic truth.
 
+Run `arifce knowledge audit` when decisions or claims may overlap. It reports deterministic duplicate and conflict indicators without using an LLM to select truth. Resolve an intentionally replaced decision with `arifce decision supersede <old-id> --by <active-id>`; unresolved conflicts remain visible in context explanations and handoffs.
+
 ## Acceptance
 
 Acceptance is separate from claim verification. A claim must have current evidence, must not be contradicted or stale, and must not be blocked by an open high or critical finding.

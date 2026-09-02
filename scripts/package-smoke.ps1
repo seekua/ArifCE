@@ -37,6 +37,12 @@ try {
         if ($LASTEXITCODE -ne 0 -or $taskId -notmatch '^TASK-\d{4}$') { throw "Task creation failed: $taskId" }
         $decisionId = (& $executable decision create 'Package fixture storage choice' --decision 'Use canonical JSON records' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $decisionId -notmatch '^ADR-\d{4}$') { throw "Decision creation failed: $decisionId" }
+        $supersededDecisionId = (& $executable decision create 'Legacy package fixture storage choice' --decision 'Use transient memory' | Select-Object -Last 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or $supersededDecisionId -notmatch '^ADR-\d{4}$') { throw "Supersession fixture creation failed: $supersededDecisionId" }
+        & $executable decision supersede $supersededDecisionId --by $decisionId
+        if ($LASTEXITCODE -ne 0) { throw 'Explicit decision supersession failed.' }
+        $knowledgeAudit = (& $executable knowledge audit | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $knowledgeAudit -notmatch 'Blocking:\s+0' -or $knowledgeAudit -notmatch 'Warnings:\s+0') { throw 'Packaged canonical knowledge audit failed.' }
         $attemptId = (& $executable attempt record $taskId 'Discard transcript dump' --result 'rejected' --reason 'Handoff must remain semantic' --evidence $decisionId | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $attemptId -notmatch '^ATTEMPT-\d{4}$') { throw "Attempt recording failed: $attemptId" }
         $checkpointId = (& $executable checkpoint --summary 'Packaged CLI fixture checkpoint' | Select-Object -Last 1).Trim()
@@ -103,6 +109,7 @@ try {
 
         $taskRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/tasks/$($taskId.ToLowerInvariant()).json") | ConvertFrom-Json
         $decisionRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/decisions/$($decisionId.ToLowerInvariant()).json") | ConvertFrom-Json
+        $supersededDecisionRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/decisions/$($supersededDecisionId.ToLowerInvariant()).json") | ConvertFrom-Json
         $attemptRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/attempts/$($attemptId.ToLowerInvariant()).json") | ConvertFrom-Json
         $claimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($claimId.ToLowerInvariant()).json") | ConvertFrom-Json
         $architectureClaimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($architectureClaimId.ToLowerInvariant()).json") | ConvertFrom-Json
@@ -112,6 +119,7 @@ try {
         $refactorRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/refactors/$($refactorId.ToLowerInvariant()).json") | ConvertFrom-Json
         if ($taskRecord.status -ne 'COMPLETED') { throw 'Canonical task state is not completed.' }
         if ($decisionRecord.historicalRationale -ne 'Unknown.') { throw 'Decision did not preserve unknown historical rationale.' }
+        if ($supersededDecisionRecord.status -ne 'SUPERSEDED' -or $supersededDecisionRecord.supersededBy -ne $decisionId) { throw 'Decision supersession history is incomplete.' }
         if ($attemptRecord.taskId -ne $taskId -or $attemptRecord.result -ne 'rejected') { throw 'Canonical failed-attempt state is incomplete.' }
         if ($claimRecord.status -ne 'SUPPORTED' -or $claimRecord.evidence.Count -lt 1) { throw 'Unrelated repository changes incorrectly invalidated scoped evidence.' }
         if ($architectureClaimRecord.evidence.Count -ne 1) { throw 'Canonical architecture-boundary state is incomplete.' }

@@ -34,6 +34,8 @@ public sealed class McpProtocolTests
         Assert.Contains(lines, line => line.Contains("arifce_refactor_verify", StringComparison.Ordinal));
         Assert.Contains(lines, line => line.Contains("arifce_context", StringComparison.Ordinal));
         Assert.Contains(lines, line => line.Contains("arifce_llm_review", StringComparison.Ordinal));
+        Assert.Contains(lines, line => line.Contains("arifce_knowledge_audit", StringComparison.Ordinal));
+        Assert.Contains(lines, line => line.Contains("arifce_decision_supersede", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -47,8 +49,9 @@ public sealed class McpProtocolTests
             await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"arifce_task_create\",\"arguments\":{\"title\":\"unsafe fallback\",\"risk\":\"impossible\"}}}");
             await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"arifce_refactor_status\",\"arguments\":{\"id\":\"../../outside\"}}}");
             await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"arifce_status\",\"arguments\":{\"unexpected\":true}}}");
+            await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"arifce_decision_supersede\",\"arguments\":{\"id\":\"ADR-0001\",\"replacementId\":\"../../outside\"}}}");
             await process.StandardInput.FlushAsync();
-            var responses = new[] { await process.StandardOutput.ReadLineAsync(), await process.StandardOutput.ReadLineAsync(), await process.StandardOutput.ReadLineAsync() };
+            var responses = new[] { await process.StandardOutput.ReadLineAsync(), await process.StandardOutput.ReadLineAsync(), await process.StandardOutput.ReadLineAsync(), await process.StandardOutput.ReadLineAsync() };
             Assert.All(responses, response => Assert.Contains("\"code\":-32602", response));
             Assert.Contains(responses, response => response!.Contains("Invalid risk value", StringComparison.Ordinal));
             Assert.Contains(responses, response => response!.Contains("valid repository entity ID", StringComparison.Ordinal));

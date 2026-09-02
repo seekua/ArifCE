@@ -62,12 +62,42 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
 
     public async Task<DecisionRecord> CreateDecisionAsync(string root, string title, string decision, string? historicalRationale, CancellationToken cancellationToken = default)
     {
+        await using var semanticLock = await FileMutationLock.AcquireAsync(root, "decisions", "semantic-create", cancellationToken);
+        var decisionDirectory = Path.Combine(root, ".arifce", "decisions");
+        if (Directory.Exists(decisionDirectory)) foreach (var path in Directory.EnumerateFiles(decisionDirectory, "*.json").Order(StringComparer.Ordinal))
+        {
+            DecisionRecord? existing;
+            try { existing = JsonSerializer.Deserialize<DecisionRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options); }
+            catch (JsonException exception) { throw new InvalidOperationException($"Cannot create a decision while canonical record {Path.GetFileName(path)} is malformed.", exception); }
+            if (existing is null) throw new InvalidOperationException($"Cannot create a decision while canonical record {Path.GetFileName(path)} is empty or invalid.");
+            if (!string.Equals(existing.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(existing.SupersededBy)) continue;
+            if (KnowledgeConflictAnalyzer.NormalizeText(existing.Title) != KnowledgeConflictAnalyzer.NormalizeText(title)) continue;
+            var relation = KnowledgeConflictAnalyzer.NormalizeText(existing.Decision) == KnowledgeConflictAnalyzer.NormalizeText(decision) ? "duplicates" : "conflicts with";
+            throw new InvalidOperationException($"New decision {relation} active decision {existing.Id}. Review it and use explicit supersession instead of creating ambiguous canonical state.");
+        }
         var id = canonical.NextId(root, "decisions", "ADR");
         var item = new DecisionRecord(1, id, title, decision, string.IsNullOrWhiteSpace(historicalRationale) ? "Unknown." : historicalRationale, "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UtcNow);
         await canonical.WriteAsync(root, "decisions", id, item, cancellationToken); await RecordAsync(root, "decision.created", id, item, cancellationToken); return item;
     }
 
     public Task<DecisionRecord?> GetDecisionAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<DecisionRecord>(root, "decisions", id, cancellationToken);
+
+    public async Task<DecisionRecord> SupersedeDecisionAsync(string root, string id, string replacementId, CancellationToken cancellationToken = default)
+    {
+        if (id.Equals(replacementId, StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("A decision cannot supersede itself.");
+        await using var semanticLock = await FileMutationLock.AcquireAsync(root, "decisions", "semantic-create", cancellationToken);
+        var current = await GetDecisionAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Decision {id} was not found.");
+        var replacement = await GetDecisionAsync(root, replacementId, cancellationToken) ?? throw new InvalidOperationException($"Replacement decision {replacementId} was not found.");
+        if (!string.Equals(current.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(current.SupersededBy)) throw new InvalidOperationException($"Decision {id} is not active.");
+        if (!string.Equals(replacement.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(replacement.SupersededBy)) throw new InvalidOperationException($"Replacement decision {replacementId} is not active.");
+        var updated = await canonical.UpdateAsync<DecisionRecord>(root, "decisions", id, value =>
+        {
+            if (!string.Equals(value.Status, "ACTIVE", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(value.SupersededBy)) throw new InvalidOperationException($"Decision {id} is not active.");
+            return value with { Status = "SUPERSEDED", SupersededBy = replacement.Id };
+        }, cancellationToken);
+        await RecordAsync(root, "decision.superseded", id, new { replacementId = replacement.Id }, cancellationToken);
+        return updated;
+    }
 
     public async Task<AttemptRecord> RecordAttemptAsync(string root, string taskId, string approach, string result, string reason, IReadOnlyList<string>? evidenceIds = null, CancellationToken cancellationToken = default)
     {
@@ -400,11 +430,13 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     public async Task<HandoffRecord> HandoffAsync(string root, CancellationToken cancellationToken = default)
     {
         var trust = await RefreshTrustAsync(root, cancellationToken);
+        var knowledge = await KnowledgeConflictAnalyzer.AuditAsync(root, cancellationToken);
         var snapshot = await git.CaptureAsync(root, cancellationToken);
         var current = await BoundedCurrentAsync(root, cancellationToken);
         var tasks = await LatestJsonAsync(root, "tasks", cancellationToken); var decisions = await LatestJsonAsync(root, "decisions", cancellationToken); var attempts = await LatestJsonAsync(root, "attempts", cancellationToken); var checkpoints = await LatestJsonAsync(root, "checkpoints", cancellationToken); var claims = await LatestJsonAsync(root, "claims", cancellationToken); var evidence = await LatestJsonAsync(root, "evidence", cancellationToken); var findings = await LatestJsonAsync(root, "findings", cancellationToken); var reviews = await LatestJsonAsync(root, "reviews", cancellationToken);
         var trustWarnings = trust.Warnings.Count == 0 ? "No stale trust relationships detected." : string.Join('\n', trust.Warnings.Select(warning => $"- WARNING: {warning}"));
-        var markdown = $"# Handoff\n\n## Trust Warnings\n\n{trustWarnings}\n\n## Current State\n\n{current}\n\n## Latest Task\n\n{tasks}\n\n## Latest Decision\n\n{decisions}\n\n## Latest Failed Attempt\n\n{attempts}\n\n## Latest Checkpoint\n\n{checkpoints}\n\n## Latest Claim\n\n{claims}\n\n## Latest Evidence\n\n{evidence}\n\n## Latest Finding\n\n{findings}\n\n## Latest Review\n\n{reviews}\n\n## Git State\n\n- Branch: {snapshot.Branch ?? "unknown"}\n- Commit: {snapshot.Commit ?? "none"}\n- Dirty: {snapshot.IsDirty}\n- Modified files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles))}\n\n## Next Recommended Actions\n\nReview open work, retrieve targeted context, and verify claims against the current snapshot.\n";
+        var knowledgeWarnings = knowledge.Issues.Count == 0 ? "No deterministic duplicate or conflict indicators detected." : string.Join('\n', knowledge.Issues.Select(issue => $"- {issue.Severity}: {issue.Kind} ({string.Join(", ", issue.EntityIds)}) — {issue.Summary}"));
+        var markdown = $"# Handoff\n\n## Trust Warnings\n\n{trustWarnings}\n\n## Knowledge Warnings\n\n{knowledgeWarnings}\n\n## Current State\n\n{current}\n\n## Latest Task\n\n{tasks}\n\n## Latest Decision\n\n{decisions}\n\n## Latest Failed Attempt\n\n{attempts}\n\n## Latest Checkpoint\n\n{checkpoints}\n\n## Latest Claim\n\n{claims}\n\n## Latest Evidence\n\n{evidence}\n\n## Latest Finding\n\n{findings}\n\n## Latest Review\n\n{reviews}\n\n## Git State\n\n- Branch: {snapshot.Branch ?? "unknown"}\n- Commit: {snapshot.Commit ?? "none"}\n- Dirty: {snapshot.IsDirty}\n- Modified files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles))}\n\n## Next Recommended Actions\n\nReview open work, resolve knowledge warnings, retrieve targeted context, and verify claims against the current snapshot.\n";
         var id = canonical.NextId(root, "handoffs", "HANDOFF"); var item = new HandoffRecord(1, id, markdown, snapshot, DateTimeOffset.UtcNow);
         await canonical.WriteAsync(root, "handoffs", id, item, cancellationToken); await RecordAsync(root, "handoff.created", id, item, cancellationToken); return item;
     }

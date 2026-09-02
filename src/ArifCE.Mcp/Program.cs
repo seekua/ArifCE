@@ -78,6 +78,8 @@ internal sealed partial class McpServer
             Tool("arifce_checkpoint", "Record a project checkpoint with an explicit summary.", new { type = "object", required = new[] { "summary" }, properties = new { summary = new { type = "string", minLength = 1 } } }),
             Tool("arifce_task_create", "Create a tracked task in the canonical project store.", new { type = "object", required = new[] { "title" }, properties = new { title = new { type = "string" }, risk = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } } } }),
             Tool("arifce_decision_create", "Record a project decision and its historical rationale.", new { type = "object", required = new[] { "title", "decision" }, properties = new { title = new { type = "string" }, decision = new { type = "string" }, historicalRationale = new { type = "string" } } }),
+            Tool("arifce_decision_supersede", "Supersede one active decision with another active decision while preserving history.", new { type = "object", required = new[] { "id", "replacementId" }, properties = new { id = new { type = "string" }, replacementId = new { type = "string" } } }),
+            Tool("arifce_knowledge_audit", "Detect duplicate, conflicting, malformed, or broken canonical decisions and claims.", new { type = "object", properties = new { } }),
             Tool("arifce_attempt_record", "Record a failed or rejected approach for an existing task.", new { type = "object", required = new[] { "taskId", "approach", "result", "reason" }, properties = new { taskId = new { type = "string" }, approach = new { type = "string" }, result = new { type = "string" }, reason = new { type = "string" } } }),
             Tool("arifce_claim_create", "Create an explicit claim requiring evidence.", new { type = "object", required = new[] { "statement" }, properties = new { statement = new { type = "string" }, risk = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } } } }),
             Tool("arifce_finding_create", "Record an actionable project finding.", new { type = "object", required = new[] { "title", "description" }, properties = new { title = new { type = "string" }, description = new { type = "string" }, severity = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } }, taskId = new { type = "string" }, path = new { type = "string" } } }),
@@ -110,6 +112,8 @@ internal sealed partial class McpServer
             "arifce_checkpoint" => (await service.CheckpointAsync(root, Required(arguments, "summary"))).Id,
             "arifce_task_create" => (await service.CreateTaskAsync(root, Required(arguments, "title"), Enum(arguments, "risk", RiskLevel.Medium))).Id,
             "arifce_decision_create" => (await service.CreateDecisionAsync(root, Required(arguments, "title"), Required(arguments, "decision"), Optional(arguments, "historicalRationale"))).Id,
+            "arifce_decision_supersede" => (await service.SupersedeDecisionAsync(root, Required(arguments, "id"), Required(arguments, "replacementId"))).Status,
+            "arifce_knowledge_audit" => JsonSerializer.Serialize(await KnowledgeConflictAnalyzer.AuditAsync(root), JsonDefaults.Options),
             "arifce_attempt_record" => (await service.RecordAttemptAsync(root, Required(arguments, "taskId"), Required(arguments, "approach"), Required(arguments, "result"), Required(arguments, "reason"))).Id,
             "arifce_claim_create" => (await service.CreateClaimAsync(root, Required(arguments, "statement"), Enum(arguments, "risk", RiskLevel.Medium))).Id,
             "arifce_finding_create" => (await service.CreateFindingAsync(root, Required(arguments, "title"), Required(arguments, "description"), Enum(arguments, "severity", RiskLevel.Medium), Optional(arguments, "taskId"), Optional(arguments, "path"))).Id,
@@ -211,12 +215,13 @@ internal sealed partial class McpServer
     {
         var allowed = tool switch
         {
-            "arifce_status" or "arifce_handoff" or "arifce_llm_providers" => Array.Empty<string>(),
+            "arifce_status" or "arifce_handoff" or "arifce_llm_providers" or "arifce_knowledge_audit" => Array.Empty<string>(),
             "arifce_search" => ["query", "limit"],
             "arifce_context" => ["task", "budget"],
             "arifce_checkpoint" => ["summary"],
             "arifce_task_create" => ["title", "risk"],
             "arifce_decision_create" => ["title", "decision", "historicalRationale"],
+            "arifce_decision_supersede" => ["id", "replacementId"],
             "arifce_attempt_record" => ["taskId", "approach", "result", "reason"],
             "arifce_claim_create" => ["statement", "risk"],
             "arifce_finding_create" => ["title", "description", "severity", "taskId", "path"],
@@ -232,7 +237,7 @@ internal sealed partial class McpServer
         foreach (var property in arguments.EnumerateObject())
         {
             if (property.Value.ValueKind == JsonValueKind.String && property.Value.GetString() is { Length: > MaxArgumentCharacters }) throw new McpException(-32602, $"Argument {property.Name} exceeds the size limit.");
-            if ((property.Name is "id" or "taskId" or "claimId") && property.Value.ValueKind == JsonValueKind.String && !SafeId().IsMatch(property.Value.GetString() ?? string.Empty)) throw new McpException(-32602, $"Argument {property.Name} is not a valid repository entity ID.");
+            if ((property.Name is "id" or "taskId" or "claimId" or "replacementId") && property.Value.ValueKind == JsonValueKind.String && !SafeId().IsMatch(property.Value.GetString() ?? string.Empty)) throw new McpException(-32602, $"Argument {property.Name} is not a valid repository entity ID.");
         }
     }
     [GeneratedRegex(@"^[A-Za-z]+-[A-Za-z0-9][A-Za-z0-9-]{0,63}$", RegexOptions.CultureInvariant)]

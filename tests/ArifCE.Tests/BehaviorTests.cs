@@ -71,6 +71,37 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Concurrent_equivalent_decisions_create_only_one_active_record()
+    {
+        await Service.InitializeAsync(root, false);
+        var results = await Task.WhenAll(Enumerable.Range(0, 8).Select(async _ =>
+        {
+            try { return (await Service.CreateDecisionAsync(root, "Concurrent cache policy", "Use one bounded cache", "Concurrent fixture")).Id; }
+            catch (InvalidOperationException) { return null; }
+        }));
+        Assert.Single(results, id => id is not null);
+        var audit = await KnowledgeConflictAnalyzer.AuditAsync(root);
+        Assert.Empty(audit.Issues);
+    }
+
+    [Fact]
+    public async Task Concurrent_supersession_selects_exactly_one_active_replacement()
+    {
+        await Service.InitializeAsync(root, false);
+        var original = await Service.CreateDecisionAsync(root, "Legacy cache", "Use legacy cache", "Fixture");
+        var firstReplacement = await Service.CreateDecisionAsync(root, "Bounded cache", "Use bounded cache", "Fixture");
+        var secondReplacement = await Service.CreateDecisionAsync(root, "No cache", "Disable cache", "Fixture");
+        var attempts = await Task.WhenAll(new[] { firstReplacement.Id, secondReplacement.Id }.Select(async replacementId =>
+        {
+            try { return (await Service.SupersedeDecisionAsync(root, original.Id, replacementId)).SupersededBy; }
+            catch (InvalidOperationException) { return null; }
+        }));
+        var selected = Assert.Single(attempts, id => id is not null);
+        Assert.Equal(selected, (await Service.GetDecisionAsync(root, original.Id))!.SupersededBy);
+        Assert.Empty((await KnowledgeConflictAnalyzer.AuditAsync(root)).Issues);
+    }
+
+    [Fact]
     public async Task Concurrent_updates_preserve_every_claim_evidence_link()
     {
         await Service.InitializeAsync(root, false);
@@ -149,6 +180,66 @@ public sealed class BehaviorTests : IDisposable
         Assert.False(ClaimTransitions.IsAllowed(ClaimStatus.Verified, ClaimStatus.Unverified));
         Assert.True(ClaimTransitions.IsAllowed(ClaimStatus.Supported, ClaimStatus.Disputed));
         Assert.True(ClaimTransitions.IsAllowed(ClaimStatus.Disputed, ClaimStatus.Supported));
+    }
+
+    [Fact]
+    public async Task Knowledge_audit_detects_duplicates_conflicts_and_explicit_supersession_resolves_history()
+    {
+        await Service.InitializeAsync(root, false);
+        var first = await Service.CreateDecisionAsync(root, "Choose cache policy", "Use bounded local cache", "Performance constraint");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CreateDecisionAsync(root, "Choose cache policy", "Use bounded local cache", "Repeated observation"));
+        var duplicate = new DecisionRecord(1, "ADR-0002", "Choose cache policy", "Use bounded local cache", "Imported duplicate", "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UnixEpoch);
+        await canonical.WriteAsync(root, "decisions", duplicate.Id, duplicate);
+        var duplicateAudit = await KnowledgeConflictAnalyzer.AuditAsync(root);
+        var duplicateIssue = Assert.Single(duplicateAudit.Issues, issue => issue.Kind == "DUPLICATE_DECISION");
+        Assert.Equal([first.Id, duplicate.Id], duplicateIssue.EntityIds);
+        Assert.Equal(0, duplicateAudit.Blocking);
+
+        var superseded = await Service.SupersedeDecisionAsync(root, duplicate.Id, first.Id);
+        Assert.Equal("SUPERSEDED", superseded.Status);
+        Assert.Equal(first.Id, superseded.SupersededBy);
+        Assert.DoesNotContain((await KnowledgeConflictAnalyzer.AuditAsync(root)).Issues, issue => issue.EntityIds.Contains(duplicate.Id));
+        await Assert.ThrowsAsync<ArgumentException>(() => Service.SupersedeDecisionAsync(root, first.Id, first.Id));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CreateDecisionAsync(root, "Choose cache policy", "Disable caching entirely", "Correctness concern"));
+        var conflict = new DecisionRecord(1, "ADR-0003", "Choose cache policy", "Disable caching entirely", "Imported conflict", "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UnixEpoch);
+        await canonical.WriteAsync(root, "decisions", conflict.Id, conflict);
+        var conflictAudit = await KnowledgeConflictAnalyzer.AuditAsync(root);
+        Assert.Equal(1, conflictAudit.Blocking);
+        Assert.Contains(conflictAudit.Issues, issue => issue.Kind == "CONFLICTING_DECISION" && issue.EntityIds.Contains(conflict.Id));
+        var handoff = await Service.HandoffAsync(root);
+        Assert.Contains("Knowledge Warnings", handoff.Markdown);
+        Assert.Contains("CONFLICTING_DECISION", handoff.Markdown);
+    }
+
+    [Fact]
+    public async Task Knowledge_audit_reports_equivalent_claims_with_opposing_states()
+    {
+        await Service.InitializeAsync(root, false);
+        var supported = await Service.CreateClaimAsync(root, "Public API remains stable", RiskLevel.Low);
+        var contradicted = await Service.CreateClaimAsync(root, "Public API remains stable!", RiskLevel.Low);
+        await canonical.UpdateAsync<ClaimRecord>(root, "claims", supported.Id, claim => claim with { Status = ClaimStatus.Supported });
+        await canonical.UpdateAsync<ClaimRecord>(root, "claims", contradicted.Id, claim => claim with { Status = ClaimStatus.Contradicted });
+        var audit = await KnowledgeConflictAnalyzer.AuditAsync(root);
+        var issue = Assert.Single(audit.Issues, item => item.Kind == "CONFLICTING_CLAIM");
+        Assert.Equal("BLOCKING", issue.Severity);
+        Assert.Equal([supported.Id, contradicted.Id], issue.EntityIds);
+    }
+
+    [Fact]
+    public async Task Malformed_decision_blocks_audit_and_new_decision_creation()
+    {
+        await Service.InitializeAsync(root, false);
+        await File.WriteAllTextAsync(Path.Combine(root, ".arifce", "decisions", "adr-9999.json"), "{malformed");
+        var audit = await KnowledgeConflictAnalyzer.AuditAsync(root);
+        Assert.Equal(1, audit.Blocking);
+        Assert.Contains(audit.Issues, issue => issue.Kind == "MALFORMED_RECORD" && issue.EntityIds.Contains("ADR-9999"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CreateDecisionAsync(root, "Cannot bypass malformed state", "Repair first", "Fixture"));
+
+        await File.WriteAllTextAsync(Path.Combine(root, ".arifce", "decisions", "adr-9999.json"), "null");
+        audit = await KnowledgeConflictAnalyzer.AuditAsync(root);
+        Assert.Equal(1, audit.Blocking);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CreateDecisionAsync(root, "Cannot bypass empty state", "Repair first", "Fixture"));
     }
 
     [Fact]

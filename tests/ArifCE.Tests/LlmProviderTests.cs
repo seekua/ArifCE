@@ -240,6 +240,27 @@ public sealed class LlmProviderTests
     }
 
     [Fact]
+    public async Task Context_assembly_rejects_redundant_decisions_and_labels_blocking_conflicts()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-context-conflict-");
+        try
+        {
+            var canonical = new CanonicalStore();
+            await canonical.WriteAsync(root.FullName, "decisions", "ADR-0001", new DecisionRecord(1, "ADR-0001", "Cache policy", "Use bounded local cache", "Primary", "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UnixEpoch));
+            await canonical.WriteAsync(root.FullName, "decisions", "ADR-0002", new DecisionRecord(1, "ADR-0002", "Cache policy", "Use bounded local cache", "Duplicate", "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UnixEpoch));
+            await canonical.WriteAsync(root.FullName, "decisions", "ADR-0003", new DecisionRecord(1, "ADR-0003", "Cache policy", "Disable caching", "Conflict", "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UnixEpoch));
+            var index = new IndexStore(); await index.RebuildAsync(root.FullName);
+            var context = await new LlmContextComposer(index).ComposeAsync(root.FullName, "cache policy", 2000);
+
+            Assert.Contains(context.Items, item => item.Path.Contains("adr-0002", StringComparison.Ordinal) && !item.Included && item.Freshness == "DUPLICATE" && item.Reason.Contains("ADR-0001", StringComparison.Ordinal));
+            Assert.Contains(context.Items, item => item.Path.Contains("adr-0001", StringComparison.Ordinal) && item.Included && item.Freshness == "CONFLICT");
+            Assert.Contains(context.Items, item => item.Path.Contains("adr-0003", StringComparison.Ordinal) && item.Included && item.Freshness == "CONFLICT");
+            Assert.Contains("blocking canonical conflict", context.Content, StringComparison.Ordinal);
+        }
+        finally { root.Delete(true); }
+    }
+
+    [Fact]
     public async Task Token_embedding_is_deterministic_and_shared_terms_are_comparable()
     {
         var provider = new TokenEmbeddingProvider(new EmbeddingProfile("tokens", "offline", 128));

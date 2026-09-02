@@ -53,6 +53,7 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
 
         var timer = Stopwatch.StartNew();
         await index.UpdateIncrementalAsync(root, cancellationToken);
+        var knowledge = await KnowledgeConflictAnalyzer.AuditAsync(root, cancellationToken);
         var snippetTokens = Math.Clamp(budget / Math.Max(terms.Length, 1), 20, 120);
         var hits = await index.SearchAsync(root, string.Join(" OR ", terms.Select(term => $"\"{term}\"")), 50, cancellationToken, snippetTokens);
         GitSnapshot? currentSnapshot = null;
@@ -61,7 +62,7 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
         {
             var kind = KindOf(hit.Path);
             if (kind is "CLAIM" or "EVIDENCE" or "ACCEPTANCE" && currentSnapshot is null) currentSnapshot = await git.CaptureAsync(root, cancellationToken);
-            var trust = await AssessTrustAsync(root, hit.Path, kind, currentSnapshot, cancellationToken);
+            var trust = ApplyKnowledgeIssues(hit.Path, await AssessTrustAsync(root, hit.Path, kind, currentSnapshot, cancellationToken), knowledge);
             candidates.Add(new Candidate(hit.Path, kind, hit.Snippet, hit.Score, PriorityOf(hit.Path, kind), trust));
         }
 
@@ -130,6 +131,19 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
 
     private static ContextAssemblyItem ToItem(Candidate candidate, int tokens, bool included, string reason) =>
         new(candidate.Path, candidate.Kind, candidate.Snippet, candidate.Score, candidate.Priority, candidate.Trust.Freshness, tokens, included, reason);
+
+    private static TrustAssessment ApplyKnowledgeIssues(string path, TrustAssessment trust, KnowledgeAuditResult audit)
+    {
+        if (!trust.Include) return trust;
+        var id = Path.GetFileNameWithoutExtension(path).ToUpperInvariant();
+        var issues = audit.Issues.Where(issue => issue.EntityIds.Contains(id, StringComparer.OrdinalIgnoreCase)).ToArray();
+        var duplicateDecision = issues.FirstOrDefault(issue => issue.Kind == "DUPLICATE_DECISION" && !issue.EntityIds[0].Equals(id, StringComparison.OrdinalIgnoreCase));
+        if (duplicateDecision is not null) return new(false, "DUPLICATE", $"duplicate canonical decision; prefer {duplicateDecision.EntityIds[0]} until explicit supersession is recorded");
+        var conflict = issues.FirstOrDefault(issue => issue.Severity == "BLOCKING" && issue.Kind is "CONFLICTING_DECISION" or "CONFLICTING_CLAIM");
+        if (conflict is not null) return new(true, "CONFLICT", $"blocking canonical conflict {conflict.Code}: {conflict.Summary}");
+        var duplicateClaim = issues.FirstOrDefault(issue => issue.Kind == "DUPLICATE_CLAIM");
+        return duplicateClaim is null ? trust : new(true, "DUPLICATE", $"duplicate canonical claim {duplicateClaim.Code}; consolidation is unresolved");
+    }
 
     private static string Render(Candidate candidate, string reason) =>
         $"[{candidate.Path}]\nKind: {candidate.Kind}\nFreshness: {candidate.Trust.Freshness}\nReason: {reason}\n{candidate.Snippet}";

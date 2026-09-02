@@ -41,9 +41,12 @@ arifce search <query>
 arifce context <task> [--budget <estimated-tokens>]
 arifce context explain <task> [--budget <estimated-tokens>]
 arifce why <path-or-id>
+arifce knowledge audit
 ```
 
 Search uses SQLite FTS5. Context assembly uses deterministic lexical candidates, record-type priority, trust-state filtering, and a positive token budget. It updates the disposable index before retrieval and reports candidate, selected, rejected, and token totals. `context explain` lists every candidate with its score, priority, freshness, cost, disposition, and reason. Stale evidence and claims, superseded decisions, non-current acceptances, and malformed typed records are rejected; disputed and unverified claims remain visible only with an explicit warning. `why` reports known provenance or explicitly says the historical rationale is unknown.
+
+`knowledge audit` reads canonical decisions and claims directly and reports duplicates, conflicting active decisions, opposing equivalent claims, malformed records, and broken supersession links. Blocking conflicts return a failure after the report; the command never chooses a winner or rewrites records.
 
 ## Work and continuity
 
@@ -54,6 +57,7 @@ arifce task complete <task-id>
 
 arifce decision create <title> --decision <text> [--rationale <text>]
 arifce decision status <decision-id>
+arifce decision supersede <decision-id> --by <active-replacement-id>
 
 arifce attempt record <task-id> <approach> --result <result> --reason <text> [--evidence <id> ...]
 arifce attempt status <attempt-id>
@@ -66,7 +70,7 @@ arifce checkpoint --summary <text>
 arifce handoff
 ```
 
-Omitted historical rationale is stored as `Unknown.`. Attempts must reference an existing task. Handoffs select current engineering state and never dump raw transcripts.
+Omitted historical rationale is stored as `Unknown.`. Decision creation is serialized and rejects a normalized title already held by an active decision. Supersession requires two distinct active decisions and preserves the replaced record with a link to its active replacement. Attempts must reference an existing task. Handoffs select current engineering state, include trust and knowledge warnings, and never dump raw transcripts.
 
 ## Claims and verification
 

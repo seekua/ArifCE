@@ -15,6 +15,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Project intelligence](concepts/project-intelligence.md)
 - [Project memory](concepts/project-memory.md)
 - [Claims and evidence](concepts/claims-and-evidence.md)
+- [Knowledge conflicts](concepts/knowledge-conflicts.md)
 - [Verification](concepts/verification.md)
 - [Continuity](concepts/continuity.md)
 - [Handoffs](concepts/handoffs.md)

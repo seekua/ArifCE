@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Add deterministic canonical knowledge audits, explicit decision supersession, handoff conflict warnings, and duplicate/conflict-aware context assembly without automatic truth selection.
 - Add backward-compatible file/directory-scoped evidence freshness so unrelated repository changes do not invalidate explicitly bounded verification, while legacy evidence remains repository-snapshot scoped.
 - Unify context assembly across CLI, MCP, and provider prompts with deterministic record priority, trust filtering, budget/rejection telemetry, and `context explain` diagnostics.
 - Publish the first complete ten-pair engineering benchmark with withheld evaluators, all negative outcomes, and an explicit inconclusive verdict due to permission variance and unavailable token telemetry.
