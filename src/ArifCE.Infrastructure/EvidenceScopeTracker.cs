@@ -16,6 +16,15 @@ public static class EvidenceScopeTracker
         return new EvidenceScope(dependencies);
     }
 
+    public static async Task<EvidenceScope> CaptureForContractAsync(string root, ChangeContractRecord contract, IReadOnlyList<string>? additionalPaths = null, CancellationToken cancellationToken = default)
+    {
+        var closure = await new CodeGraphStore().TrustedClosureAsync(root, contract.Target, cancellationToken);
+        var dependencies = new List<EvidenceDependency> { new($"symbol:{contract.Target}", closure.Digest, "CODE_GRAPH_CLOSURE") };
+        var paths = closure.Paths.Concat(additionalPaths ?? []).Where(path => !string.IsNullOrWhiteSpace(path)).Select(path => Normalize(root, path)).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.Ordinal);
+        foreach (var path in paths) dependencies.Add(new EvidenceDependency(path, await DigestAsync(root, path, "CONTENT", cancellationToken)));
+        return new EvidenceScope(dependencies, contract.Id);
+    }
+
     public static async Task<EvidenceScope> CaptureApiSurfaceAsync(string root, string assemblyPath, string baselinePath, CancellationToken cancellationToken = default) =>
         new([
             await CaptureDependencyAsync(root, assemblyPath, "PUBLIC_API_SURFACE", cancellationToken),
@@ -63,6 +72,11 @@ public static class EvidenceScopeTracker
 
     private static async Task<string> DigestAsync(string root, string relativePath, string mode, CancellationToken cancellationToken)
     {
+        if (mode == "CODE_GRAPH_CLOSURE")
+        {
+            if (!relativePath.StartsWith("symbol:", StringComparison.Ordinal)) throw new ArgumentException("Code-graph closure dependencies require a symbol target.");
+            return (await new CodeGraphStore().TrustedClosureAsync(root, relativePath["symbol:".Length..], cancellationToken)).Digest;
+        }
         var fullRoot = Path.GetFullPath(root);
         var fullPath = Path.GetFullPath(Path.Combine(fullRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
         var relative = Path.GetRelativePath(fullRoot, fullPath);

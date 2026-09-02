@@ -10,6 +10,7 @@ public sealed record CodeGraphNode(string Id, string Kind, string Name, string P
 public sealed record CodeGraphEdge(string From, string To, string Kind, string Confidence);
 public sealed record CodeGraphDocument(int SchemaVersion, DateTimeOffset GeneratedAtUtc, IReadOnlyList<CodeGraphNode> Nodes, IReadOnlyList<CodeGraphEdge> Edges, string? SourceDigest = null, int GeneratorVersion = 0);
 public sealed record CodeGraphQueryResult(IReadOnlyList<CodeGraphNode> Matches, IReadOnlyList<CodeGraphNode> RelatedNodes, IReadOnlyList<CodeGraphEdge> Edges);
+public sealed record TrustedCodeGraphClosure(string Target, IReadOnlyList<string> Paths, string Digest);
 
 public sealed partial class CodeGraphStore
 {
@@ -114,15 +115,46 @@ public sealed partial class CodeGraphStore
         }
     }
 
-    public async Task<CodeGraphQueryResult> QueryAsync(string root, string symbol, CancellationToken cancellationToken = default)
+    public async Task<CodeGraphQueryResult> QueryAsync(string root, string symbol, CancellationToken cancellationToken = default, bool exactMatch = false)
     {
         if (string.IsNullOrWhiteSpace(symbol)) throw new ArgumentException("A symbol name is required.", nameof(symbol));
         var graph = await ReadAsync(root, cancellationToken);
-        var matches = graph.Nodes.Where(node => node.Name.Equals(symbol, StringComparison.Ordinal) || node.Name.Contains(symbol, StringComparison.OrdinalIgnoreCase)).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray();
+        var matches = graph.Nodes.Where(node => exactMatch ? node.Name.Equals(symbol, StringComparison.Ordinal) : node.Name.Equals(symbol, StringComparison.Ordinal) || node.Name.Contains(symbol, StringComparison.OrdinalIgnoreCase)).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray();
         var ids = matches.Select(node => node.Id).ToHashSet(StringComparer.Ordinal);
         var edges = graph.Edges.Where(edge => ids.Contains(edge.From) || ids.Contains(edge.To)).ToArray();
         var relatedIds = edges.SelectMany(edge => new[] { edge.From, edge.To }).Where(id => !ids.Contains(id)).ToHashSet(StringComparer.Ordinal);
         return new CodeGraphQueryResult(matches, graph.Nodes.Where(node => relatedIds.Contains(node.Id)).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray(), edges);
+    }
+
+    public async Task<TrustedCodeGraphClosure> TrustedClosureAsync(string root, string symbol, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(symbol)) throw new ArgumentException("A symbol name is required.", nameof(symbol));
+        var graph = await ReadAsync(root, cancellationToken);
+        var matches = graph.Nodes.Where(node => node.Name.Equals(symbol, StringComparison.Ordinal)).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray();
+        if (matches.Length == 0) throw new InvalidOperationException($"No exact code-graph symbol matches '{symbol}'.");
+
+        var visited = matches.Select(node => node.Id).ToHashSet(StringComparer.Ordinal);
+        var pending = new Queue<string>(visited.Order(StringComparer.Ordinal));
+        while (pending.Count > 0)
+        {
+            var id = pending.Dequeue();
+            foreach (var edge in graph.Edges)
+            {
+                string? related = edge switch
+                {
+                    { Confidence: "STRUCTURAL", Kind: "DECLARES" } when edge.From == id => edge.To,
+                    { Confidence: "STRUCTURAL", Kind: "DECLARES" } when edge.To == id => edge.From,
+                    { Confidence: "EXACT", Kind: "PROJECT_REFERENCE" } when edge.To == id => edge.From,
+                    _ => null
+                };
+                if (related is not null && visited.Add(related)) pending.Enqueue(related);
+            }
+        }
+
+        var paths = graph.Nodes.Where(node => visited.Contains(node.Id)).Select(node => node.Path).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.Ordinal).ToArray();
+        var digestInput = $"TRUSTED_CODE_GRAPH_CLOSURE_V1\n{symbol}\n{string.Join('\n', paths)}";
+        var digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(digestInput))).ToLowerInvariant();
+        return new TrustedCodeGraphClosure(symbol, paths, digest);
     }
 
     private static string GraphPath(string root) => Path.Combine(Path.GetFullPath(root), ".arifce", "index", "code-graph.json");

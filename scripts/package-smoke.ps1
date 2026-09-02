@@ -68,6 +68,15 @@ try {
         if ($LASTEXITCODE -ne 0 -or $graphQuery -notmatch 'METHOD\s+FreshGraphSymbol') { throw 'Packaged code-graph query did not rebuild after a source edit.' }
         $graphDocument = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory '.arifce\index\code-graph.json') | ConvertFrom-Json
         if ($graphDocument.generatorVersion -ne 2) { throw 'Packaged code graph does not carry the current generator version.' }
+        $contractOutput = (& $executable contract create FreshGraphSymbol --risk LOW | Out-String)
+        $contractId = [regex]::Match($contractOutput, 'CONTRACT-\d{4}').Value
+        $contractClaimId = [regex]::Match($contractOutput, 'Claim:\s*(CLAIM-\d{4})').Groups[1].Value
+        if ($LASTEXITCODE -ne 0 -or $contractId -notmatch '^CONTRACT-\d{4}$' -or $contractClaimId -notmatch '^CLAIM-\d{4}$') { throw 'Packaged change-contract creation failed.' }
+        $contractVerification = (& $executable verify $contractClaimId --command 'dotnet --version' --contract $contractId --allow-unsafe-command | Out-String)
+        $contractEvidenceId = [regex]::Match($contractVerification, 'EVIDENCE-\d{4}').Value
+        if ($LASTEXITCODE -ne 0 -or $contractEvidenceId -notmatch '^EVIDENCE-\d{4}$') { throw 'Packaged contract-linked verification failed.' }
+        $contractEvidence = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/evidence/$($contractEvidenceId.ToLowerInvariant()).json") | ConvertFrom-Json
+        if ($contractEvidence.scope.contractId -ne $contractId -or $contractEvidence.scope.dependencies.mode -notcontains 'CODE_GRAPH_CLOSURE' -or $contractEvidence.scope.dependencies.path -notcontains 'src/GraphFixture.cs') { throw 'Packaged contract evidence did not persist its trusted dependency closure.' }
         $architectureClaimId = (& $executable claim create 'The packaged CLI verifies an architecture boundary' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
         $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)

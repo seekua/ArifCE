@@ -477,6 +477,67 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Contract_linked_evidence_stales_only_for_trusted_closure_changes()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        var targetPath = Path.Combine(source, "PaymentService.cs");
+        var heuristicPath = Path.Combine(source, "InvoiceService.cs");
+        await File.WriteAllTextAsync(targetPath, "public sealed class PaymentService { public decimal Calculate(decimal value) { return value; } }");
+        await File.WriteAllTextAsync(heuristicPath, "public sealed class InvoiceService { public decimal Create(PaymentService payment) { return payment.Calculate(10); } }");
+
+        var contract = await Service.CreateChangeContractAsync(root, "Calculate", RiskLevel.Low);
+        var verified = await Service.VerifyAsync(root, contract.ClaimId, OperatingSystem.IsWindows() ? "ver" : "true", true, contractId: contract.Id);
+        Assert.Equal(contract.Id, verified.Evidence.Scope!.ContractId);
+        Assert.Contains(verified.Evidence.Scope.Dependencies, dependency => dependency.Mode == "CODE_GRAPH_CLOSURE" && dependency.Path == "symbol:Calculate");
+        Assert.Contains(verified.Evidence.Scope.Dependencies, dependency => dependency.Mode == "CONTENT" && dependency.Path == "src/PaymentService.cs");
+        Assert.DoesNotContain(verified.Evidence.Scope.Dependencies, dependency => dependency.Path == "src/InvoiceService.cs");
+
+        await File.AppendAllTextAsync(heuristicPath, "\n// unrelated heuristic caller edit");
+        Assert.Equal(EvidenceFreshness.Current, await EvidenceScopeTracker.EvaluateAsync(root, verified.Evidence, await new GitInspector().CaptureAsync(root)));
+
+        await File.AppendAllTextAsync(targetPath, "\n// target edit");
+        Assert.Equal(EvidenceFreshness.Stale, await EvidenceScopeTracker.EvaluateAsync(root, verified.Evidence, await new GitInspector().CaptureAsync(root)));
+        Assert.Equal(1, (await Service.RefreshTrustAsync(root)).ClaimsStaled);
+        Assert.Equal(ClaimStatus.Stale, (await Service.GetClaimAsync(root, contract.ClaimId))!.Status);
+    }
+
+    [Fact]
+    public async Task Contract_linked_project_closure_tracks_exact_transitive_dependents_and_rejects_wrong_claim()
+    {
+        await Service.InitializeAsync(root, false);
+        var projects = Path.Combine(root, "src"); Directory.CreateDirectory(projects);
+        Directory.CreateDirectory(Path.Combine(projects, "A")); Directory.CreateDirectory(Path.Combine(projects, "B")); Directory.CreateDirectory(Path.Combine(projects, "C")); Directory.CreateDirectory(Path.Combine(projects, "D"));
+        await File.WriteAllTextAsync(Path.Combine(projects, "B", "LibraryB.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+        await File.WriteAllTextAsync(Path.Combine(projects, "A", "LibraryA.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><ProjectReference Include=\"../B/LibraryB.csproj\" /></ItemGroup></Project>");
+        await File.WriteAllTextAsync(Path.Combine(projects, "C", "LibraryC.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><ProjectReference Include=\"../A/LibraryA.csproj\" /></ItemGroup></Project>");
+        var unrelatedPath = Path.Combine(projects, "D", "LibraryD.csproj");
+        await File.WriteAllTextAsync(unrelatedPath, "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+
+        var contract = await Service.CreateChangeContractAsync(root, "LibraryB", RiskLevel.Low);
+        var otherClaim = await Service.CreateClaimAsync(root, "Unrelated claim", RiskLevel.Low);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.VerifyAsync(root, otherClaim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true, contractId: contract.Id));
+        var verified = await Service.VerifyAsync(root, contract.ClaimId, OperatingSystem.IsWindows() ? "ver" : "true", true, contractId: contract.Id);
+        var scopedPaths = verified.Evidence.Scope!.Dependencies.Where(dependency => dependency.Mode == "CONTENT").Select(dependency => dependency.Path).ToArray();
+        Assert.Equal(["src/A/LibraryA.csproj", "src/B/LibraryB.csproj", "src/C/LibraryC.csproj"], scopedPaths);
+
+        await File.AppendAllTextAsync(unrelatedPath, "\n<!-- unrelated -->");
+        Assert.Equal(EvidenceFreshness.Current, await EvidenceScopeTracker.EvaluateAsync(root, verified.Evidence, await new GitInspector().CaptureAsync(root)));
+        Directory.CreateDirectory(Path.Combine(projects, "E"));
+        await File.WriteAllTextAsync(Path.Combine(projects, "E", "LibraryE.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\"><ItemGroup><ProjectReference Include=\"../B/LibraryB.csproj\" /></ItemGroup></Project>");
+        Assert.Equal(EvidenceFreshness.Stale, await EvidenceScopeTracker.EvaluateAsync(root, verified.Evidence, await new GitInspector().CaptureAsync(root)));
+    }
+
+    [Fact]
+    public async Task Change_contract_requires_an_exact_symbol_name()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "PaymentService.cs"), "public sealed class PaymentService { public decimal Calculate(decimal value) { return value; } }");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CreateChangeContractAsync(root, "Calc", RiskLevel.Low));
+    }
+
+    [Fact]
     public async Task Flight_recorder_keeps_structured_redacted_steps_and_promotes_failed_attempts()
     {
         await Service.InitializeAsync(root, false);

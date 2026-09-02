@@ -14,6 +14,8 @@ Every relationship carries a confidence label:
 
 Heuristic edges are impact candidates, not proof. They must not independently verify a claim or accept a change. The method scanner requires an ordinary declaration boundary, return type, name, and parameter list; this rejects observed invocation chains, async lambdas, and pattern keywords. It does not claim compiler completeness: constructors, operators, tuple-return signatures, explicit-interface methods, overload identity, and non-C# languages are incomplete. Future language-specific adapters may replace heuristic edges with parser-backed caller, callee, symbol-reference, and test-discovery relationships while preserving the derived graph contract.
 
+`verify --contract` is the only automatic graph-to-evidence expansion. It resolves an exact target, walks declaration/file edges in either direction, and walks reverse `PROJECT_REFERENCE` edges transitively so exact dependent projects participate. It stores a closure digest plus content digests for every resulting path. `REFERENCES` and `RELATED_TEST` edges are never traversed for freshness because they are heuristic.
+
 Use `arifce codegraph query <symbol>` to inspect matching declarations and their incoming or outgoing relationships. The output remains explainable and names its confidence level.
 
 Graph freshness does not make heuristic edges proof. ArifCE does not yet use heuristic graph closure to expand evidence scope or invalidate claims transitively; that requires an explicit policy so false-positive identifier matches cannot silently invalidate accepted knowledge.

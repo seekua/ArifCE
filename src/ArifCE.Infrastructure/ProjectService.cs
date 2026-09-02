@@ -220,7 +220,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         await RecordAsync(root, "acceptance.revoked", id, updated, cancellationToken); return updated;
     }
 
-    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyAsync(string root, string claimId, string commandText, bool allowUnsafeCommand = false, IReadOnlyList<string>? scopePaths = null, CancellationToken cancellationToken = default)
+    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyAsync(string root, string claimId, string commandText, bool allowUnsafeCommand = false, IReadOnlyList<string>? scopePaths = null, CancellationToken cancellationToken = default, string? contractId = null)
     {
         var claim = await canonical.ReadAsync<ClaimRecord>(root, "claims", claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
         var commandRedaction = new SecretRedactor().Redact(commandText);
@@ -228,7 +228,14 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var policy = VerificationCommandPolicy.Classify(commandText);
         if (policy == VerificationCommandKind.UnsafeShell && !allowUnsafeCommand) throw new InvalidOperationException("Unrecognized verification commands require explicit --allow-unsafe-command approval.");
         var before = await git.CaptureAsync(root, cancellationToken);
-        var scope = await EvidenceScopeTracker.CaptureAsync(root, scopePaths, cancellationToken);
+        EvidenceScope? scope;
+        if (string.IsNullOrWhiteSpace(contractId)) scope = await EvidenceScopeTracker.CaptureAsync(root, scopePaths, cancellationToken);
+        else
+        {
+            var contract = await GetChangeContractAsync(root, contractId, cancellationToken) ?? throw new InvalidOperationException($"Change contract {contractId} was not found.");
+            if (!contract.ClaimId.Equals(claim.Id, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException($"Change contract {contract.Id} is linked to claim {contract.ClaimId}, not {claim.Id}.");
+            scope = await EvidenceScopeTracker.CaptureForContractAsync(root, contract, scopePaths, cancellationToken);
+        }
         var result = policy == VerificationCommandKind.NamedDotNet
             ? await RunNamedCommandAsync(root, commandText, cancellationToken)
             : await RunShellCommandAsync(root, commandText, cancellationToken);
@@ -346,7 +353,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     public async Task<ChangeContractRecord> CreateChangeContractAsync(string root, string target, RiskLevel risk, IReadOnlyList<string>? invariants = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(target)) throw new ArgumentException("A change target is required.", nameof(target));
-        var graphResult = await new CodeGraphStore().QueryAsync(root, target, cancellationToken);
+        var graphResult = await new CodeGraphStore().QueryAsync(root, target, cancellationToken, exactMatch: true);
         if (graphResult.Matches.Count == 0) throw new InvalidOperationException($"No code-graph symbol matches '{target}'. Build the graph and use an exact symbol name.");
         var impact = graphResult.RelatedNodes.Where(node => node.Kind is not ("TEST" or "TEST_FILE"))
             .Select(node => new ChangeImpactItem(node.Kind, node.Name, node.Path, node.Confidence)).Distinct().OrderBy(item => item.Path, StringComparer.Ordinal).ToArray();

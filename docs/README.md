@@ -24,6 +24,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Benchmark protocol, V0.7 smoke evidence, and the first inconclusive matched run](research/benchmarks.md)
 - [First complete engineering benchmark result](evidence/engineering-benchmark-results-2026-09-02.md)
 - [Deterministic code-graph precision audit](evidence/code-graph-precision-2026-09-02.md)
+- [Contract-linked dependency closure evidence](evidence/contract-closure-2026-09-02.md)
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Dependency policy](architecture/dependency-policy.md)
 - [Binary releases](release/binary-releases.md)

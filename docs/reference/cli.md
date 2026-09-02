@@ -77,7 +77,7 @@ Omitted historical rationale is stored as `Unknown.`. Decision creation is seria
 ```text
 arifce claim create <statement>
 arifce claim status <claim-id>
-arifce verify <claim-id> --command <deterministic-command> [--path <file-or-directory>] [--path <file-or-directory>]
+arifce verify <claim-id> --command <deterministic-command> [--path <file-or-directory>] [--path <file-or-directory>] [--contract <id>]
 arifce architecture check <claim-id> --forbid <reference> --path <source-path>
 ```
 
@@ -92,6 +92,8 @@ The unsafe flag is a local execution approval, not evidence that the command is 
 
 One or more `--path` values opt evidence into dependency-scoped freshness. ArifCE hashes each selected file or directory at verification time; unrelated repository changes then leave the evidence current, while an edit, deletion, creation, or rename inside the selected scope makes it stale. Omitting `--path` preserves the conservative repository-wide snapshot behavior for backward compatibility. Architecture, public API, and SQLite schema verification infer their scopes from their required path arguments.
 
+`--contract <id>` requires that the contract belongs to the verified claim. It adds the exact/structural target closure and reverse transitive exact project dependents to the evidence scope; explicit `--path` values are additive. The closure itself is hashed so a newly added exact project dependent invalidates prior evidence. Heuristic code-graph edges are excluded and cannot create automatic stale state.
+
 Run `arifce trust refresh` after repository changes or before a handoff. It compares scoped path digests when present and otherwise compares the legacy repository snapshot, moves affected claims to `STALE`, and marks linked accepted records as `NEEDS_REVIEW`. Handoff generation performs the same refresh and prints trust warnings. Changes under `.arifce/` are excluded from the repository-wide code-state fingerprint so recording evidence does not invalidate itself.
 
 Build and query the disposable deterministic code graph:
@@ -103,7 +105,7 @@ arifce codegraph query Calculate
 
 Project-reference edges are exact, declarations are structural, and identifier-based references or related-test candidates are explicitly heuristic. Code-graph output identifies possible impact; it is not verification evidence by itself.
 
-The derived graph stores a digest of repository `.cs` and `.csproj` paths and contents plus its generator version. `codegraph query` and contract creation automatically rebuild after source edits, additions, deletions, renames, or scanner upgrades. Legacy files and malformed derived graph JSON are rebuilt safely; continuously changing sources make the build fail instead of publishing a mixed snapshot. The dependency-free scanner covers common C# declarations but is not a complete compiler symbol model.
+The derived graph stores a digest of repository `.cs` and `.csproj` paths and contents plus its generator version. `codegraph query` and contract creation automatically rebuild after source edits, additions, deletions, renames, or scanner upgrades. Contract creation requires an exact symbol name. Legacy files and malformed derived graph JSON are rebuilt safely; continuously changing sources make the build fail instead of publishing a mixed snapshot. The dependency-free scanner covers common C# declarations but is not a complete compiler symbol model.
 
 Create a pre-change engineering contract from a graph symbol:
 

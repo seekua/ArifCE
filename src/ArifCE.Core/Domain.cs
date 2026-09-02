@@ -18,7 +18,7 @@ public sealed record ClaimRecord(int SchemaVersion, string Id, string Statement,
 public sealed record AcceptanceRecord(int SchemaVersion, string Id, string ClaimId, string Actor, AcceptanceStatus Status, string Rationale, GitSnapshot Snapshot, IReadOnlyList<string> EvidenceIds, DateTimeOffset CreatedAtUtc, DateTimeOffset? RevokedAtUtc = null);
 public sealed record EvidenceMetrics(int? Total, int? Passed, int? Failed, int? Skipped, int? Warnings = null, int? Errors = null);
 public sealed record EvidenceDependency(string Path, string Digest, string Mode = "CONTENT");
-public sealed record EvidenceScope(IReadOnlyList<EvidenceDependency> Dependencies);
+public sealed record EvidenceScope(IReadOnlyList<EvidenceDependency> Dependencies, string? ContractId = null);
 public sealed record EvidenceRecord(int SchemaVersion, string Id, string ClaimId, string Kind, string? Command, int? ExitCode, string Summary, GitSnapshot Snapshot, DateTimeOffset CreatedAtUtc, EvidenceMetrics? Metrics = null, EvidenceScope? Scope = null);
 public sealed record CheckpointRecord(int SchemaVersion, string Id, string Summary, GitSnapshot Snapshot, DateTimeOffset CreatedAtUtc);
 public sealed record HandoffRecord(int SchemaVersion, string Id, string Markdown, GitSnapshot Snapshot, DateTimeOffset CreatedAtUtc);
