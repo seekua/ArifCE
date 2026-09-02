@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0017",
+  "summary": "Phase 59 path-qualified code graph targets complete",
+  "snapshot": {
+    "commit": "a0d7850a63aa1555f8feae324ea7bea2828d56c6",
+    "branch": "master",
+    "isDirty": false,
+    "changedFiles": [],
+    "digest": "f6cdee53f28a6d09d9e8172c397527e4a1e27023da1b58eac56dd8995f5cadc3"
+  },
+  "createdAtUtc": "2026-09-02T12:05:01.7290498+00:00"
+}
