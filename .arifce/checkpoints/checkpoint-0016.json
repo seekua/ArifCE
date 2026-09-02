@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0016",
+  "summary": "Phase 58 task risk CLI parsing and package proof complete",
+  "snapshot": {
+    "commit": "a60cebff7e2ef65e33dd00dd1af0eb3b38e95f2a",
+    "branch": "master",
+    "isDirty": false,
+    "changedFiles": [],
+    "digest": "4e01877baa06ab6650c1ab80388ac4003e636f62ee0c785f79106f7826635dd4"
+  },
+  "createdAtUtc": "2026-09-02T11:47:44.5022815+00:00"
+}
