@@ -72,6 +72,11 @@ public sealed class GitInspector
             {
                 throw new InvalidOperationException("Git reported a path outside the repository root.");
             }
+            var resolved = new FileInfo(full).ResolveLinkTarget(returnFinalTarget: true);
+            if (resolved is not null && !resolved.FullName.StartsWith(fullRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("Git reported a symbolic link that resolves outside the repository root.");
+            }
             if (!File.Exists(full))
             {
                 yield return $"{relative}\n<MISSING>";
