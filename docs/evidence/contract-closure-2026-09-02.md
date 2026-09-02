@@ -13,4 +13,6 @@ The deterministic behavior suite proves that editing a heuristic caller does not
 
 Local evidence: 74/74 Release tests and the packaged CLI smoke test pass. The package smoke creates a contract, verifies its linked claim with `--contract`, and reads the canonical evidence file to confirm the closure mode, contract ID, and target path.
 
+Remote evidence: [GitHub Actions run 33621238337](https://github.com/seekua/ArifCE/actions/runs/33621238337) passed at commit `b9ea930` on Windows, Ubuntu, and macOS. All five self-contained targets—Windows x64, Linux x64/ARM64, and macOS x64/ARM64—also published and smoke-tested successfully.
+
 This is not symbol-level invalidation. A C# target currently scopes its complete declaration file, so an unrelated edit in that same file still requires re-verification. Caller/callee resolution, semantic dependency inference, heuristic expansion, and non-C# symbol closure remain deferred.
