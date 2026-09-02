@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0019",
+  "summary": "Phase 62 Roslyn code graph parser complete",
+  "snapshot": {
+    "commit": "337031f5ed69e34c4739ed43dd6013ba07a8faa8",
+    "branch": "master",
+    "isDirty": false,
+    "changedFiles": [],
+    "digest": "93c0643eba14d4f6937296fc92506ceda4cebd972acd0f5ae650de27c7edfe3c"
+  },
+  "createdAtUtc": "2026-09-02T19:13:21.0915918+00:00"
+}
