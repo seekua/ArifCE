@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 is closed at commit `cba9f49`; remote CI run 33619130756 passed. Phase 57 is closed at commit `b9ea930`; remote CI run 33621238337 passed the three-OS build/test/package matrix and five self-contained targets. Phase 58 is closed at commit `542373b`; remote CI runs 33625989049 and 33626496248 passed the same matrix and five native targets. Phase 59 is closed at commit `2fd47ca`; remote CI run 33627400656 passed the same matrix and five native targets. Phase 60 is closed at commits `76b0209` and `298b185`; remote CI run 33629366199 passed the same matrix and five native targets. Phase 61 is closed at commit `29e0e0a`; remote CI run 33636565099 passed the same matrix and five native targets. Verification may explicitly bind evidence to a change contract, only structural declaration/file relationships plus reverse exact project references can expand its freshness scope, `task create` rejects unsupported options rather than storing them in canonical titles, a path-qualified graph target prevents same-name declarations in other files from broadening trusted closure, and Git snapshots fail closed for unavailable state, root escapes, and external symbolic-link targets.
+Phase 56 through 61 are closed with their recorded remote CI evidence. Phase 62 is closed at commits `cdd37cc` and `0b563da`; remote CI run 33668317643 passed. The disposable C# graph now uses a Roslyn syntax adapter and generator version 3. Heuristic references remain outside trusted closure.
 
 ## Blockers
 

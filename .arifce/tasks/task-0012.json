@@ -3,7 +3,7 @@
   "id": "TASK-0012",
   "title": "Add parser-backed C# declaration identity",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "HIGH",
   "createdAtUtc": "2026-09-02T14:44:25.5571215+00:00"
 }
