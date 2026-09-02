@@ -57,11 +57,13 @@ Use `arifce adopt` for an existing repository. Both operations are non-destructi
 ## Tasks, decisions, and attempts
 
 ```bash
-arifce task create "Ship tenant-aware caching"
+arifce task create "Ship tenant-aware caching" --risk HIGH
 arifce task status TASK-0001
 arifce decision create "Use local cache" --decision "Avoid network dependency" --rationale "Local-first requirement"
 arifce attempt record TASK-0001 "Redis invalidation" --result rejected --reason "Reconnect reliability risk"
 ```
+
+Task risk defaults to `MEDIUM`. Put `--risk LOW`, `--risk MEDIUM`, `--risk HIGH`, or `--risk CRITICAL` after the title; an unsupported option is rejected instead of being stored as part of the task title.
 
 Attempts must reference a task. Unknown historical rationale is stored as `Unknown.`.
 

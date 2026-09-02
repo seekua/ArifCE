@@ -128,7 +128,46 @@ internal static class Cli
         Console.WriteLine($"\nRejected by budget: {context.Telemetry.BudgetRejected}\nRejected as stale: {context.Telemetry.StaleRejected}\nRejected as superseded: {context.Telemetry.SupersededRejected}\nRejected as invalid: {context.Telemetry.InvalidRejected}\nAssembly latency: {context.Telemetry.AssemblyMilliseconds} ms");
     }
     private static async Task Why(IndexStore index, string root, string query) { var hits = await index.SearchAsync(root, $"\"{query.Replace("\"", "\"\"")}\"", 10); if (hits.Count == 0) Console.WriteLine("No recorded provenance or rationale was found. Historical rationale: unknown."); else foreach (var hit in hits) Console.WriteLine($"{hit.Path}: {hit.Snippet}"); }
-    private static async Task TaskCommand(ProjectService service, string root, string[] args) { Require(args, 3, "task create <title> | task status <id> | task complete <id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateTaskAsync(root, string.Join(' ', args[2..]), RiskLevel.Medium)).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetTaskAsync(root, args[2]) ?? throw new InvalidOperationException("Task not found."), JsonDefaults.Options)); break; case "complete": Console.WriteLine((await service.CompleteTaskAsync(root, args[2])).Status); break; default: throw new ArgumentException("Unknown task action."); } }
+    private static async Task TaskCommand(ProjectService service, string root, string[] args)
+    {
+        Require(args, 3, "task create <title> [--risk <LOW|MEDIUM|HIGH|CRITICAL>] | task status <id> | task complete <id>");
+
+        switch (args[1])
+        {
+            case "create":
+            {
+                var optionIndex = Array.FindIndex(args, 2, value => value.StartsWith("--", StringComparison.Ordinal));
+                var titleEnd = optionIndex < 0 ? args.Length : optionIndex;
+                var title = string.Join(' ', args[2..titleEnd]);
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    throw new ArgumentException("Task title is required.");
+                }
+
+                if (optionIndex >= 0 && (!args[optionIndex].Equals("--risk", StringComparison.OrdinalIgnoreCase) || optionIndex != args.Length - 2))
+                {
+                    throw new ArgumentException("task create supports only --risk <LOW|MEDIUM|HIGH|CRITICAL> after the title.");
+                }
+
+                var riskText = optionIndex < 0 ? nameof(RiskLevel.Medium) : args[optionIndex + 1];
+                if (!Enum.TryParse<RiskLevel>(riskText, ignoreCase: true, out var risk))
+                {
+                    throw new ArgumentException("Task risk must be LOW, MEDIUM, HIGH, or CRITICAL.");
+                }
+
+                Console.WriteLine((await service.CreateTaskAsync(root, title, risk)).Id);
+                break;
+            }
+            case "status":
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetTaskAsync(root, args[2]) ?? throw new InvalidOperationException("Task not found."), JsonDefaults.Options));
+                break;
+            case "complete":
+                Console.WriteLine((await service.CompleteTaskAsync(root, args[2])).Status);
+                break;
+            default:
+                throw new ArgumentException("Unknown task action.");
+        }
+    }
     private static async Task ClaimCommand(ProjectService service, string root, string[] args) { Require(args, 3, "claim create <statement> | claim status <id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateClaimAsync(root, string.Join(' ', args[2..]), RiskLevel.Medium)).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetClaimAsync(root, args[2]) ?? throw new InvalidOperationException("Claim not found."), JsonDefaults.Options)); break; default: throw new ArgumentException("Unknown claim action."); } }
     private static async Task AcceptanceCommand(ProjectService service, string root, string[] args) { Require(args, 3, "acceptance create <claim-id> --actor <name> --rationale <text> | acceptance status <id> | acceptance revoke <id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateAcceptanceAsync(root, args[2], Option(args, "--actor") ?? throw new ArgumentException("--actor is required."), Option(args, "--rationale") ?? throw new ArgumentException("--rationale is required."))).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetAcceptanceAsync(root, args[2]) ?? throw new InvalidOperationException("Acceptance not found."), JsonDefaults.Options)); break; case "revoke": Console.WriteLine((await service.RevokeAcceptanceAsync(root, args[2])).Status); break; default: throw new ArgumentException("Unknown acceptance action."); } }
     private static async Task DecisionCommand(ProjectService service, string root, string[] args) { Require(args, 3, "decision create <title> --decision <text> [--rationale <text>] | decision status <id> | decision supersede <id> --by <replacement-id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateDecisionAsync(root, args[2], Option(args, "--decision") ?? throw new ArgumentException("--decision is required."), Option(args, "--rationale"))).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetDecisionAsync(root, args[2]) ?? throw new InvalidOperationException("Decision not found."), JsonDefaults.Options)); break; case "supersede": Console.WriteLine((await service.SupersedeDecisionAsync(root, args[2], Option(args, "--by") ?? throw new ArgumentException("--by is required."))).Status); break; default: throw new ArgumentException("Unknown decision action."); } }

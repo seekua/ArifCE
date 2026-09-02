@@ -88,6 +88,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 55: make deterministic code-graph reads verify their source-tree digest and atomically rebuild stale, legacy, or corrupt derived graphs before impact analysis.
 - [x] Phase 56: reduce deterministic C# method-declaration false positives, version the graph generator, and publish a bounded real-repository noise audit before dependency-closure work.
 - [x] Phase 57: bind verification evidence explicitly to change contracts, propagate stale state through exact/structural dependency closure, and prove false-stale boundaries without trusting heuristic edges.
+- [x] Phase 58: parse task risk explicitly, reject unsupported task-create options, and prove canonical title/risk integrity through packaged CLI smoke coverage.
 
 ## Explicit deferrals
 

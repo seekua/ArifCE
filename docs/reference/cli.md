@@ -51,7 +51,7 @@ Search uses SQLite FTS5. Context assembly uses deterministic lexical candidates,
 ## Work and continuity
 
 ```text
-arifce task create <title>
+arifce task create <title> [--risk <LOW|MEDIUM|HIGH|CRITICAL>]
 arifce task status <task-id>
 arifce task complete <task-id>
 
@@ -69,6 +69,8 @@ arifce finding resolve <finding-id>
 arifce checkpoint --summary <text>
 arifce handoff
 ```
+
+Task risk defaults to `MEDIUM`. `--risk` must follow the title and accepts `LOW`, `MEDIUM`, `HIGH`, or `CRITICAL`; unsupported options are rejected rather than becoming title text.
 
 Omitted historical rationale is stored as `Unknown.`. Decision creation is serialized and rejects a normalized title already held by an active decision. Supersession requires two distinct active decisions and preserves the replaced record with a link to its active replacement. Attempts must reference an existing task. Handoffs select current engineering state, include trust and knowledge warnings, and never dump raw transcripts.
 

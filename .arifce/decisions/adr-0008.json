@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0008",
+  "title": "Reject task-create options that could mutate titles",
+  "decision": "Parse --risk explicitly and reject unsupported task-create options.",
+  "historicalRationale": "Unknown options previously became part of the canonical task title during dogfood.",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-09-02T11:39:59.0671078+00:00"
+}

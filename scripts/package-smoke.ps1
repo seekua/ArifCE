@@ -33,8 +33,10 @@ try {
         & $executable init
         if ($LASTEXITCODE -ne 0) { throw 'Idempotent arifce init failed.' }
 
-        $taskId = (& $executable task create 'Package fixture continuity task' | Select-Object -Last 1).Trim()
+        $taskId = (& $executable task create 'Package fixture continuity task' --risk HIGH | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $taskId -notmatch '^TASK-\d{4}$') { throw "Task creation failed: $taskId" }
+        $invalidTaskOutput = (& $executable task create 'Package fixture invalid option' --unknown HIGH 2>&1 | Out-String)
+        if ($LASTEXITCODE -eq 0 -or $invalidTaskOutput -notmatch 'supports only --risk') { throw 'Unsupported task-create options were not rejected.' }
         $decisionId = (& $executable decision create 'Package fixture storage choice' --decision 'Use canonical JSON records' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $decisionId -notmatch '^ADR-\d{4}$') { throw "Decision creation failed: $decisionId" }
         $supersededDecisionId = (& $executable decision create 'Legacy package fixture storage choice' --decision 'Use transient memory' | Select-Object -Last 1).Trim()
@@ -134,7 +136,7 @@ try {
         $findingRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/findings/$($findingId.ToLowerInvariant()).json") | ConvertFrom-Json
         $reviewRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/reviews/$($reviewId.ToLowerInvariant()).json") | ConvertFrom-Json
         $refactorRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/refactors/$($refactorId.ToLowerInvariant()).json") | ConvertFrom-Json
-        if ($taskRecord.status -ne 'COMPLETED') { throw 'Canonical task state is not completed.' }
+        if ($taskRecord.status -ne 'COMPLETED' -or $taskRecord.title -ne 'Package fixture continuity task' -or $taskRecord.risk -ne 'HIGH') { throw 'Canonical task state or task risk parsing is incorrect.' }
         if ($decisionRecord.historicalRationale -ne 'Unknown.') { throw 'Decision did not preserve unknown historical rationale.' }
         if ($supersededDecisionRecord.status -ne 'SUPERSEDED' -or $supersededDecisionRecord.supersededBy -ne $decisionId) { throw 'Decision supersession history is incomplete.' }
         if ($attemptRecord.taskId -ne $taskId -or $attemptRecord.result -ne 'rejected') { throw 'Canonical failed-attempt state is incomplete.' }

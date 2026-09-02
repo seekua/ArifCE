@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0007",
+  "title": "Harden task risk CLI parsing",
+  "description": null,
+  "status": "OPEN",
+  "risk": "MEDIUM",
+  "createdAtUtc": "2026-09-02T11:39:54.8103445+00:00"
+}

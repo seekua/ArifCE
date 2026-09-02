@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Parse `task create --risk` explicitly, preserve the intended canonical title, and reject unsupported task-create options before any record is written.
 - Add explicit contract-linked evidence scopes with exact/structural closure digests, reverse transitive project-dependent invalidation, and strict exclusion of heuristic graph edges.
 - Tighten deterministic C# method scanning to reject invocation, lambda, and pattern-syntax false positives, and version derived graphs so scanner upgrades invalidate old cache output.
 - Make the disposable deterministic code graph self-invalidating with a source-tree digest, automatic legacy/corrupt recovery, and stable-snapshot rebuild checks.
