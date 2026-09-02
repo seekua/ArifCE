@@ -69,7 +69,7 @@ try {
         $graphQuery = (& $executable codegraph query FreshGraphSymbol | Out-String)
         if ($LASTEXITCODE -ne 0 -or $graphQuery -notmatch 'METHOD\s+FreshGraphSymbol') { throw 'Packaged code-graph query did not rebuild after a source edit.' }
         $graphDocument = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory '.arifce\index\code-graph.json') | ConvertFrom-Json
-        if ($graphDocument.generatorVersion -ne 2) { throw 'Packaged code graph does not carry the current generator version.' }
+        if ($graphDocument.generatorVersion -ne 3) { throw 'Packaged code graph does not carry the current generator version.' }
         $contractOutput = (& $executable contract create FreshGraphSymbol --risk LOW | Out-String)
         $contractId = [regex]::Match($contractOutput, 'CONTRACT-\d{4}').Value
         $contractClaimId = [regex]::Match($contractOutput, 'Claim:\s*(CLAIM-\d{4})').Groups[1].Value

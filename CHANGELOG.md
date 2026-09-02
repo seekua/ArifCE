@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Replace C# declaration regex scanning with a Roslyn syntax adapter for constructors, overload identity, and explicit-interface methods.
 - Reject Git snapshot paths that resolve outside the repository root.
 - Fail closed when `git status` cannot capture repository state, preventing an unreadable repository from producing a synthesized clean snapshot.
 - Add `path::symbol` graph and change-contract selectors to isolate same-name declarations in different files without promoting heuristic edges to trust evidence.

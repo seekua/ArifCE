@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0011",
+  "title": "Isolate Roslyn behind the disposable code graph adapter",
+  "decision": "Use a package-backed C# syntax adapter only for derived graph precision; canonical records and trust policy remain dependency-independent.",
+  "historicalRationale": "SDK-local assembly references would break self-contained distribution and blur the core dependency boundary.",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-09-02T14:44:28.6638913+00:00"
+}

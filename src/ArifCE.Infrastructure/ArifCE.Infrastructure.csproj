@@ -2,5 +2,6 @@
   <ItemGroup>
     <ProjectReference Include="../ArifCE.Core/ArifCE.Core.csproj" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
   </ItemGroup>
 </Project>

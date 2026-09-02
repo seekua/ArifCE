@@ -3,6 +3,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ArifCE.Infrastructure;
 
@@ -14,7 +17,7 @@ public sealed record TrustedCodeGraphClosure(string Target, IReadOnlyList<string
 
 public sealed partial class CodeGraphStore
 {
-    private const int CurrentGeneratorVersion = 2;
+    private const int CurrentGeneratorVersion = 3;
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { ".git", ".arifce", "bin", "obj", "artifacts", "node_modules" };
 
     public Task<CodeGraphDocument> BuildAsync(string root, CancellationToken cancellationToken = default) => BuildStableAsync(root, 0, cancellationToken);
@@ -31,28 +34,37 @@ public sealed partial class CodeGraphStore
             var relative = Relative(fullRoot, file);
             var fileId = $"file:{relative}";
             nodes.Add(new CodeGraphNode(fileId, IsTestFile(relative) ? "TEST_FILE" : "FILE", Path.GetFileName(relative), relative, null, "EXACT"));
-            var lines = await File.ReadAllLinesAsync(file, cancellationToken);
-            for (var index = 0; index < lines.Length; index++)
+            var text = await File.ReadAllTextAsync(file, cancellationToken);
+            var tree = CSharpSyntaxTree.ParseText(text, cancellationToken: cancellationToken);
+            var syntax = await tree.GetRootAsync(cancellationToken);
+            foreach (var declaration in syntax.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
             {
-                foreach (Match match in TypeDeclaration().Matches(lines[index]))
-                {
-                    var name = match.Groups[1].Value;
-                    var id = $"type:{relative}:{index + 1}:{name}";
-                    nodes.Add(new CodeGraphNode(id, "TYPE", name, relative, index + 1, "STRUCTURAL"));
-                    edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
-                }
-                var method = MethodDeclaration().Match(lines[index]);
-                if (method.Success)
-                {
-                    var name = method.Groups[1].Value;
-                    var id = $"method:{relative}:{index + 1}:{name}";
-                    nodes.Add(new CodeGraphNode(id, IsTestMethod(lines, index) ? "TEST" : "METHOD", name, relative, index + 1, "STRUCTURAL"));
-                    edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
-                }
+                var line = tree.GetLineSpan(declaration.Identifier.Span).StartLinePosition.Line + 1;
+                var name = declaration.Identifier.ValueText;
+                var id = $"type:{relative}:{line}:{name}";
+                nodes.Add(new CodeGraphNode(id, "TYPE", name, relative, line, "STRUCTURAL"));
+                edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
+            }
+            foreach (var declaration in syntax.DescendantNodes().OfType<MethodDeclarationSyntax>())
+            {
+                var line = tree.GetLineSpan(declaration.Identifier.Span).StartLinePosition.Line + 1;
+                var name = declaration.Identifier.ValueText;
+                var identity = $"{name}({string.Join(',', declaration.ParameterList.Parameters.Select(parameter => parameter.Type?.ToString() ?? "?"))})";
+                var id = $"method:{relative}:{line}:{identity}";
+                nodes.Add(new CodeGraphNode(id, IsTestMethod(declaration) ? "TEST" : "METHOD", name, relative, line, "STRUCTURAL"));
+                edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
+            }
+            foreach (var declaration in syntax.DescendantNodes().OfType<ConstructorDeclarationSyntax>())
+            {
+                var line = tree.GetLineSpan(declaration.Identifier.Span).StartLinePosition.Line + 1;
+                var name = declaration.Identifier.ValueText;
+                var id = $"constructor:{relative}:{line}:{name}({string.Join(',', declaration.ParameterList.Parameters.Select(parameter => parameter.Type?.ToString() ?? "?"))})";
+                nodes.Add(new CodeGraphNode(id, "CONSTRUCTOR", name, relative, line, "STRUCTURAL"));
+                edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
             }
         }
 
-        var symbols = nodes.Where(node => node.Kind is "TYPE" or "METHOD" or "TEST").GroupBy(node => node.Name, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+        var symbols = nodes.Where(node => node.Kind is "TYPE" or "METHOD" or "TEST" or "CONSTRUCTOR").GroupBy(node => node.Name, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
         foreach (var file in files)
         {
             var relative = Relative(fullRoot, file);
@@ -184,7 +196,7 @@ public sealed partial class CodeGraphStore
     }
     private static bool IsTestFile(string path) => path.Contains("test", StringComparison.OrdinalIgnoreCase) || path.EndsWith("Tests.cs", StringComparison.OrdinalIgnoreCase);
     private static bool IsExcluded(string root, string path) => Relative(root, path).Split('/').Any(ExcludedDirectories.Contains);
-    private static bool IsTestMethod(string[] lines, int index) => lines.Skip(Math.Max(0, index - 3)).Take(Math.Min(4, index + 1)).Any(line => line.Contains("[Fact", StringComparison.Ordinal) || line.Contains("[Theory", StringComparison.Ordinal) || line.Contains("[Test", StringComparison.Ordinal));
+    private static bool IsTestMethod(MethodDeclarationSyntax declaration) => declaration.AttributeLists.SelectMany(list => list.Attributes).Any(attribute => attribute.Name.ToString() is "Fact" or "FactAttribute" or "Theory" or "TheoryAttribute" or "Test" or "TestAttribute");
     private static Regex IdentifierOccurrence(string name) => new($@"\b{Regex.Escape(name)}\b", RegexOptions.CultureInvariant);
 
     private static async Task<string> ComputeSourceDigestAsync(string root, CancellationToken cancellationToken)
@@ -204,8 +216,4 @@ public sealed partial class CodeGraphStore
         return Convert.ToHexString(aggregate.GetHashAndReset()).ToLowerInvariant();
     }
 
-    [GeneratedRegex(@"\b(?:class|interface|record|struct|enum)\s+([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.CultureInvariant)]
-    private static partial Regex TypeDeclaration();
-    [GeneratedRegex(@"(?:^|[{};])\s*(?:\[[^\]]+\]\s*)*(?:(?:public|private|protected|internal|static|virtual|override|abstract|sealed|async|extern|unsafe|new|partial|readonly)\s+)*(?:[A-Za-z_][A-Za-z0-9_?.]*(?:\s*<[^;{}()]+>)?(?:\[\])?)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:<[^;{}()]+>)?\s*\([^;{}]*\)\s*(?:=>|\{|$)", RegexOptions.CultureInvariant)]
-    private static partial Regex MethodDeclaration();
 }

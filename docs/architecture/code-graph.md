@@ -4,7 +4,7 @@ ArifCE builds a disposable structural graph at `.arifce/index/code-graph.json`. 
 
 The derived document records a SHA-256 digest over normalized `.cs` and `.csproj` paths and contents plus a graph-generator version. Every graph read checks both. Source edits, additions, deletions, renames, and scanner upgrades trigger an automatic atomic rebuild before a query or change contract can consume the graph. Legacy documents without a digest/version and malformed derived JSON are rebuilt rather than trusted. A build compares the source digest before and after scanning and retries a bounded number of times; continuously changing input fails explicitly instead of publishing a mixed snapshot.
 
-The first implementation deliberately uses the .NET base class library and adds no parser or embedding dependency. It records C# files, test files, type and method declarations, projects, project references, symbol references, and related-test candidates.
+The C# declaration adapter uses `Microsoft.CodeAnalysis.CSharp` only inside this disposable graph layer. It records C# files, test files, types, methods, constructors, projects, project references, symbol references, and related-test candidates. Canonical repository records and trust policy do not depend on Roslyn.
 
 Every relationship carries a confidence label:
 
@@ -12,7 +12,7 @@ Every relationship carries a confidence label:
 - `STRUCTURAL`: deterministic C# declaration scanning.
 - `HEURISTIC`: identifier occurrence that may indicate a reference or related test.
 
-Heuristic edges are impact candidates, not proof. They must not independently verify a claim or accept a change. The method scanner requires an ordinary declaration boundary, return type, name, and parameter list; this rejects observed invocation chains, async lambdas, and pattern keywords. It does not claim compiler completeness: constructors, operators, tuple-return signatures, explicit-interface methods, overload identity, and non-C# languages are incomplete. Future language-specific adapters may replace heuristic edges with parser-backed caller, callee, symbol-reference, and test-discovery relationships while preserving the derived graph contract.
+Heuristic edges are impact candidates, not proof. They must not independently verify a claim or accept a change. The parser-backed declaration adapter rejects invocation chains, lambdas, and pattern syntax while recognizing constructors, overload-specific graph IDs, and explicit-interface methods. Operators, semantic caller/callee resolution, compiler-bound symbol references, and non-C# languages remain incomplete. Future language-specific adapters may add parser-backed caller, callee, symbol-reference, and test-discovery relationships while preserving the derived graph contract.
 
 `verify --contract` is the only automatic graph-to-evidence expansion. It resolves an exact target, walks declaration/file edges in either direction, and walks reverse `PROJECT_REFERENCE` edges transitively so exact dependent projects participate. It stores a closure digest plus content digests for every resulting path. `REFERENCES` and `RELATED_TEST` edges are never traversed for freshness because they are heuristic.
 

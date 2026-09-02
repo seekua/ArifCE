@@ -435,13 +435,13 @@ public sealed class BehaviorTests : IDisposable
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         var recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
         Assert.False(string.IsNullOrWhiteSpace(recovered!.SourceDigest));
-        Assert.Equal(2, recovered.GeneratorVersion);
+        Assert.Equal(3, recovered.GeneratorVersion);
 
         var outdatedGenerator = recovered with { GeneratorVersion = 1 };
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(outdatedGenerator, JsonDefaults.Options));
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
-        Assert.Equal(2, recovered!.GeneratorVersion);
+        Assert.Equal(3, recovered!.GeneratorVersion);
 
         var structurallyInvalid = new CodeGraphDocument(1, DateTimeOffset.UtcNow, null!, null!, recovered.SourceDigest, recovered.GeneratorVersion);
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(structurallyInvalid, JsonDefaults.Options));
@@ -801,6 +801,29 @@ public sealed class BehaviorTests : IDisposable
         var current = System.Text.Json.JsonSerializer.Serialize(WorkStatus.InProgress, JsonDefaults.Options); Assert.Equal("\"IN_PROGRESS\"", current);
         var legacy = System.Text.Json.JsonSerializer.Deserialize<WorkStatus>("\"InProgress\"", JsonDefaults.Options); Assert.Equal(WorkStatus.InProgress, legacy);
         var snake = System.Text.Json.JsonSerializer.Deserialize<ClaimStatus>("\"PARTIALLY_VERIFIED\"", JsonDefaults.Options); Assert.Equal(ClaimStatus.PartiallyVerified, snake);
+    }
+
+    [Fact]
+    public async Task Code_graph_parser_captures_constructors_overloads_and_explicit_interface_methods()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "ParserFixture.cs"), """
+            public interface IWorker { void Run(); }
+            public sealed class ParserFixture : IWorker {
+                public ParserFixture() { }
+                public ParserFixture(int count) { }
+                public void Run() { }
+                void IWorker.Run() { }
+                public int Calculate(int value) => value;
+                public int Calculate(string value) => value.Length;
+            }
+            """);
+        var graph = await new CodeGraphStore().BuildAsync(root);
+        Assert.Equal(2, graph.Nodes.Count(node => node.Kind == "CONSTRUCTOR" && node.Name == "ParserFixture"));
+        Assert.Equal(2, graph.Nodes.Count(node => node.Kind == "METHOD" && node.Name == "Run"));
+        Assert.Equal(2, graph.Nodes.Count(node => node.Kind == "METHOD" && node.Name == "Calculate"));
+        Assert.Equal(2, graph.Nodes.Where(node => node.Kind == "METHOD" && node.Name == "Calculate").Select(node => node.Id).Distinct(StringComparer.Ordinal).Count());
     }
 
     private void RunGit(string arguments) { using var process = Process.Start(new ProcessStartInfo("git", arguments) { WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true }); process!.WaitForExit(); Assert.Equal(0, process.ExitCode); }
