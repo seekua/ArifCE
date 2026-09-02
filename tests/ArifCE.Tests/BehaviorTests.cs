@@ -821,7 +821,7 @@ public sealed class BehaviorTests : IDisposable
             """);
         var graph = await new CodeGraphStore().BuildAsync(root);
         Assert.Equal(2, graph.Nodes.Count(node => node.Kind == "CONSTRUCTOR" && node.Name == "ParserFixture"));
-        Assert.Equal(2, graph.Nodes.Count(node => node.Kind == "METHOD" && node.Name == "Run"));
+        Assert.Equal(3, graph.Nodes.Count(node => node.Kind == "METHOD" && node.Name == "Run"));
         Assert.Equal(2, graph.Nodes.Count(node => node.Kind == "METHOD" && node.Name == "Calculate"));
         Assert.Equal(2, graph.Nodes.Where(node => node.Kind == "METHOD" && node.Name == "Calculate").Select(node => node.Id).Distinct(StringComparer.Ordinal).Count());
     }
