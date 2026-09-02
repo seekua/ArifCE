@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Add parser-backed heuristic `CALLS` edges to the disposable C# graph for investigation without allowing them to expand evidence freshness or acceptance.
 - Replace C# declaration regex scanning with a Roslyn syntax adapter for constructors, overload identity, and explicit-interface methods.
 - Reject Git snapshot paths that resolve outside the repository root.
 - Fail closed when `git status` cannot capture repository state, preventing an unreadable repository from producing a synthesized clean snapshot.

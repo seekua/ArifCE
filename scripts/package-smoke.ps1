@@ -68,8 +68,12 @@ try {
         Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\GraphFixture.cs') -Value 'public sealed class GraphFixture { public void FreshGraphSymbol() { } }'
         $graphQuery = (& $executable codegraph query FreshGraphSymbol | Out-String)
         if ($LASTEXITCODE -ne 0 -or $graphQuery -notmatch 'METHOD\s+FreshGraphSymbol') { throw 'Packaged code-graph query did not rebuild after a source edit.' }
+        Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\CallCandidateSource.cs') -Value 'public sealed class CallCandidateSource { public void Caller() { Target(); } }'
+        Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\CallCandidateTarget.cs') -Value 'public sealed class CallCandidateTarget { public void Target() { } }'
+        $callCandidateQuery = (& $executable codegraph query Target | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $callCandidateQuery -notmatch 'CALLS\s+\S+\s+\S+\s+HEURISTIC') { throw 'Packaged code graph did not expose parser-backed heuristic call candidates.' }
         $graphDocument = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory '.arifce\index\code-graph.json') | ConvertFrom-Json
-        if ($graphDocument.generatorVersion -ne 3) { throw 'Packaged code graph does not carry the current generator version.' }
+        if ($graphDocument.generatorVersion -ne 4) { throw 'Packaged code graph does not carry the current generator version.' }
         $contractOutput = (& $executable contract create FreshGraphSymbol --risk LOW | Out-String)
         $contractId = [regex]::Match($contractOutput, 'CONTRACT-\d{4}').Value
         $contractClaimId = [regex]::Match($contractOutput, 'Claim:\s*(CLAIM-\d{4})').Groups[1].Value

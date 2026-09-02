@@ -435,13 +435,13 @@ public sealed class BehaviorTests : IDisposable
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         var recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
         Assert.False(string.IsNullOrWhiteSpace(recovered!.SourceDigest));
-        Assert.Equal(3, recovered.GeneratorVersion);
+        Assert.Equal(4, recovered.GeneratorVersion);
 
         var outdatedGenerator = recovered with { GeneratorVersion = 1 };
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(outdatedGenerator, JsonDefaults.Options));
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
-        Assert.Equal(3, recovered!.GeneratorVersion);
+        Assert.Equal(4, recovered!.GeneratorVersion);
 
         var structurallyInvalid = new CodeGraphDocument(1, DateTimeOffset.UtcNow, null!, null!, recovered.SourceDigest, recovered.GeneratorVersion);
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(structurallyInvalid, JsonDefaults.Options));
@@ -824,6 +824,22 @@ public sealed class BehaviorTests : IDisposable
         Assert.Equal(3, graph.Nodes.Count(node => node.Kind == "METHOD" && node.Name == "Run"));
         Assert.Equal(2, graph.Nodes.Count(node => node.Kind == "METHOD" && node.Name == "Calculate"));
         Assert.Equal(2, graph.Nodes.Where(node => node.Kind == "METHOD" && node.Name == "Calculate").Select(node => node.Id).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public async Task Code_graph_emits_parser_backed_call_candidates_without_trusting_them_for_closure()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "Caller.cs"), "public sealed class Caller { public void CallerMethod() { Target(); } }");
+        await File.WriteAllTextAsync(Path.Combine(source, "Target.cs"), "public sealed class TargetHost { public void Target() { } }");
+        var graph = await new CodeGraphStore().BuildAsync(root);
+        var caller = Assert.Single(graph.Nodes, node => node.Kind == "METHOD" && node.Name == "CallerMethod");
+        var target = Assert.Single(graph.Nodes, node => node.Kind == "METHOD" && node.Name == "Target");
+        Assert.Contains(graph.Edges, edge => edge.From == caller.Id && edge.To == target.Id && edge.Kind == "CALLS" && edge.Confidence == "HEURISTIC");
+
+        var closure = await new CodeGraphStore().TrustedClosureAsync(root, "Target");
+        Assert.DoesNotContain("src/Caller.cs", closure.Paths);
     }
 
     private void RunGit(string arguments) { using var process = Process.Start(new ProcessStartInfo("git", arguments) { WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true }); process!.WaitForExit(); Assert.Equal(0, process.ExitCode); }

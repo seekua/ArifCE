@@ -10,11 +10,11 @@ Every relationship carries a confidence label:
 
 - `EXACT`: filesystem or MSBuild project-reference structure.
 - `STRUCTURAL`: deterministic C# declaration scanning.
-- `HEURISTIC`: identifier occurrence that may indicate a reference or related test.
+- `HEURISTIC`: identifier occurrence or parser-backed invocation candidate that may indicate a reference, related test, or call.
 
-Heuristic edges are impact candidates, not proof. They must not independently verify a claim or accept a change. The parser-backed declaration adapter rejects invocation chains, lambdas, and pattern syntax while recognizing constructors, overload-specific graph IDs, and explicit-interface methods. Operators, semantic caller/callee resolution, compiler-bound symbol references, and non-C# languages remain incomplete. Future language-specific adapters may add parser-backed caller, callee, symbol-reference, and test-discovery relationships while preserving the derived graph contract.
+Heuristic edges are impact candidates, not proof. They must not independently verify a claim or accept a change. The parser-backed declaration adapter recognizes constructors, overload-specific graph IDs, explicit-interface methods, and simple invocation targets. `CALLS` edges identify the declaring method and matching same-name candidates without semantic binding; they do not resolve overloads, dynamic dispatch, extensions, or external symbols. Operators, semantic caller/callee resolution, compiler-bound symbol references, and non-C# languages remain incomplete.
 
-`verify --contract` is the only automatic graph-to-evidence expansion. It resolves an exact target, walks declaration/file edges in either direction, and walks reverse `PROJECT_REFERENCE` edges transitively so exact dependent projects participate. It stores a closure digest plus content digests for every resulting path. `REFERENCES` and `RELATED_TEST` edges are never traversed for freshness because they are heuristic.
+`verify --contract` is the only automatic graph-to-evidence expansion. It resolves an exact target, walks declaration/file edges in either direction, and walks reverse `PROJECT_REFERENCE` edges transitively so exact dependent projects participate. It stores a closure digest plus content digests for every resulting path. `REFERENCES`, `RELATED_TEST`, and `CALLS` edges are never traversed for freshness because they are heuristic.
 
 Use `arifce codegraph query <symbol>` to inspect matching declarations and their incoming or outgoing relationships. When the same name exists in more than one file, use `arifce codegraph query <path>::<symbol>` and pass the same selector to `contract create`, for example `src/Payments/PaymentService.cs::Calculate`. The query output includes each stable graph node ID for inspection. A path-qualified selector keeps trusted closure limited to declarations in that file; it does not yet distinguish overloads on different lines of the same file.
 

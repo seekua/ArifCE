@@ -93,6 +93,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 60: fail closed when Git repository state cannot be captured, with cross-platform regression coverage using real Git fixtures.
 - [x] Phase 61: confine Git snapshot paths to the repository root and reject traversal before hashing file content.
 - [x] Phase 62: replace C# declaration regex scanning with a Roslyn syntax adapter and version derived graphs.
+- [x] Phase 63: expose parser-backed C# call candidates for graph exploration while retaining their heuristic, non-trust status.
 
 ## Explicit deferrals
 

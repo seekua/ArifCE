@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0013",
+  "title": "Expose parser-backed C# call candidates",
+  "description": null,
+  "status": "OPEN",
+  "risk": "MEDIUM",
+  "createdAtUtc": "2026-09-02T21:13:21.6446177+00:00"
+}

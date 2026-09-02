@@ -17,7 +17,7 @@ public sealed record TrustedCodeGraphClosure(string Target, IReadOnlyList<string
 
 public sealed partial class CodeGraphStore
 {
-    private const int CurrentGeneratorVersion = 3;
+    private const int CurrentGeneratorVersion = 4;
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { ".git", ".arifce", "bin", "obj", "artifacts", "node_modules" };
 
     public Task<CodeGraphDocument> BuildAsync(string root, CancellationToken cancellationToken = default) => BuildStableAsync(root, 0, cancellationToken);
@@ -77,6 +77,28 @@ public sealed partial class CodeGraphStore
                 {
                     var kind = IsTestFile(relative) ? "RELATED_TEST" : "REFERENCES";
                     edges.Add(new CodeGraphEdge(fileId, target.Id, kind, "HEURISTIC"));
+                }
+            }
+        }
+
+        foreach (var file in files)
+        {
+            var relative = Relative(fullRoot, file);
+            var text = await File.ReadAllTextAsync(file, cancellationToken);
+            var tree = CSharpSyntaxTree.ParseText(text, cancellationToken: cancellationToken);
+            var syntax = await tree.GetRootAsync(cancellationToken);
+            foreach (var invocation in syntax.DescendantNodes().OfType<InvocationExpressionSyntax>())
+            {
+                var calledName = InvocationName(invocation);
+                if (calledName is null) continue;
+                var owner = invocation.FirstAncestorOrSelf<BaseMethodDeclarationSyntax>();
+                if (owner is null) continue;
+                var ownerLine = DeclarationLine(tree, owner);
+                var source = nodes.FirstOrDefault(node => node.Path.Equals(relative, StringComparison.OrdinalIgnoreCase) && node.Line == ownerLine && node.Kind is "METHOD" or "TEST" or "CONSTRUCTOR");
+                if (source is null) continue;
+                foreach (var target in symbols.GetValueOrDefault(calledName, []).Where(node => node.Id != source.Id))
+                {
+                    edges.Add(new CodeGraphEdge(source.Id, target.Id, "CALLS", "HEURISTIC"));
                 }
             }
         }
@@ -194,6 +216,19 @@ public sealed partial class CodeGraphStore
         var symbol = target[(separatorIndex + separator.Length)..].Trim();
         return path.Length > 0 && symbol.Length > 0 ? (path, symbol) : null;
     }
+    private static string? InvocationName(InvocationExpressionSyntax invocation) => invocation.Expression switch
+    {
+        IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+        MemberAccessExpressionSyntax member => member.Name.Identifier.ValueText,
+        MemberBindingExpressionSyntax member => member.Name.Identifier.ValueText,
+        _ => null
+    };
+    private static int DeclarationLine(SyntaxTree tree, BaseMethodDeclarationSyntax declaration) => declaration switch
+    {
+        MethodDeclarationSyntax method => tree.GetLineSpan(method.Identifier.Span).StartLinePosition.Line + 1,
+        ConstructorDeclarationSyntax constructor => tree.GetLineSpan(constructor.Identifier.Span).StartLinePosition.Line + 1,
+        _ => tree.GetLineSpan(declaration.Span).StartLinePosition.Line + 1
+    };
     private static bool IsTestFile(string path) => path.Contains("test", StringComparison.OrdinalIgnoreCase) || path.EndsWith("Tests.cs", StringComparison.OrdinalIgnoreCase);
     private static bool IsExcluded(string root, string path) => Relative(root, path).Split('/').Any(ExcludedDirectories.Contains);
     private static bool IsTestMethod(MethodDeclarationSyntax declaration) => declaration.AttributeLists.SelectMany(list => list.Attributes).Any(attribute => attribute.Name.ToString() is "Fact" or "FactAttribute" or "Theory" or "TheoryAttribute" or "Test" or "TestAttribute");
