@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0010",
+  "title": "Treat unavailable Git state as untrusted",
+  "decision": "Reject snapshot capture when git status fails instead of synthesizing a clean state.",
+  "historicalRationale": "A failed Git invocation must not preserve or create a false CURRENT evidence state.",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-09-02T12:11:21.1713674+00:00"
+}

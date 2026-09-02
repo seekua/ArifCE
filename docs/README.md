@@ -27,6 +27,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Contract-linked dependency closure evidence](evidence/contract-closure-2026-09-02.md)
 - [Task-risk parsing integrity evidence](evidence/task-risk-parsing-2026-09-02.md)
 - [Path-qualified code-graph target evidence](evidence/path-qualified-code-graph-targets-2026-09-02.md)
+- [Fail-closed Git snapshot evidence](evidence/git-snapshot-fail-closed-2026-09-02.md)
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Dependency policy](architecture/dependency-policy.md)
 - [Binary releases](release/binary-releases.md)

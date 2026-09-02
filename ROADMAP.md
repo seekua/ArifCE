@@ -90,6 +90,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 57: bind verification evidence explicitly to change contracts, propagate stale state through exact/structural dependency closure, and prove false-stale boundaries without trusting heuristic edges.
 - [x] Phase 58: parse task risk explicitly, reject unsupported task-create options, and prove canonical title/risk integrity through packaged CLI smoke coverage.
 - [x] Phase 59: add deterministic path-qualified graph targets so same-name declarations in other files cannot broaden a trusted contract closure.
+- [x] Phase 60: fail closed when Git repository state cannot be captured, with cross-platform regression coverage using real Git fixtures.
 
 ## Explicit deferrals
 

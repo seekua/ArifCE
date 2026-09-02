@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0009",
+  "title": "Fail closed when repository state cannot be read",
+  "description": null,
+  "status": "COMPLETED",
+  "risk": "CRITICAL",
+  "createdAtUtc": "2026-09-02T12:11:17.6341501+00:00"
+}
