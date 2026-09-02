@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0020",
+  "summary": "Phase 63 parser-backed heuristic call candidates complete",
+  "snapshot": {
+    "commit": "78fe2713a6b0f1fab27912bd7b844628ae129b71",
+    "branch": "master",
+    "isDirty": false,
+    "changedFiles": [],
+    "digest": "89ad2b1c1ef2ff42e967ae6f4bdd094fe83bca667ed3d7b83a7282847d346a92"
+  },
+  "createdAtUtc": "2026-09-02T21:41:35.4781832+00:00"
+}
