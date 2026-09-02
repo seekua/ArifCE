@@ -38,6 +38,10 @@ public sealed class GitInspector
     public async Task<GitSnapshot> CaptureAsync(string root, CancellationToken cancellationToken = default)
     {
         var status = await RunAsync(root, "status --porcelain=v1 -b", cancellationToken);
+        if (status.ExitCode != 0)
+        {
+            throw new InvalidOperationException("Unable to capture repository state because git status failed.");
+        }
         var lines = status.Output.Replace("\r", "", StringComparison.Ordinal).Split('\n', StringSplitOptions.RemoveEmptyEntries);
         var branchLine = lines.FirstOrDefault(x => x.StartsWith("## ", StringComparison.Ordinal));
         var branch = branchLine?[3..].Split("...", StringSplitOptions.None)[0];

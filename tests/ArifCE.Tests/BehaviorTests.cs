@@ -27,6 +27,22 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Git_snapshot_fails_closed_when_repository_state_cannot_be_read()
+    {
+        var notARepository = Path.Combine(Path.GetTempPath(), "arifce-not-a-repository", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(notARepository);
+        try
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => new GitInspector().CaptureAsync(notARepository));
+            Assert.Contains("git status failed", exception.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(notARepository, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Incremental_index_tracks_added_changed_and_removed_canonical_files()
     {
         await Service.InitializeAsync(root, false);
