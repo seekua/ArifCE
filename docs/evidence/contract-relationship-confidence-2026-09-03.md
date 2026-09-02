@@ -20,4 +20,6 @@ Phase 65 projects the strongest direct relationship between a candidate and the 
 
 Historical contracts remain snapshots with their original labels; they are not silently rewritten. Recreate a contract to obtain corrected labels. Candidate confidence is advisory: acceptance and evidence freshness continue to use their own verification rules and exact/structural closure.
 
-Remote CI evidence is appended after the implementation commit is pushed.
+## Remote proof
+
+Implementation commit `dd26ff9` passed [GitHub Actions run 33688503940](https://github.com/seekua/ArifCE/actions/runs/33688503940). Windows, Ubuntu, and macOS build/test/package jobs and all five self-contained binary targets succeeded. Phase 65 is closed against this implementation.

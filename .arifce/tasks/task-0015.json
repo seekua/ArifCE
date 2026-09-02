@@ -3,7 +3,7 @@
   "id": "TASK-0015",
   "title": "Preserve relationship confidence in change contracts",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "MEDIUM",
   "createdAtUtc": "2026-09-02T21:57:36.1747476+00:00"
 }

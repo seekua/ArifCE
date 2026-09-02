@@ -95,7 +95,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 62: replace C# declaration regex scanning with a Roslyn syntax adapter and version derived graphs.
 - [x] Phase 63: expose parser-backed C# call candidates for graph exploration while retaining their heuristic, non-trust status.
 - [x] Phase 64: record exact C# type-member ownership in the disposable graph without inferring semantic dependencies.
-- [ ] Phase 65: preserve direct relationship confidence in canonical change-contract impact and related-test entries. Implemented and locally tested; remote CI pending.
+- [x] Phase 65: preserve direct relationship confidence in canonical change-contract impact and related-test entries; verified by [CI run 33688503940](https://github.com/seekua/ArifCE/actions/runs/33688503940).
 
 ## Explicit deferrals
 

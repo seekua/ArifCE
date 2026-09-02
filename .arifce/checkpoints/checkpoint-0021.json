@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0021",
+  "summary": "Phases 64 and 65 closed: distinct declaration identities, exact call ownership, and relationship confidence preserved; 83 local tests and remote CI runs 33687771905 and 33688503940 passed.",
+  "snapshot": {
+    "commit": "dd26ff93daef7dc2eb02ec529bd403924481cb64",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "ROADMAP.md",
+      "docs/evidence/contract-relationship-confidence-2026-09-03.md"
+    ],
+    "digest": "0c4271f032620b00c67d8ca1f5c6bf75933fadf1af07c8c207547d4032402dcd"
+  },
+  "createdAtUtc": "2026-09-02T22:12:48.46119+00:00"
+}
