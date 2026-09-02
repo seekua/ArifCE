@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0011",
+  "title": "Reject external symbolic links in Git snapshots",
+  "description": null,
+  "status": "COMPLETED",
+  "risk": "HIGH",
+  "createdAtUtc": "2026-09-02T14:37:09.4051309+00:00"
+}
