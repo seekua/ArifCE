@@ -153,7 +153,7 @@ internal sealed partial class McpServer
         var budget = 4000;
         if (arguments.TryGetProperty("budget", out var value) && (!value.TryGetInt32(out budget) || budget is < 1 or > 20000)) throw new McpException(-32602, "budget must be an integer from 1 to 20000.");
         var context = await new LlmContextComposer(new IndexStore()).ComposeAsync(root, task, budget);
-        return JsonSerializer.Serialize(new { context.Task, context.Content, context.EstimatedTokens, context.Sources });
+        return JsonSerializer.Serialize(context, JsonDefaults.Options);
     }
 
     private static async Task<string> LlmProvidersAsync()

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using ArifCE.Core;
 using ArifCE.Infrastructure;
 using Xunit;
@@ -189,10 +190,51 @@ public sealed class LlmProviderTests
         try
         {
             Directory.CreateDirectory(Path.Combine(root.FullName, ".arifce", "decisions"));
-            await File.WriteAllTextAsync(Path.Combine(root.FullName, ".arifce", "decisions", "adr.json"), "database migration decision context");
+            var decision = new DecisionRecord(1, "ADR-0001", "Database migration", "Use deterministic migration context", "Schema compatibility", "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UnixEpoch);
+            await File.WriteAllTextAsync(Path.Combine(root.FullName, ".arifce", "decisions", "adr-0001.json"), JsonSerializer.Serialize(decision, JsonDefaults.Options));
             var index = new IndexStore(); await index.RebuildAsync(root.FullName);
-            var context = await new LlmContextComposer(index).ComposeAsync(root.FullName, "database migration", 100);
-            Assert.Contains("adr.json", context.Sources[0]); Assert.True(context.EstimatedTokens <= 100);
+            var context = await new LlmContextComposer(index).ComposeAsync(root.FullName, "database migration", 250);
+            Assert.Contains("adr-0001.json", context.Sources[0]); Assert.True(context.EstimatedTokens <= 250);
+            var selected = Assert.Single(context.Items, item => item.Included);
+            Assert.Equal("CURRENT", selected.Freshness);
+            Assert.Contains("fits token budget", selected.Reason);
+        }
+        finally { root.Delete(true); }
+    }
+
+    [Fact]
+    public async Task Context_assembly_explains_trust_and_budget_rejections_deterministically()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-context-explain-");
+        try
+        {
+            var canonical = new CanonicalStore();
+            var snapshot = new GitSnapshot("abc", "main", false, [], "digest");
+            await canonical.WriteAsync(root.FullName, "decisions", "ADR-0001", new DecisionRecord(1, "ADR-0001", "Token migration", "Use the current token migration", "Current architecture", "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UnixEpoch));
+            await canonical.WriteAsync(root.FullName, "decisions", "ADR-0002", new DecisionRecord(1, "ADR-0002", "Legacy token migration", "Use the legacy token migration", "Historical", "SUPERSEDED", "USER_CONFIRMED", "ADR-0001", DateTimeOffset.UnixEpoch));
+            await canonical.WriteAsync(root.FullName, "claims", "CLAIM-0001", new ClaimRecord(1, "CLAIM-0001", "Token migration remains safe", ClaimStatus.Stale, RiskLevel.High, snapshot, [], DateTimeOffset.UnixEpoch));
+            var index = new IndexStore();
+            await index.RebuildAsync(root.FullName);
+            var composer = new LlmContextComposer(index);
+
+            var first = await composer.ComposeAsync(root.FullName, "token migration", 1000);
+            var second = await composer.ComposeAsync(root.FullName, "token migration", 1000);
+
+            Assert.Equal(3, first.Telemetry.CandidateRecords);
+            Assert.Equal(1, first.Telemetry.SelectedRecords);
+            Assert.Equal(1, first.Telemetry.StaleRejected);
+            Assert.Equal(1, first.Telemetry.SupersededRejected);
+            Assert.Contains(first.Items, item => item.Path.Contains("adr-0001", StringComparison.Ordinal) && item.Included);
+            Assert.Contains(first.Items, item => item.Freshness == "STALE" && !item.Included && item.Reason.Contains("re-verification", StringComparison.Ordinal));
+            Assert.Contains(first.Items, item => item.Freshness == "SUPERSEDED" && !item.Included && item.Reason.Contains("ADR-0001", StringComparison.Ordinal));
+            Assert.Equal(
+                first.Items.Select(item => (item.Path, item.Included, item.Freshness, item.Priority, item.Reason)),
+                second.Items.Select(item => (item.Path, item.Included, item.Freshness, item.Priority, item.Reason)));
+
+            var tiny = await composer.ComposeAsync(root.FullName, "token migration", 1);
+            Assert.Equal(0, tiny.Telemetry.SelectedRecords);
+            Assert.Equal(1, tiny.Telemetry.BudgetRejected);
+            Assert.Empty(tiny.Content);
         }
         finally { root.Delete(true); }
     }

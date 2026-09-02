@@ -21,7 +21,7 @@ internal static class Cli
                 case "doctor": Console.WriteLine(await service.DoctorAsync(root, args.Contains("--repair", StringComparer.Ordinal))); break;
                 case "rebuild": await index.RebuildAsync(root); Console.WriteLine("Index rebuilt from canonical project intelligence."); break;
                 case "search": Require(args, 2, "search <query>"); await Search(index, root, string.Join(' ', args[1..])); break;
-                case "context": Require(args, 2, "context <task> [--budget N]"); await Context(index, root, args); break;
+                case "context": Require(args, 2, "context [explain] <task> [--budget N]"); await Context(index, root, args); break;
                 case "task": await TaskCommand(service, root, args); break;
                 case "decision": await DecisionCommand(service, root, args); break;
                 case "attempt": await AttemptCommand(service, root, args); break;
@@ -102,7 +102,30 @@ internal static class Cli
         }
     }
     private static async Task JournalCommand(JournalStore journal, string root, string[] args) { Require(args, 2, "journal rotate [--max-bytes N]"); if (args[1] != "rotate") throw new ArgumentException("Unknown journal action."); var marker = Array.IndexOf(args, "--max-bytes"); var max = marker >= 0 && marker + 1 < args.Length && long.TryParse(args[marker + 1], out var parsed) && parsed > 0 ? parsed : 5_000_000; var archive = await journal.RotateAsync(root, max); Console.WriteLine(archive is null ? "Journal is below the rotation threshold." : $"Journal archived: {archive}"); }
-    private static async Task Context(IndexStore index, string root, string[] args) { var marker = Array.IndexOf(args, "--budget"); var budget = marker >= 0 && marker + 1 < args.Length && int.TryParse(args[marker + 1], out var n) && n > 0 ? n : 8000; var task = string.Join(' ', args.Skip(1).Take(marker < 0 ? args.Length - 1 : marker - 1)); var terms = System.Text.RegularExpressions.Regex.Matches(task, "[A-Za-z0-9_]+", System.Text.RegularExpressions.RegexOptions.CultureInvariant).Select(x => x.Value).Distinct(StringComparer.OrdinalIgnoreCase).Take(12).ToArray(); if (terms.Length == 0) throw new ArgumentException("Context task must contain searchable terms."); var query = string.Join(" OR ", terms.Select(x => $"\"{x}\"")); var used = 0; var snippetTokens = Math.Clamp(budget / Math.Max(terms.Length, 1), 20, 120); Console.WriteLine($"Context Budget: {budget}\n\nIncluded"); foreach (var item in await index.SearchAsync(root, query, 50, default, snippetTokens)) { var estimate = (int)Math.Ceiling(item.Snippet.Length / 4d); if (used + estimate > budget) continue; used += estimate; Console.WriteLine($"{item.Path}\t{estimate} tokens\tlexical term match, score {item.Score:F3}\n{item.Snippet}"); } Console.WriteLine($"\nEstimated total: {used}"); }
+    private static async Task Context(IndexStore index, string root, string[] args)
+    {
+        var explain = args.Length > 1 && args[1].Equals("explain", StringComparison.OrdinalIgnoreCase);
+        var taskStart = explain ? 2 : 1;
+        if (args.Length <= taskStart) throw new ArgumentException("context [explain] <task> [--budget N]");
+        var marker = Array.IndexOf(args, "--budget");
+        var budget = marker >= 0 && marker + 1 < args.Length && int.TryParse(args[marker + 1], out var parsed) && parsed > 0 ? parsed : 8000;
+        var taskEnd = marker >= 0 ? marker : args.Length;
+        var task = string.Join(' ', args[taskStart..taskEnd]);
+        var context = await new LlmContextComposer(index).ComposeAsync(root, task, budget);
+        Console.WriteLine($"Context budget: {budget}\nCandidate records: {context.Telemetry.CandidateRecords}\nSelected records: {context.Telemetry.SelectedRecords}\nRejected records: {context.Telemetry.RejectedRecords}\nCandidate tokens: {context.Telemetry.CandidateTokens}\nSelected tokens: {context.Telemetry.SelectedTokens}");
+        if (!explain)
+        {
+            Console.WriteLine($"Sources: {string.Join(", ", context.Sources)}\n\n{context.Content}");
+            return;
+        }
+
+        Console.WriteLine("\nContext explanation");
+        foreach (var item in context.Items)
+        {
+            Console.WriteLine($"\n{(item.Included ? "INCLUDED" : "EXCLUDED")} {item.Path}\nKind: {item.Kind}\nPriority: {item.Priority}\nFreshness: {item.Freshness}\nScore: {item.Score:F3}\nCost: {item.EstimatedTokens} tokens\nReason: {item.Reason}");
+        }
+        Console.WriteLine($"\nRejected by budget: {context.Telemetry.BudgetRejected}\nRejected as stale: {context.Telemetry.StaleRejected}\nRejected as superseded: {context.Telemetry.SupersededRejected}\nRejected as invalid: {context.Telemetry.InvalidRejected}\nAssembly latency: {context.Telemetry.AssemblyMilliseconds} ms");
+    }
     private static async Task Why(IndexStore index, string root, string query) { var hits = await index.SearchAsync(root, $"\"{query.Replace("\"", "\"\"")}\"", 10); if (hits.Count == 0) Console.WriteLine("No recorded provenance or rationale was found. Historical rationale: unknown."); else foreach (var hit in hits) Console.WriteLine($"{hit.Path}: {hit.Snippet}"); }
     private static async Task TaskCommand(ProjectService service, string root, string[] args) { Require(args, 3, "task create <title> | task status <id> | task complete <id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateTaskAsync(root, string.Join(' ', args[2..]), RiskLevel.Medium)).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetTaskAsync(root, args[2]) ?? throw new InvalidOperationException("Task not found."), JsonDefaults.Options)); break; case "complete": Console.WriteLine((await service.CompleteTaskAsync(root, args[2])).Status); break; default: throw new ArgumentException("Unknown task action."); } }
     private static async Task ClaimCommand(ProjectService service, string root, string[] args) { Require(args, 3, "claim create <statement> | claim status <id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateClaimAsync(root, string.Join(' ', args[2..]), RiskLevel.Medium)).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetClaimAsync(root, args[2]) ?? throw new InvalidOperationException("Claim not found."), JsonDefaults.Options)); break; default: throw new ArgumentException("Unknown claim action."); } }
@@ -141,7 +164,7 @@ internal static class Cli
             var budget = marker >= 0 && marker + 1 < args.Length && int.TryParse(args[marker + 1], out var parsed) ? parsed : 4000;
             var task = string.Join(' ', args.Skip(2).Take(marker >= 0 ? marker - 2 : args.Length - 2));
             var context = await new LlmContextComposer(new IndexStore()).ComposeAsync(root, task, budget);
-            Console.WriteLine($"Context budget: {budget}\nEstimated tokens: {context.EstimatedTokens}\nSources: {string.Join(", ", context.Sources)}\n\n{context.Content}");
+            Console.WriteLine($"Context budget: {budget}\nEstimated tokens: {context.EstimatedTokens}\nCandidates: {context.Telemetry.CandidateRecords}\nSelected: {context.Telemetry.SelectedRecords}\nRejected: {context.Telemetry.RejectedRecords}\nSources: {string.Join(", ", context.Sources)}\n\n{context.Content}");
             return;
         }
         if (args[1].Equals("review", StringComparison.OrdinalIgnoreCase))
@@ -205,5 +228,5 @@ internal static class Cli
         var execution = await orchestrator.ExecuteAsync(root, new LlmRequest(args[2], prompt), Option(args, "--claim") ?? "CLAIM-UNASSIGNED");
         Console.WriteLine($"{execution.Route.Response.Text}\n\nProvider: {execution.Route.Response.ProviderId}\nModel: {execution.Route.Response.Model}\nTokens: {execution.Route.Response.Usage.TotalTokens}\nEstimated cost: {execution.Route.EstimatedCost:0.########}\nEvidence: {execution.Evidence.Id}");
     }
-    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context, codegraph build|query, contract create|status, run start|event|finish|status, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, trust refresh, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, llm review, llm benchmark, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
+    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context [explain], codegraph build|query, contract create|status, run start|event|finish|status, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, trust refresh, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, llm review, llm benchmark, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
 }

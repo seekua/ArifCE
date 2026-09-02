@@ -39,10 +39,11 @@ Adding a missing root or a duplicate root fails. Removing an entry never deletes
 ```text
 arifce search <query>
 arifce context <task> [--budget <estimated-tokens>]
+arifce context explain <task> [--budget <estimated-tokens>]
 arifce why <path-or-id>
 ```
 
-Search uses SQLite FTS5. Context selection uses deterministic lexical matches, reports inclusion reasons and estimated token costs, and does not exceed a positive budget. `why` reports known provenance or explicitly says the historical rationale is unknown.
+Search uses SQLite FTS5. Context assembly uses deterministic lexical candidates, record-type priority, trust-state filtering, and a positive token budget. It updates the disposable index before retrieval and reports candidate, selected, rejected, and token totals. `context explain` lists every candidate with its score, priority, freshness, cost, disposition, and reason. Stale evidence and claims, superseded decisions, non-current acceptances, and malformed typed records are rejected; disputed and unverified claims remain visible only with an explicit warning. `why` reports known provenance or explicitly says the historical rationale is unknown.
 
 ## Work and continuity
 
@@ -158,6 +159,6 @@ arifce llm review <claim> <prompt> --reviewer <name> --rationale <text> --approv
 arifce llm benchmark <prompt> --expected <text>
 ```
 
-`llm context` previews indexed repository memory under a token budget. `llm run --with-context` injects that bounded memory into the prompt automatically. Runs use enabled profiles with fallback and persist canonical evidence. API keys remain local and should be supplied through an environment variable or stdin.
+`llm context` previews the same trust-aware context assembly used by `context` and reports its telemetry. `llm run --with-context` injects that bounded memory into the prompt automatically. The MCP `arifce_context` tool returns the same structured items and telemetry rather than maintaining a separate selection path. Runs use enabled profiles with fallback and persist canonical evidence. API keys remain local and should be supplied through an environment variable or stdin.
 
 `llm benchmark` runs a deterministic comparison case and reports provider, expected-token recall (`TokenRecall`), latency, tokens, and estimated cost. The pass threshold is a coarse smoke-test threshold, not a quality score.

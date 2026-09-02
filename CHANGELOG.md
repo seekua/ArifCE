@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Unify context assembly across CLI, MCP, and provider prompts with deterministic record priority, trust filtering, budget/rejection telemetry, and `context explain` diagnostics.
 - Publish the first complete ten-pair engineering benchmark with withheld evaluators, all negative outcomes, and an explicit inconclusive verdict due to permission variance and unavailable token telemetry.
 - Defined the V0.1 product, domain, storage, lifecycle, and CLI contracts.
 - Added the .NET 10 core, canonical project store, JSONL journal, SQLite FTS5 index, Git snapshots, retrieval, claims/evidence, verification, handoffs, refactor guards, redaction, diagnostics, agent adapters, and behavior tests.
