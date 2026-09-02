@@ -19,4 +19,8 @@ The packaged smoke script creates the same fixture and requires `arifce codegrap
 
 ## Limits
 
-This layer does not resolve overloads, polymorphism, extension methods, dynamic dispatch, aliases, external assemblies, or compiler symbols. A query result is a candidate for review, never verification proof. Remote CI evidence is appended after the Phase 63 implementation commit is pushed.
+This layer does not resolve overloads, polymorphism, extension methods, dynamic dispatch, aliases, external assemblies, or compiler symbols. A query result is a candidate for review, never verification proof.
+
+## Remote proof
+
+Implementation commit `c8e71b0` passed the full Windows, Ubuntu, and macOS build/test/package matrix together with all five self-contained binary smoke targets in [GitHub Actions run 33685946240](https://github.com/seekua/ArifCE/actions/runs/33685946240).

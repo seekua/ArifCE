@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 through 62 are closed with their recorded remote CI evidence. Phase 63 is locally verified and pending remote CI. The disposable C# graph uses a Roslyn syntax adapter and generator version 4. Parser-backed `CALLS` candidates and heuristic references remain outside trusted closure.
+Phase 56 through 63 are closed with their recorded remote CI evidence. Phase 63 implementation commit `c8e71b0` passed remote CI run 33685946240. The disposable C# graph uses a Roslyn syntax adapter and generator version 4. Parser-backed `CALLS` candidates and heuristic references remain outside trusted closure.
 
 ## Blockers
 
@@ -14,4 +14,4 @@ No implementation or release blocker is known. Heuristic caller/test relationshi
 
 ## Next steps
 
-Await Phase 63 remote CI evidence, then choose the next owner-approved V0.9 trust objective from the explicit deferrals. Do not expand heuristic edges into automatic trust decisions without a new false-invalidation policy and measured evidence.
+Choose the next owner-approved V0.9 trust objective from the explicit deferrals. Do not expand heuristic edges into automatic trust decisions without a new false-invalidation policy and measured evidence.
