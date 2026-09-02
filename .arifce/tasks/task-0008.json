@@ -3,7 +3,7 @@
   "id": "TASK-0008",
   "title": "Disambiguate deterministic code graph symbol targets",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "HIGH",
   "createdAtUtc": "2026-09-02T11:51:08.2919308+00:00"
 }

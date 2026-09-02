@@ -1,6 +1,6 @@
 # Path-qualified code-graph target evidence
 
-**Status:** implemented and locally verified; remote CI evidence is added after the commit is observed in the three-OS matrix.
+**Status:** implemented and verified locally and remotely.
 
 ## Problem
 
@@ -23,3 +23,4 @@ Simple symbol names remain supported for discovery and backward compatibility. A
 - `dotnet build ArifCE.slnx -c Release --no-restore -m:1` completed with 0 warnings and 0 errors.
 - `dotnet test ArifCE.slnx -c Release --no-build --disable-build-servers -m:1` passed.
 - `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/package-smoke.ps1` passed. Its packed-tool fixture creates two same-name declarations, queries the qualified target, verifies a qualified contract, and rejects a closure that contains the unrelated file.
+- [GitHub Actions run 33627400656](https://github.com/seekua/ArifCE/actions/runs/33627400656) passed the Windows, Ubuntu, and macOS build/test/package jobs and all five self-contained native CLI targets for commit `2fd47ca`.
