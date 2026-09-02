@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0013",
+  "title": "Keep C# member ownership structural",
+  "decision": "Record syntax-tree type-to-member containment for graph exploration and trusted structure without inferring semantic dependencies.",
+  "historicalRationale": "C# declarations have exact lexical parents, unlike caller resolution; this relationship adds useful structure without promoting heuristic links.",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-09-02T21:43:39.6301284+00:00"
+}

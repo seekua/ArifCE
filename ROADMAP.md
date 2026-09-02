@@ -94,6 +94,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 61: confine Git snapshot paths to the repository root and reject traversal before hashing file content.
 - [x] Phase 62: replace C# declaration regex scanning with a Roslyn syntax adapter and version derived graphs.
 - [x] Phase 63: expose parser-backed C# call candidates for graph exploration while retaining their heuristic, non-trust status.
+- [x] Phase 64: record exact C# type-member ownership in the disposable graph without inferring semantic dependencies.
 
 ## Explicit deferrals
 

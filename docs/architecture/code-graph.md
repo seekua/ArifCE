@@ -4,12 +4,12 @@ ArifCE builds a disposable structural graph at `.arifce/index/code-graph.json`. 
 
 The derived document records a SHA-256 digest over normalized `.cs` and `.csproj` paths and contents plus a graph-generator version. Every graph read checks both. Source edits, additions, deletions, renames, and scanner upgrades trigger an automatic atomic rebuild before a query or change contract can consume the graph. Legacy documents without a digest/version and malformed derived JSON are rebuilt rather than trusted. A build compares the source digest before and after scanning and retries a bounded number of times; continuously changing input fails explicitly instead of publishing a mixed snapshot.
 
-The C# declaration adapter uses `Microsoft.CodeAnalysis.CSharp` only inside this disposable graph layer. It records C# files, test files, types, methods, constructors, projects, project references, symbol references, and related-test candidates. Canonical repository records and trust policy do not depend on Roslyn.
+The C# declaration adapter uses `Microsoft.CodeAnalysis.CSharp` only inside this disposable graph layer. It records C# files, test files, types, methods, constructors, exact lexical type-member containment, projects, project references, symbol references, and related-test candidates. Canonical repository records and trust policy do not depend on Roslyn.
 
 Every relationship carries a confidence label:
 
 - `EXACT`: filesystem or MSBuild project-reference structure.
-- `STRUCTURAL`: deterministic C# declaration scanning.
+- `STRUCTURAL`: deterministic C# declaration scanning and lexical `CONTAINS` ownership.
 - `HEURISTIC`: identifier occurrence or parser-backed invocation candidate that may indicate a reference, related test, or call.
 
 Heuristic edges are impact candidates, not proof. They must not independently verify a claim or accept a change. The parser-backed declaration adapter recognizes constructors, overload-specific graph IDs, explicit-interface methods, and simple invocation targets. `CALLS` edges identify the declaring method and matching same-name candidates without semantic binding; they do not resolve overloads, dynamic dispatch, extensions, or external symbols. Operators, semantic caller/callee resolution, compiler-bound symbol references, and non-C# languages remain incomplete.

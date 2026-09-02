@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0014",
+  "title": "Record exact C# type member ownership",
+  "description": null,
+  "status": "OPEN",
+  "risk": "LOW",
+  "createdAtUtc": "2026-09-02T21:42:53.6565539+00:00"
+}

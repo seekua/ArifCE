@@ -17,7 +17,7 @@ public sealed record TrustedCodeGraphClosure(string Target, IReadOnlyList<string
 
 public sealed partial class CodeGraphStore
 {
-    private const int CurrentGeneratorVersion = 4;
+    private const int CurrentGeneratorVersion = 5;
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { ".git", ".arifce", "bin", "obj", "artifacts", "node_modules" };
 
     public Task<CodeGraphDocument> BuildAsync(string root, CancellationToken cancellationToken = default) => BuildStableAsync(root, 0, cancellationToken);
@@ -44,6 +44,7 @@ public sealed partial class CodeGraphStore
                 var id = $"type:{relative}:{line}:{name}";
                 nodes.Add(new CodeGraphNode(id, "TYPE", name, relative, line, "STRUCTURAL"));
                 edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
+                AddContainingTypeEdge(tree, declaration, relative, id, edges);
             }
             foreach (var declaration in syntax.DescendantNodes().OfType<MethodDeclarationSyntax>())
             {
@@ -53,6 +54,7 @@ public sealed partial class CodeGraphStore
                 var id = $"method:{relative}:{line}:{identity}";
                 nodes.Add(new CodeGraphNode(id, IsTestMethod(declaration) ? "TEST" : "METHOD", name, relative, line, "STRUCTURAL"));
                 edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
+                AddContainingTypeEdge(tree, declaration, relative, id, edges);
             }
             foreach (var declaration in syntax.DescendantNodes().OfType<ConstructorDeclarationSyntax>())
             {
@@ -61,6 +63,7 @@ public sealed partial class CodeGraphStore
                 var id = $"constructor:{relative}:{line}:{name}({string.Join(',', declaration.ParameterList.Parameters.Select(parameter => parameter.Type?.ToString() ?? "?"))})";
                 nodes.Add(new CodeGraphNode(id, "CONSTRUCTOR", name, relative, line, "STRUCTURAL"));
                 edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
+                AddContainingTypeEdge(tree, declaration, relative, id, edges);
             }
         }
 
@@ -229,6 +232,14 @@ public sealed partial class CodeGraphStore
         ConstructorDeclarationSyntax constructor => tree.GetLineSpan(constructor.Identifier.Span).StartLinePosition.Line + 1,
         _ => tree.GetLineSpan(declaration.Span).StartLinePosition.Line + 1
     };
+    private static void AddContainingTypeEdge(SyntaxTree tree, SyntaxNode declaration, string relative, string childId, ICollection<CodeGraphEdge> edges)
+    {
+        var parent = declaration.Parent?.AncestorsAndSelf().OfType<BaseTypeDeclarationSyntax>().FirstOrDefault();
+        if (parent is null) return;
+        var line = tree.GetLineSpan(parent.Identifier.Span).StartLinePosition.Line + 1;
+        var parentId = $"type:{relative}:{line}:{parent.Identifier.ValueText}";
+        edges.Add(new CodeGraphEdge(parentId, childId, "CONTAINS", "STRUCTURAL"));
+    }
     private static bool IsTestFile(string path) => path.Contains("test", StringComparison.OrdinalIgnoreCase) || path.EndsWith("Tests.cs", StringComparison.OrdinalIgnoreCase);
     private static bool IsExcluded(string root, string path) => Relative(root, path).Split('/').Any(ExcludedDirectories.Contains);
     private static bool IsTestMethod(MethodDeclarationSyntax declaration) => declaration.AttributeLists.SelectMany(list => list.Attributes).Any(attribute => attribute.Name.ToString() is "Fact" or "FactAttribute" or "Theory" or "TheoryAttribute" or "Test" or "TestAttribute");

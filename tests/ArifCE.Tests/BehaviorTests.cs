@@ -435,13 +435,13 @@ public sealed class BehaviorTests : IDisposable
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         var recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
         Assert.False(string.IsNullOrWhiteSpace(recovered!.SourceDigest));
-        Assert.Equal(4, recovered.GeneratorVersion);
+        Assert.Equal(5, recovered.GeneratorVersion);
 
         var outdatedGenerator = recovered with { GeneratorVersion = 1 };
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(outdatedGenerator, JsonDefaults.Options));
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
-        Assert.Equal(4, recovered!.GeneratorVersion);
+        Assert.Equal(5, recovered!.GeneratorVersion);
 
         var structurallyInvalid = new CodeGraphDocument(1, DateTimeOffset.UtcNow, null!, null!, recovered.SourceDigest, recovered.GeneratorVersion);
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(structurallyInvalid, JsonDefaults.Options));
@@ -475,6 +475,26 @@ public sealed class BehaviorTests : IDisposable
         var methods = graph.Nodes.Where(node => node.Kind is "METHOD" or "TEST").Select(node => node.Name).Order(StringComparer.Ordinal).ToArray();
         Assert.Equal(["Configure", "RealMethod", "Real_test"], methods);
         Assert.DoesNotContain(methods, name => name is "async" or "is" or "or" or "Where" or "Select" or "Count" or "MapGet" or "WriteAsync");
+    }
+
+    [Fact]
+    public async Task Code_graph_records_exact_type_member_ownership_for_nested_declarations()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "OwnershipFixture.cs"), "public sealed class Outer { public Outer() { } public void TopLevel() { } public sealed class Inner { public void Nested() { } } }");
+
+        var graph = await new CodeGraphStore().BuildAsync(root);
+        var outer = Assert.Single(graph.Nodes, node => node.Kind == "TYPE" && node.Name == "Outer");
+        var inner = Assert.Single(graph.Nodes, node => node.Kind == "TYPE" && node.Name == "Inner");
+        var constructor = Assert.Single(graph.Nodes, node => node.Kind == "CONSTRUCTOR" && node.Name == "Outer");
+        var topLevel = Assert.Single(graph.Nodes, node => node.Kind == "METHOD" && node.Name == "TopLevel");
+        var nested = Assert.Single(graph.Nodes, node => node.Kind == "METHOD" && node.Name == "Nested");
+
+        Assert.Contains(graph.Edges, edge => edge.From == outer.Id && edge.To == constructor.Id && edge.Kind == "CONTAINS" && edge.Confidence == "STRUCTURAL");
+        Assert.Contains(graph.Edges, edge => edge.From == outer.Id && edge.To == topLevel.Id && edge.Kind == "CONTAINS" && edge.Confidence == "STRUCTURAL");
+        Assert.Contains(graph.Edges, edge => edge.From == outer.Id && edge.To == inner.Id && edge.Kind == "CONTAINS" && edge.Confidence == "STRUCTURAL");
+        Assert.Contains(graph.Edges, edge => edge.From == inner.Id && edge.To == nested.Id && edge.Kind == "CONTAINS" && edge.Confidence == "STRUCTURAL");
     }
 
     [Fact]
