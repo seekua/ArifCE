@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0008",
+  "taskId": "TASK-0005",
+  "approach": "Pass unsupported --risk option to task create",
+  "result": "failed",
+  "reason": "The task command treated the option as title text and used its default MEDIUM risk; canonical state was corrected before commit.",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-09-02T10:15:58.6115413+00:00"
+}

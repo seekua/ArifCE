@@ -66,6 +66,8 @@ try {
         Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\GraphFixture.cs') -Value 'public sealed class GraphFixture { public void FreshGraphSymbol() { } }'
         $graphQuery = (& $executable codegraph query FreshGraphSymbol | Out-String)
         if ($LASTEXITCODE -ne 0 -or $graphQuery -notmatch 'METHOD\s+FreshGraphSymbol') { throw 'Packaged code-graph query did not rebuild after a source edit.' }
+        $graphDocument = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory '.arifce\index\code-graph.json') | ConvertFrom-Json
+        if ($graphDocument.generatorVersion -ne 2) { throw 'Packaged code graph does not carry the current generator version.' }
         $architectureClaimId = (& $executable claim create 'The packaged CLI verifies an architecture boundary' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
         $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)

@@ -131,7 +131,7 @@ arifce codegraph query Calculate
 arifce contract create Calculate --risk HIGH --invariant "Financial rounding remains unchanged"
 ```
 
-The code graph is disposable and deterministic. Queries and contract creation verify its digest against current `.cs` and `.csproj` paths and contents, then automatically rebuild it after an edit, addition, deletion, or rename. Corrupt and legacy graph files are rebuilt rather than trusted. Structural and heuristic relationships are impact candidates, not verification evidence.
+The code graph is disposable and deterministic. Queries and contract creation verify its digest against current `.cs` and `.csproj` paths and contents, then automatically rebuild it after an edit, addition, deletion, rename, or scanner-version upgrade. Corrupt and legacy graph files are rebuilt rather than trusted. Structural and heuristic relationships are impact candidates, not verification evidence. The dependency-free C# scanner recognizes common type and method declarations but is not a complete compiler model.
 
 ## Refactor campaigns
 

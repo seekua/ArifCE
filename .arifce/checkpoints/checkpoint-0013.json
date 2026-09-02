@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0013",
+  "summary": "Phase 56 graph precision implementation passed 71 tests, package smoke, bounded 43-to-0 false-positive audit, and local policy gates; remote CI pending",
+  "snapshot": {
+    "commit": "85e6bfcc62357dbbdc8546fae6c7f9eedd4699e5",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "CHANGELOG.md",
+      "ROADMAP.md",
+      "docs/README.md",
+      "docs/USER-GUIDE.md",
+      "docs/architecture/code-graph.md",
+      "docs/concepts/change-contracts.md",
+      "docs/evidence/code-graph-precision-2026-09-02.md",
+      "docs/reference/cli.md",
+      "scripts/package-smoke.ps1",
+      "src/ArifCE.Infrastructure/CodeGraph.cs",
+      "tests/ArifCE.Tests/BehaviorTests.cs"
+    ],
+    "digest": "74cdfcaebc43c910c6bb01c14cba04726d888b06a45919ae188f35e72d514b45"
+  },
+  "createdAtUtc": "2026-09-02T10:11:28.7979697+00:00"
+}

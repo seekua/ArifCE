@@ -86,6 +86,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 53: add backward-compatible file and directory dependency scopes to evidence freshness, inferred by deterministic verification commands and optionally declared by generic verification.
 - [x] Phase 54: detect canonical decision/claim duplicates and conflicts, preserve explicit decision supersession, and surface unresolved knowledge warnings in context and handoffs.
 - [x] Phase 55: make deterministic code-graph reads verify their source-tree digest and atomically rebuild stale, legacy, or corrupt derived graphs before impact analysis.
+- [x] Phase 56: reduce deterministic C# method-declaration false positives, version the graph generator, and publish a bounded real-repository noise audit before dependency-closure work.
 
 ## Explicit deferrals
 
@@ -93,6 +94,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - **V0.7 release operations:** the versioned release checklist is prepared; tagging, signing, immutable asset attachment, and external package-manager submissions remain maintainer-controlled steps.
 - **Semantic contradiction discovery:** Phase 54 detects normalized same-title decisions and equivalent claim statements deterministically. Differently worded semantic contradictions, automatic winner selection, and LLM-authored consolidation remain deferred because they could manufacture false certainty; unresolved cases require explicit review and supersession.
 - **Dependency-closure evidence:** Phase 55 establishes a trustworthy current code graph but does not silently expand evidence scope from heuristic edges. Contract-linked dependency closure and transitive stale propagation require a separate phase with explicit confidence and false-invalidation rules.
+- **Parser-backed code intelligence:** Phase 56 removes the observed invocation/lambda/pattern false positives without adding a parser dependency. Constructors, operators, tuple-return signatures, explicit-interface methods, overload identity, callers/callees, and non-C# languages remain incomplete; heuristic edges are not eligible to prove dependency closure.
 
 GitHub repository description/topics remain an external account-setting task. No local `GITHUB_TOKEN` is available in this environment, so metadata has not been claimed as updated; repository code and releases continue to be pushed normally. Journal rotation is now implemented with a size threshold and timestamped archive.
 

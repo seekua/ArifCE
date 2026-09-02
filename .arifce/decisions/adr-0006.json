@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0006",
+  "title": "Gate dependency closure on graph precision",
+  "decision": "Reduce deterministic declaration false positives and measure graph output before using heuristic relationships for transitive evidence invalidation",
+  "historicalRationale": "Phase 55 dogfood exposed keyword and invocation nodes that would make automatic dependency closure noisy and potentially misleading",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-09-02T10:02:44.5667853+00:00"
+}

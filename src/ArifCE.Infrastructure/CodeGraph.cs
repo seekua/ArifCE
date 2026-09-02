@@ -8,13 +8,13 @@ namespace ArifCE.Infrastructure;
 
 public sealed record CodeGraphNode(string Id, string Kind, string Name, string Path, int? Line, string Confidence);
 public sealed record CodeGraphEdge(string From, string To, string Kind, string Confidence);
-public sealed record CodeGraphDocument(int SchemaVersion, DateTimeOffset GeneratedAtUtc, IReadOnlyList<CodeGraphNode> Nodes, IReadOnlyList<CodeGraphEdge> Edges, string? SourceDigest = null);
+public sealed record CodeGraphDocument(int SchemaVersion, DateTimeOffset GeneratedAtUtc, IReadOnlyList<CodeGraphNode> Nodes, IReadOnlyList<CodeGraphEdge> Edges, string? SourceDigest = null, int GeneratorVersion = 0);
 public sealed record CodeGraphQueryResult(IReadOnlyList<CodeGraphNode> Matches, IReadOnlyList<CodeGraphNode> RelatedNodes, IReadOnlyList<CodeGraphEdge> Edges);
 
 public sealed partial class CodeGraphStore
 {
+    private const int CurrentGeneratorVersion = 2;
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { ".git", ".arifce", "bin", "obj", "artifacts", "node_modules" };
-    private static readonly HashSet<string> ControlWords = new(StringComparer.Ordinal) { "if", "for", "foreach", "while", "switch", "catch", "using", "lock", "return", "new" };
 
     public Task<CodeGraphDocument> BuildAsync(string root, CancellationToken cancellationToken = default) => BuildStableAsync(root, 0, cancellationToken);
 
@@ -41,7 +41,7 @@ public sealed partial class CodeGraphStore
                     edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
                 }
                 var method = MethodDeclaration().Match(lines[index]);
-                if (method.Success && !ControlWords.Contains(method.Groups[1].Value))
+                if (method.Success)
                 {
                     var name = method.Groups[1].Value;
                     var id = $"method:{relative}:{index + 1}:{name}";
@@ -89,7 +89,7 @@ public sealed partial class CodeGraphStore
             if (attempt >= 2) throw new IOException("Source files kept changing while the deterministic code graph was being built.");
             return await BuildStableAsync(fullRoot, attempt + 1, cancellationToken);
         }
-        var graph = new CodeGraphDocument(1, DateTimeOffset.UtcNow, nodes.DistinctBy(node => node.Id).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray(), edges.Distinct().OrderBy(edge => edge.From, StringComparer.Ordinal).ThenBy(edge => edge.To, StringComparer.Ordinal).ToArray(), sourceDigest);
+        var graph = new CodeGraphDocument(1, DateTimeOffset.UtcNow, nodes.DistinctBy(node => node.Id).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray(), edges.Distinct().OrderBy(edge => edge.From, StringComparer.Ordinal).ThenBy(edge => edge.To, StringComparer.Ordinal).ToArray(), sourceDigest, CurrentGeneratorVersion);
         var path = GraphPath(fullRoot); Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var temporary = path + $".{Guid.NewGuid():N}.tmp";
         await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(graph, JsonDefaults.Options), cancellationToken);
@@ -104,7 +104,7 @@ public sealed partial class CodeGraphStore
         try
         {
             var graph = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options);
-            if (graph is null || graph.SchemaVersion != 1 || graph.Nodes is null || graph.Edges is null || string.IsNullOrWhiteSpace(graph.SourceDigest)) return await BuildAsync(root, cancellationToken);
+            if (graph is null || graph.SchemaVersion != 1 || graph.GeneratorVersion != CurrentGeneratorVersion || graph.Nodes is null || graph.Edges is null || string.IsNullOrWhiteSpace(graph.SourceDigest)) return await BuildAsync(root, cancellationToken);
             var currentDigest = await ComputeSourceDigestAsync(root, cancellationToken);
             return string.Equals(graph.SourceDigest, currentDigest, StringComparison.Ordinal) ? graph : await BuildAsync(root, cancellationToken);
         }
@@ -151,6 +151,6 @@ public sealed partial class CodeGraphStore
 
     [GeneratedRegex(@"\b(?:class|interface|record|struct|enum)\s+([A-Za-z_][A-Za-z0-9_]*)", RegexOptions.CultureInvariant)]
     private static partial Regex TypeDeclaration();
-    [GeneratedRegex(@"\b([A-Za-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*(?:=>|\{|$)", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?:^|[{};])\s*(?:\[[^\]]+\]\s*)*(?:(?:public|private|protected|internal|static|virtual|override|abstract|sealed|async|extern|unsafe|new|partial|readonly)\s+)*(?:[A-Za-z_][A-Za-z0-9_?.]*(?:\s*<[^;{}()]+>)?(?:\[\])?)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:<[^;{}()]+>)?\s*\([^;{}]*\)\s*(?:=>|\{|$)", RegexOptions.CultureInvariant)]
     private static partial Regex MethodDeclaration();
 }

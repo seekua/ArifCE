@@ -410,10 +410,46 @@ public sealed class BehaviorTests : IDisposable
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         var recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
         Assert.False(string.IsNullOrWhiteSpace(recovered!.SourceDigest));
+        Assert.Equal(2, recovered.GeneratorVersion);
 
-        var structurallyInvalid = new CodeGraphDocument(1, DateTimeOffset.UtcNow, null!, null!, recovered.SourceDigest);
+        var outdatedGenerator = recovered with { GeneratorVersion = 1 };
+        await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(outdatedGenerator, JsonDefaults.Options));
+        Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
+        recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
+        Assert.Equal(2, recovered!.GeneratorVersion);
+
+        var structurallyInvalid = new CodeGraphDocument(1, DateTimeOffset.UtcNow, null!, null!, recovered.SourceDigest, recovered.GeneratorVersion);
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(structurallyInvalid, JsonDefaults.Options));
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
+    }
+
+    [Fact]
+    public async Task Code_graph_method_scanner_rejects_invocations_lambdas_and_pattern_keywords()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "PrecisionFixture.cs"), """
+            public sealed class PrecisionFixture
+            {
+                public int RealMethod(int value) {
+                    if (value is (>= 0 and <= 10)) { return Math.Abs(value); }
+                    return Enumerable.Range(0, value)
+                        .Where(item => item > 0)
+                        .Select(item => item)
+                        .Count();
+                }
+                [Fact] public void Real_test() { RealMethod(1); }
+                public Task Configure(WebApplication app) {
+                    app.MapGet("/", async (context) => await context.Response.WriteAsync("ok"));
+                    return Task.CompletedTask;
+                }
+            }
+            """);
+
+        var graph = await new CodeGraphStore().BuildAsync(root);
+        var methods = graph.Nodes.Where(node => node.Kind is "METHOD" or "TEST").Select(node => node.Name).Order(StringComparer.Ordinal).ToArray();
+        Assert.Equal(["Configure", "RealMethod", "Real_test"], methods);
+        Assert.DoesNotContain(methods, name => name is "async" or "is" or "or" or "Where" or "Select" or "Count" or "MapGet" or "WriteAsync");
     }
 
     [Fact]

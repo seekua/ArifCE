@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0005",
+  "title": "Improve deterministic code graph precision for Phase 56",
+  "description": null,
+  "status": "COMPLETED",
+  "risk": "HIGH",
+  "createdAtUtc": "2026-09-02T10:02:41.1710568+00:00"
+}
