@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 through 63 are closed with their recorded remote CI evidence. Phase 64 is locally verified and pending remote CI. The disposable C# graph uses a Roslyn syntax adapter and generator version 5. Exact lexical `CONTAINS` edges represent type-member ownership; parser-backed `CALLS` candidates and heuristic references remain outside trusted closure.
+Phase 56 through 63 are closed with their recorded remote CI evidence. Phase 64 initial commit `5f6772e` passed remote CI run 33687064063. Follow-up same-line declaration identity and call-ownership corrections pass all 82 local tests; corrected remote CI is pending. Graph generator version 6 rebuilds earlier caches. Exact lexical `CONTAINS` edges represent type-member ownership; parser-backed `CALLS` candidates and heuristic references remain outside trusted closure.
 
 ## Blockers
 

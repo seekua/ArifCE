@@ -6,6 +6,8 @@ The derived document records a SHA-256 digest over normalized `.cs` and `.csproj
 
 The C# declaration adapter uses `Microsoft.CodeAnalysis.CSharp` only inside this disposable graph layer. It records C# files, test files, types, methods, constructors, exact lexical type-member containment, projects, project references, symbol references, and related-test candidates. Canonical repository records and trust policy do not depend on Roslyn.
 
+Declaration IDs include the identifier's source offset so identical names and signatures on one line remain separate. Invocation ownership uses the containing declaration's exact syntax span. These are source-snapshot identifiers: edits can change them, and they are not persistent semantic symbol IDs. `CONTAINS` records only direct lexical parentage, including nested types; it is not inheritance or runtime dispatch.
+
 Every relationship carries a confidence label:
 
 - `EXACT`: filesystem or MSBuild project-reference structure.

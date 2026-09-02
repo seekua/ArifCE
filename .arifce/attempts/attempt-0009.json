@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0009",
+  "taskId": "TASK-0014",
+  "approach": "Line-only declaration identity and call ownership",
+  "result": "FAILED",
+  "reason": "Two adversarial regressions failed before the fix: distinct same-line types collapsed from four nodes to two, and two calls were attributed to one wrong owner. Graph IDs now include identifier offsets; call sources use exact declaration spans.",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-09-02T21:53:37.6511322+00:00"
+}

@@ -134,7 +134,7 @@ arifce contract create Calculate --risk HIGH --invariant "Financial rounding rem
 arifce verify CLAIM-0002 --command "dotnet test" --contract CONTRACT-0001
 ```
 
-The code graph is disposable and deterministic. Queries and contract creation verify its digest against current `.cs` and `.csproj` paths and contents, then automatically rebuild it after an edit, addition, deletion, rename, or scanner-version upgrade. Corrupt and legacy graph files are rebuilt rather than trusted. `verify --contract` binds evidence to the contract's exact/structural target closure and records both the closure digest and content digests. A target edit or a new exact transitive project dependent makes that evidence stale; heuristic caller/test candidates never do so automatically. The dependency-free C# scanner recognizes common type and method declarations but is not a complete compiler model.
+The code graph is disposable and deterministic. Queries and contract creation verify its digest against current `.cs` and `.csproj` paths and contents, then automatically rebuild it after an edit, addition, deletion, rename, or scanner-version upgrade. Corrupt and legacy graph files are rebuilt rather than trusted. `verify --contract` binds evidence to the contract's exact/structural target closure and records both the closure digest and content digests. A target edit or a new exact transitive project dependent makes that evidence stale; heuristic caller/test candidates never do so automatically. The Roslyn syntax adapter recognizes C# types, methods, constructors, direct type-member ownership, and invocation candidates. It does not resolve compiler symbols or semantic dependencies.
 
 ## Refactor campaigns
 

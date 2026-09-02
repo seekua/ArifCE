@@ -17,7 +17,7 @@ public sealed record TrustedCodeGraphClosure(string Target, IReadOnlyList<string
 
 public sealed partial class CodeGraphStore
 {
-    private const int CurrentGeneratorVersion = 5;
+    private const int CurrentGeneratorVersion = 6;
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase) { ".git", ".arifce", "bin", "obj", "artifacts", "node_modules" };
 
     public Task<CodeGraphDocument> BuildAsync(string root, CancellationToken cancellationToken = default) => BuildStableAsync(root, 0, cancellationToken);
@@ -28,6 +28,7 @@ public sealed partial class CodeGraphStore
         var sourceDigest = await ComputeSourceDigestAsync(fullRoot, cancellationToken);
         var nodes = new List<CodeGraphNode>();
         var edges = new List<CodeGraphEdge>();
+        var callableIds = new Dictionary<(string Path, int SpanStart), string>();
         var files = Directory.EnumerateFiles(fullRoot, "*.cs", SearchOption.AllDirectories).Where(path => !IsExcluded(fullRoot, path)).Order(StringComparer.Ordinal).ToArray();
         foreach (var file in files)
         {
@@ -41,7 +42,7 @@ public sealed partial class CodeGraphStore
             {
                 var line = tree.GetLineSpan(declaration.Identifier.Span).StartLinePosition.Line + 1;
                 var name = declaration.Identifier.ValueText;
-                var id = $"type:{relative}:{line}:{name}";
+                var id = $"type:{relative}:{line}:{declaration.Identifier.SpanStart}:{name}";
                 nodes.Add(new CodeGraphNode(id, "TYPE", name, relative, line, "STRUCTURAL"));
                 edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
                 AddContainingTypeEdge(tree, declaration, relative, id, edges);
@@ -51,7 +52,8 @@ public sealed partial class CodeGraphStore
                 var line = tree.GetLineSpan(declaration.Identifier.Span).StartLinePosition.Line + 1;
                 var name = declaration.Identifier.ValueText;
                 var identity = $"{name}({string.Join(',', declaration.ParameterList.Parameters.Select(parameter => parameter.Type?.ToString() ?? "?"))})";
-                var id = $"method:{relative}:{line}:{identity}";
+                var id = $"method:{relative}:{line}:{declaration.Identifier.SpanStart}:{identity}";
+                callableIds.Add((relative, declaration.SpanStart), id);
                 nodes.Add(new CodeGraphNode(id, IsTestMethod(declaration) ? "TEST" : "METHOD", name, relative, line, "STRUCTURAL"));
                 edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
                 AddContainingTypeEdge(tree, declaration, relative, id, edges);
@@ -60,7 +62,8 @@ public sealed partial class CodeGraphStore
             {
                 var line = tree.GetLineSpan(declaration.Identifier.Span).StartLinePosition.Line + 1;
                 var name = declaration.Identifier.ValueText;
-                var id = $"constructor:{relative}:{line}:{name}({string.Join(',', declaration.ParameterList.Parameters.Select(parameter => parameter.Type?.ToString() ?? "?"))})";
+                var id = $"constructor:{relative}:{line}:{declaration.Identifier.SpanStart}:{name}({string.Join(',', declaration.ParameterList.Parameters.Select(parameter => parameter.Type?.ToString() ?? "?"))})";
+                callableIds.Add((relative, declaration.SpanStart), id);
                 nodes.Add(new CodeGraphNode(id, "CONSTRUCTOR", name, relative, line, "STRUCTURAL"));
                 edges.Add(new CodeGraphEdge(fileId, id, "DECLARES", "STRUCTURAL"));
                 AddContainingTypeEdge(tree, declaration, relative, id, edges);
@@ -95,13 +98,10 @@ public sealed partial class CodeGraphStore
                 var calledName = InvocationName(invocation);
                 if (calledName is null) continue;
                 var owner = invocation.FirstAncestorOrSelf<BaseMethodDeclarationSyntax>();
-                if (owner is null) continue;
-                var ownerLine = DeclarationLine(tree, owner);
-                var source = nodes.FirstOrDefault(node => node.Path.Equals(relative, StringComparison.OrdinalIgnoreCase) && node.Line == ownerLine && node.Kind is "METHOD" or "TEST" or "CONSTRUCTOR");
-                if (source is null) continue;
-                foreach (var target in symbols.GetValueOrDefault(calledName, []).Where(node => node.Id != source.Id))
+                if (owner is null || !callableIds.TryGetValue((relative, owner.SpanStart), out var sourceId)) continue;
+                foreach (var target in symbols.GetValueOrDefault(calledName, []).Where(node => node.Id != sourceId))
                 {
-                    edges.Add(new CodeGraphEdge(source.Id, target.Id, "CALLS", "HEURISTIC"));
+                    edges.Add(new CodeGraphEdge(sourceId, target.Id, "CALLS", "HEURISTIC"));
                 }
             }
         }
@@ -226,18 +226,12 @@ public sealed partial class CodeGraphStore
         MemberBindingExpressionSyntax member => member.Name.Identifier.ValueText,
         _ => null
     };
-    private static int DeclarationLine(SyntaxTree tree, BaseMethodDeclarationSyntax declaration) => declaration switch
-    {
-        MethodDeclarationSyntax method => tree.GetLineSpan(method.Identifier.Span).StartLinePosition.Line + 1,
-        ConstructorDeclarationSyntax constructor => tree.GetLineSpan(constructor.Identifier.Span).StartLinePosition.Line + 1,
-        _ => tree.GetLineSpan(declaration.Span).StartLinePosition.Line + 1
-    };
     private static void AddContainingTypeEdge(SyntaxTree tree, SyntaxNode declaration, string relative, string childId, ICollection<CodeGraphEdge> edges)
     {
         var parent = declaration.Parent?.AncestorsAndSelf().OfType<BaseTypeDeclarationSyntax>().FirstOrDefault();
         if (parent is null) return;
         var line = tree.GetLineSpan(parent.Identifier.Span).StartLinePosition.Line + 1;
-        var parentId = $"type:{relative}:{line}:{parent.Identifier.ValueText}";
+        var parentId = $"type:{relative}:{line}:{parent.Identifier.SpanStart}:{parent.Identifier.ValueText}";
         edges.Add(new CodeGraphEdge(parentId, childId, "CONTAINS", "STRUCTURAL"));
     }
     private static bool IsTestFile(string path) => path.Contains("test", StringComparison.OrdinalIgnoreCase) || path.EndsWith("Tests.cs", StringComparison.OrdinalIgnoreCase);

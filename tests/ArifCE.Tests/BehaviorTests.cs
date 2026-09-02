@@ -435,13 +435,13 @@ public sealed class BehaviorTests : IDisposable
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         var recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
         Assert.False(string.IsNullOrWhiteSpace(recovered!.SourceDigest));
-        Assert.Equal(5, recovered.GeneratorVersion);
+        Assert.Equal(6, recovered.GeneratorVersion);
 
-        var outdatedGenerator = recovered with { GeneratorVersion = 1 };
+        var outdatedGenerator = recovered with { GeneratorVersion = 5 };
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(outdatedGenerator, JsonDefaults.Options));
         Assert.Contains((await store.QueryAsync(root, "Calculate")).Matches, node => node.Name == "Calculate");
         recovered = JsonSerializer.Deserialize<CodeGraphDocument>(await File.ReadAllTextAsync(graphPath), JsonDefaults.Options);
-        Assert.Equal(5, recovered!.GeneratorVersion);
+        Assert.Equal(6, recovered!.GeneratorVersion);
 
         var structurallyInvalid = new CodeGraphDocument(1, DateTimeOffset.UtcNow, null!, null!, recovered.SourceDigest, recovered.GeneratorVersion);
         await File.WriteAllTextAsync(graphPath, JsonSerializer.Serialize(structurallyInvalid, JsonDefaults.Options));
@@ -495,6 +495,43 @@ public sealed class BehaviorTests : IDisposable
         Assert.Contains(graph.Edges, edge => edge.From == outer.Id && edge.To == topLevel.Id && edge.Kind == "CONTAINS" && edge.Confidence == "STRUCTURAL");
         Assert.Contains(graph.Edges, edge => edge.From == outer.Id && edge.To == inner.Id && edge.Kind == "CONTAINS" && edge.Confidence == "STRUCTURAL");
         Assert.Contains(graph.Edges, edge => edge.From == inner.Id && edge.To == nested.Id && edge.Kind == "CONTAINS" && edge.Confidence == "STRUCTURAL");
+    }
+
+    [Fact]
+    public async Task Code_graph_preserves_same_line_declarations_with_distinct_lexical_owners()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "SameLine.cs"), "namespace A { class Twin { public Twin() {} public void Run() {} public void Run<T>() {} class Nested {} } } namespace B { class Twin { public Twin() {} public void Run() {} class Nested {} } }");
+
+        var graph = await new CodeGraphStore().BuildAsync(root);
+        Assert.Equal(4, graph.Nodes.Count(node => node.Kind == "TYPE"));
+        Assert.Equal(2, graph.Nodes.Count(node => node.Kind == "CONSTRUCTOR"));
+        Assert.Equal(3, graph.Nodes.Count(node => node.Kind == "METHOD"));
+        var owners = graph.Nodes.Where(node => node.Kind == "TYPE" && node.Name == "Twin").ToArray();
+        Assert.Equal(2, owners.Length);
+        var containment = graph.Edges.Where(edge => edge.Kind == "CONTAINS").ToArray();
+        Assert.Equal(7, containment.Length);
+        Assert.All(containment.GroupBy(edge => edge.To), group => Assert.Single(group));
+        Assert.All(containment, edge => Assert.Equal("STRUCTURAL", edge.Confidence));
+        Assert.Equal(new[] { 3, 4 }, owners.Select(owner => containment.Count(edge => edge.From == owner.Id)).Order().ToArray());
+    }
+
+    [Fact]
+    public async Task Code_graph_calls_belong_to_the_exact_same_line_method_or_constructor()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "src"); Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "CallOwners.cs"), "class CallOwners { public CallOwners() { Target(); } public void Idle() {} [Obsolete] public void Active() { Target(); } public void Target() {} }");
+
+        var graph = await new CodeGraphStore().BuildAsync(root);
+        var constructor = Assert.Single(graph.Nodes, node => node.Kind == "CONSTRUCTOR");
+        var active = Assert.Single(graph.Nodes, node => node.Kind == "METHOD" && node.Name == "Active");
+        var target = Assert.Single(graph.Nodes, node => node.Kind == "METHOD" && node.Name == "Target");
+        var calls = graph.Edges.Where(edge => edge.Kind == "CALLS").ToArray();
+        Assert.Equal(2, calls.Length);
+        Assert.Contains(calls, edge => edge.From == constructor.Id && edge.To == target.Id && edge.Confidence == "HEURISTIC");
+        Assert.Contains(calls, edge => edge.From == active.Id && edge.To == target.Id && edge.Confidence == "HEURISTIC");
     }
 
     [Fact]
