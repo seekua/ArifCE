@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0010",
+  "title": "Confine Git snapshot paths to repository root",
+  "description": null,
+  "status": "COMPLETED",
+  "risk": "HIGH",
+  "createdAtUtc": "2026-09-02T13:47:38.7792799+00:00"
+}
