@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json;
 using ArifCE.Core;
 using ArifCE.Infrastructure;
@@ -40,6 +41,14 @@ public sealed class BehaviorTests : IDisposable
         {
             Directory.Delete(notARepository, recursive: true);
         }
+    }
+
+    [Fact]
+    public void Git_snapshot_rejects_a_path_outside_the_repository_root()
+    {
+        var method = typeof(GitInspector).GetMethod("SnapshotPath", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var result = (IEnumerable<string>)method.Invoke(null, [root, "../outside.txt"])!;
+        Assert.Throws<InvalidOperationException>(() => result.ToArray());
     }
 
     [Fact]

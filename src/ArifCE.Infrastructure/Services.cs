@@ -59,6 +59,7 @@ public sealed class GitInspector
 
     private static IEnumerable<string> SnapshotPath(string root, string statusPath)
     {
+        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
         var paths = statusPath.Contains(" -> ", StringComparison.Ordinal)
             ? statusPath.Split(" -> ", 2, StringSplitOptions.None)
             : [statusPath];
@@ -67,6 +68,10 @@ public sealed class GitInspector
             var relative = path.Trim().Trim('"');
             if (string.IsNullOrWhiteSpace(relative)) continue;
             var full = Path.GetFullPath(Path.Combine(root, relative));
+            if (!full.StartsWith(fullRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("Git reported a path outside the repository root.");
+            }
             if (!File.Exists(full))
             {
                 yield return $"{relative}\n<MISSING>";
