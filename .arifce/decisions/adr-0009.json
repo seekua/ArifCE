@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0009",
+  "title": "Keep code graph target selection deterministic and explicit",
+  "decision": "Add an explicit qualified target form before expanding parser-backed graph intelligence.",
+  "historicalRationale": "Same simple symbol names can currently match multiple declarations and broaden trusted closure unnecessarily.",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-09-02T11:51:11.711944+00:00"
+}

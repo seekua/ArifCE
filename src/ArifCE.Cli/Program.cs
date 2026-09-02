@@ -55,19 +55,19 @@ internal static class Cli
     private static async Task Search(IndexStore index, string root, string query) { foreach (var item in await index.SearchAsync(root, query)) Console.WriteLine($"{item.Path}\t{item.Score:F3}\t{item.Snippet.Replace(Environment.NewLine, " ")}"); }
     private static async Task CodeGraphCommand(CodeGraphStore store, string root, string[] args)
     {
-        Require(args, 2, "codegraph build | codegraph query <symbol>");
+        Require(args, 2, "codegraph build | codegraph query <symbol-or-path::symbol>");
         if (args[1].Equals("build", StringComparison.OrdinalIgnoreCase)) { var graph = await store.BuildAsync(root); Console.WriteLine($"Code graph built: {graph.Nodes.Count} nodes, {graph.Edges.Count} edges."); return; }
         if (args[1].Equals("query", StringComparison.OrdinalIgnoreCase))
         {
-            Require(args, 3, "codegraph query <symbol>"); var result = await store.QueryAsync(root, string.Join(' ', args[2..]));
-            Console.WriteLine($"Matches: {result.Matches.Count}\n{string.Join(Environment.NewLine, result.Matches.Select(node => $"{node.Kind}\t{node.Name}\t{node.Path}:{node.Line}\t{node.Confidence}"))}");
+            Require(args, 3, "codegraph query <symbol-or-path::symbol>"); var result = await store.QueryAsync(root, string.Join(' ', args[2..]));
+            Console.WriteLine($"Matches: {result.Matches.Count}\n{string.Join(Environment.NewLine, result.Matches.Select(node => $"{node.Kind}\t{node.Name}\t{node.Path}:{node.Line}\t{node.Confidence}\t{node.Id}"))}");
             Console.WriteLine($"Related: {result.RelatedNodes.Count}\n{string.Join(Environment.NewLine, result.Edges.Select(edge => $"{edge.Kind}\t{edge.From}\t{edge.To}\t{edge.Confidence}"))}"); return;
         }
         throw new ArgumentException("Unknown codegraph action.");
     }
     private static async Task ChangeContractCommand(ProjectService service, string root, string[] args)
     {
-        Require(args, 3, "contract create <symbol> [--risk <level>] [--invariant <text>] | contract status <id>");
+        Require(args, 3, "contract create <symbol-or-path::symbol> [--risk <level>] [--invariant <text>] | contract status <id>");
         if (args[1].Equals("create", StringComparison.OrdinalIgnoreCase))
         {
             var riskText = Option(args, "--risk") ?? "Medium";

@@ -119,7 +119,7 @@ public sealed partial class CodeGraphStore
     {
         if (string.IsNullOrWhiteSpace(symbol)) throw new ArgumentException("A symbol name is required.", nameof(symbol));
         var graph = await ReadAsync(root, cancellationToken);
-        var matches = graph.Nodes.Where(node => exactMatch ? node.Name.Equals(symbol, StringComparison.Ordinal) : node.Name.Equals(symbol, StringComparison.Ordinal) || node.Name.Contains(symbol, StringComparison.OrdinalIgnoreCase)).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray();
+        var matches = MatchNodes(graph.Nodes, symbol, exactMatch).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray();
         var ids = matches.Select(node => node.Id).ToHashSet(StringComparer.Ordinal);
         var edges = graph.Edges.Where(edge => ids.Contains(edge.From) || ids.Contains(edge.To)).ToArray();
         var relatedIds = edges.SelectMany(edge => new[] { edge.From, edge.To }).Where(id => !ids.Contains(id)).ToHashSet(StringComparer.Ordinal);
@@ -130,7 +130,7 @@ public sealed partial class CodeGraphStore
     {
         if (string.IsNullOrWhiteSpace(symbol)) throw new ArgumentException("A symbol name is required.", nameof(symbol));
         var graph = await ReadAsync(root, cancellationToken);
-        var matches = graph.Nodes.Where(node => node.Name.Equals(symbol, StringComparison.Ordinal)).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray();
+        var matches = MatchNodes(graph.Nodes, symbol, exactMatch: true).OrderBy(node => node.Id, StringComparer.Ordinal).ToArray();
         if (matches.Length == 0) throw new InvalidOperationException($"No exact code-graph symbol matches '{symbol}'.");
 
         var visited = matches.Select(node => node.Id).ToHashSet(StringComparer.Ordinal);
@@ -159,6 +159,29 @@ public sealed partial class CodeGraphStore
 
     private static string GraphPath(string root) => Path.Combine(Path.GetFullPath(root), ".arifce", "index", "code-graph.json");
     private static string Relative(string root, string path) => Path.GetRelativePath(root, path).Replace('\\', '/');
+    private static IEnumerable<CodeGraphNode> MatchNodes(IEnumerable<CodeGraphNode> nodes, string target, bool exactMatch)
+    {
+        var selector = ParseQualifiedTarget(target);
+        if (selector is not null)
+        {
+            return nodes.Where(node => node.Path.Equals(selector.Value.Path, StringComparison.OrdinalIgnoreCase) && node.Name.Equals(selector.Value.Symbol, StringComparison.Ordinal));
+        }
+
+        return nodes.Where(node => exactMatch
+            ? node.Name.Equals(target, StringComparison.Ordinal)
+            : node.Name.Equals(target, StringComparison.Ordinal) || node.Name.Contains(target, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static (string Path, string Symbol)? ParseQualifiedTarget(string target)
+    {
+        const string separator = "::";
+        var separatorIndex = target.IndexOf(separator, StringComparison.Ordinal);
+        if (separatorIndex <= 0 || separatorIndex != target.LastIndexOf(separator, StringComparison.Ordinal)) return null;
+
+        var path = target[..separatorIndex].Trim().Replace('\\', '/');
+        var symbol = target[(separatorIndex + separator.Length)..].Trim();
+        return path.Length > 0 && symbol.Length > 0 ? (path, symbol) : null;
+    }
     private static bool IsTestFile(string path) => path.Contains("test", StringComparison.OrdinalIgnoreCase) || path.EndsWith("Tests.cs", StringComparison.OrdinalIgnoreCase);
     private static bool IsExcluded(string root, string path) => Relative(root, path).Split('/').Any(ExcludedDirectories.Contains);
     private static bool IsTestMethod(string[] lines, int index) => lines.Skip(Math.Max(0, index - 3)).Take(Math.Min(4, index + 1)).Any(line => line.Contains("[Fact", StringComparison.Ordinal) || line.Contains("[Theory", StringComparison.Ordinal) || line.Contains("[Test", StringComparison.Ordinal));

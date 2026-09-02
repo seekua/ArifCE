@@ -538,6 +538,31 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Path_qualified_contract_target_limits_trusted_closure_to_the_selected_declaration_file()
+    {
+        await Service.InitializeAsync(root, false);
+        var first = Path.Combine(root, "src", "Payments", "PaymentService.cs");
+        var second = Path.Combine(root, "src", "Reporting", "ReportingService.cs");
+        Directory.CreateDirectory(Path.GetDirectoryName(first)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(second)!);
+        await File.WriteAllTextAsync(first, "public sealed class PaymentService { public decimal Calculate(decimal value) { return value; } }");
+        await File.WriteAllTextAsync(second, "public sealed class ReportingService { public decimal Calculate(decimal value) { return value; } }");
+
+        var target = "src/Payments/PaymentService.cs::Calculate";
+        var query = await new CodeGraphStore().QueryAsync(root, target, exactMatch: true);
+        Assert.Single(query.Matches);
+        Assert.Equal("src/Payments/PaymentService.cs", query.Matches[0].Path);
+
+        var contract = await Service.CreateChangeContractAsync(root, target, RiskLevel.Low);
+        var verified = await Service.VerifyAsync(root, contract.ClaimId, OperatingSystem.IsWindows() ? "ver" : "true", true, contractId: contract.Id);
+        var paths = verified.Evidence.Scope!.Dependencies.Where(dependency => dependency.Mode == "CONTENT").Select(dependency => dependency.Path).ToArray();
+        Assert.Equal(["src/Payments/PaymentService.cs"], paths);
+
+        await File.AppendAllTextAsync(second, "\n// unrelated same-name declaration changed");
+        Assert.Equal(EvidenceFreshness.Current, await EvidenceScopeTracker.EvaluateAsync(root, verified.Evidence, await new GitInspector().CaptureAsync(root)));
+    }
+
+    [Fact]
     public async Task Flight_recorder_keeps_structured_redacted_steps_and_promotes_failed_attempts()
     {
         await Service.InitializeAsync(root, false);

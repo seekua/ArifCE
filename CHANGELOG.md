@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Add `path::symbol` graph and change-contract selectors to isolate same-name declarations in different files without promoting heuristic edges to trust evidence.
 - Parse `task create --risk` explicitly, preserve the intended canonical title, and reject unsupported task-create options before any record is written.
 - Add explicit contract-linked evidence scopes with exact/structural closure digests, reverse transitive project-dependent invalidation, and strict exclusion of heuristic graph edges.
 - Tighten deterministic C# method scanning to reject invocation, lambda, and pattern-syntax false positives, and version derived graphs so scanner upgrades invalidate old cache output.

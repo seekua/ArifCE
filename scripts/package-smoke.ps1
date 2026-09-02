@@ -79,6 +79,19 @@ try {
         if ($LASTEXITCODE -ne 0 -or $contractEvidenceId -notmatch '^EVIDENCE-\d{4}$') { throw 'Packaged contract-linked verification failed.' }
         $contractEvidence = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/evidence/$($contractEvidenceId.ToLowerInvariant()).json") | ConvertFrom-Json
         if ($contractEvidence.scope.contractId -ne $contractId -or $contractEvidence.scope.dependencies.mode -notcontains 'CODE_GRAPH_CLOSURE' -or $contractEvidence.scope.dependencies.path -notcontains 'src/GraphFixture.cs') { throw 'Packaged contract evidence did not persist its trusted dependency closure.' }
+        New-Item -ItemType Directory -Force -Path (Join-Path $repositoryDirectory 'src\Alternate') | Out-Null
+        Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\Alternate\AlternateGraphFixture.cs') -Value 'public sealed class AlternateGraphFixture { public void FreshGraphSymbol() { } }'
+        $qualifiedTarget = 'src/GraphFixture.cs::FreshGraphSymbol'
+        $qualifiedQuery = (& $executable codegraph query $qualifiedTarget | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $qualifiedQuery -notmatch 'Matches:\s+1' -or $qualifiedQuery -notmatch 'src/GraphFixture\.cs') { throw 'Packaged path-qualified graph query did not isolate the selected declaration.' }
+        $qualifiedContractOutput = (& $executable contract create $qualifiedTarget --risk LOW | Out-String)
+        $qualifiedContractId = [regex]::Match($qualifiedContractOutput, 'CONTRACT-\d{4}').Value
+        $qualifiedClaimId = [regex]::Match($qualifiedContractOutput, 'Claim:\s*(CLAIM-\d{4})').Groups[1].Value
+        if ($LASTEXITCODE -ne 0 -or $qualifiedContractId -notmatch '^CONTRACT-\d{4}$' -or $qualifiedClaimId -notmatch '^CLAIM-\d{4}$') { throw 'Packaged path-qualified change-contract creation failed.' }
+        $qualifiedVerification = (& $executable verify $qualifiedClaimId --command 'dotnet --version' --contract $qualifiedContractId --allow-unsafe-command | Out-String)
+        $qualifiedEvidenceId = [regex]::Match($qualifiedVerification, 'EVIDENCE-\d{4}').Value
+        $qualifiedEvidence = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/evidence/$($qualifiedEvidenceId.ToLowerInvariant()).json") | ConvertFrom-Json
+        if ($LASTEXITCODE -ne 0 -or $qualifiedEvidence.scope.dependencies.path -contains 'src/Alternate/AlternateGraphFixture.cs') { throw 'Packaged path-qualified contract expanded into an unrelated same-name declaration.' }
         $architectureClaimId = (& $executable claim create 'The packaged CLI verifies an architecture boundary' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
         $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)

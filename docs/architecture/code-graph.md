@@ -16,6 +16,6 @@ Heuristic edges are impact candidates, not proof. They must not independently ve
 
 `verify --contract` is the only automatic graph-to-evidence expansion. It resolves an exact target, walks declaration/file edges in either direction, and walks reverse `PROJECT_REFERENCE` edges transitively so exact dependent projects participate. It stores a closure digest plus content digests for every resulting path. `REFERENCES` and `RELATED_TEST` edges are never traversed for freshness because they are heuristic.
 
-Use `arifce codegraph query <symbol>` to inspect matching declarations and their incoming or outgoing relationships. The output remains explainable and names its confidence level.
+Use `arifce codegraph query <symbol>` to inspect matching declarations and their incoming or outgoing relationships. When the same name exists in more than one file, use `arifce codegraph query <path>::<symbol>` and pass the same selector to `contract create`, for example `src/Payments/PaymentService.cs::Calculate`. The query output includes each stable graph node ID for inspection. A path-qualified selector keeps trusted closure limited to declarations in that file; it does not yet distinguish overloads on different lines of the same file.
 
 Graph freshness does not make heuristic edges proof. ArifCE does not yet use heuristic graph closure to expand evidence scope or invalidate claims transitively; that requires an explicit policy so false-positive identifier matches cannot silently invalidate accepted knowledge.
