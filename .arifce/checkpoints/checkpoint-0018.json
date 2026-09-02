@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0018",
+  "summary": "Phase 60 fail-closed Git snapshot handling complete",
+  "snapshot": {
+    "commit": "6b7727555c36785be9d2436c08af1d5c5b182c27",
+    "branch": "master",
+    "isDirty": false,
+    "changedFiles": [],
+    "digest": "d3d9c22376f948c741d2c86c5fc7abda14bfa70a97c5d198512a341907d94d5f"
+  },
+  "createdAtUtc": "2026-09-02T12:32:40.8551996+00:00"
+}
