@@ -95,7 +95,7 @@ arifce claim status CLAIM-0001
 arifce review record CLAIM-0001 --reviewer "agent-a" --verdict INCONCLUSIVE --summary "Needs human review"
 ```
 
-Verification records command, exit code, bounded output, metrics, and Git snapshot. Evidence can become stale after repository changes. A review is evidence, not automatic truth.
+Verification records command, exit code, bounded output, metrics, Git snapshot, and optional dependency paths supplied with repeated `--path` arguments. Scoped evidence ignores unrelated repository edits but becomes stale after any selected file/directory content change. Evidence without a scope retains conservative repository-wide freshness. A review is evidence, not automatic truth.
 
 ## Acceptance
 

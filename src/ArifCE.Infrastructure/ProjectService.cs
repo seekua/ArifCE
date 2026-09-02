@@ -135,10 +135,10 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var evidence = new List<string>();
         foreach (var evidenceId in claim.Evidence)
         {
-            var item = await canonical.ReadAsync<EvidenceRecord>(root, "evidence", evidenceId, cancellationToken) ?? throw new InvalidOperationException($"Evidence {evidenceId} was not found.");
-            if (EvidenceEvaluator.Evaluate(item.Snapshot, current) != EvidenceFreshness.Current) throw new InvalidOperationException($"Evidence {evidenceId} is stale.");
-            evidence.Add(evidenceId);
+            var item = await canonical.ReadAsync<EvidenceRecord>(root, "evidence", evidenceId, cancellationToken);
+            if (item is not null && await EvidenceScopeTracker.EvaluateAsync(root, item, current, cancellationToken) == EvidenceFreshness.Current) evidence.Add(evidenceId);
         }
+        if (evidence.Count == 0) throw new InvalidOperationException($"Claim {claimId} has no current supporting evidence.");
         await ValidateAcceptancePolicyAsync(root, claim, evidence, cancellationToken);
         var findings = Path.Combine(root, ".arifce", "findings");
         if (Directory.Exists(findings)) foreach (var path in Directory.EnumerateFiles(findings, "*.json"))
@@ -190,7 +190,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         await RecordAsync(root, "acceptance.revoked", id, updated, cancellationToken); return updated;
     }
 
-    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyAsync(string root, string claimId, string commandText, bool allowUnsafeCommand = false, CancellationToken cancellationToken = default)
+    public async Task<(ClaimRecord Claim, EvidenceRecord Evidence)> VerifyAsync(string root, string claimId, string commandText, bool allowUnsafeCommand = false, IReadOnlyList<string>? scopePaths = null, CancellationToken cancellationToken = default)
     {
         var claim = await canonical.ReadAsync<ClaimRecord>(root, "claims", claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
         var commandRedaction = new SecretRedactor().Redact(commandText);
@@ -198,6 +198,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var policy = VerificationCommandPolicy.Classify(commandText);
         if (policy == VerificationCommandKind.UnsafeShell && !allowUnsafeCommand) throw new InvalidOperationException("Unrecognized verification commands require explicit --allow-unsafe-command approval.");
         var before = await git.CaptureAsync(root, cancellationToken);
+        var scope = await EvidenceScopeTracker.CaptureAsync(root, scopePaths, cancellationToken);
         var result = policy == VerificationCommandKind.NamedDotNet
             ? await RunNamedCommandAsync(root, commandText, cancellationToken)
             : await RunShellCommandAsync(root, commandText, cancellationToken);
@@ -205,7 +206,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var parsed = CommandEvidenceParser.Parse(commandText, result.Output);
         var evidenceKind = policy == VerificationCommandKind.UnsafeShell ? "UNSAFE_COMMAND" : parsed.Kind == "COMMAND" ? "UNVERIFIED_COMMAND" : parsed.Kind;
         var safeOutput = new SecretRedactor().Redact(result.Output).Text;
-        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, evidenceKind, commandText, result.ExitCode, Truncate(safeOutput, 1000), before, DateTimeOffset.UtcNow, parsed.Metrics);
+        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, evidenceKind, commandText, result.ExitCode, Truncate(safeOutput, 1000), before, DateTimeOffset.UtcNow, parsed.Metrics, scope);
         await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
         var status = result.ExitCode == 0 ? (policy == VerificationCommandKind.UnsafeShell || parsed.Kind == "COMMAND" ? ClaimStatus.Supported : claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
         var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, current => current with { Status = status, Evidence = current.Evidence.Append(evidenceId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken);
@@ -218,13 +219,14 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (paths.Count == 0) throw new ArgumentException("At least one --path value is required.");
         var claim = await GetClaimAsync(root, claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
         var before = await git.CaptureAsync(root, cancellationToken);
+        var scope = await EvidenceScopeTracker.CaptureAsync(root, paths, cancellationToken);
         var scan = await ArchitectureBoundaryScanner.ScanAsync(root, forbiddenReferences, paths, cancellationToken);
         var evidenceId = canonical.NextId(root, "evidence", "EVIDENCE");
         var command = $"arifce architecture check {claimId} {string.Join(' ', forbiddenReferences.Select(value => $"--forbid {value}"))} {string.Join(' ', paths.Select(path => $"--path {path}"))}";
         var summary = scan.Violations.Count == 0
             ? $"Architecture boundary check passed. {scan.FilesScanned} source file(s) scanned; forbidden references: {string.Join(", ", forbiddenReferences.Order(StringComparer.Ordinal))}."
             : $"Architecture boundary check failed with {scan.Violations.Count} violation(s) in {scan.FilesScanned} source file(s).\n{string.Join('\n', scan.Violations.Take(20))}";
-        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, "ARCHITECTURE_BOUNDARY", command, scan.Violations.Count == 0 ? 0 : 1, summary, before, DateTimeOffset.UtcNow, new EvidenceMetrics(scan.FilesScanned, scan.FilesScanned - scan.ViolatingFiles, scan.Violations.Count, null));
+        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, "ARCHITECTURE_BOUNDARY", command, scan.Violations.Count == 0 ? 0 : 1, summary, before, DateTimeOffset.UtcNow, new EvidenceMetrics(scan.FilesScanned, scan.FilesScanned - scan.ViolatingFiles, scan.Violations.Count, null), scope);
         await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
         var status = scan.Violations.Count == 0 ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
         var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, current => current with { Status = status, Evidence = current.Evidence.Append(evidenceId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken);
@@ -239,7 +241,9 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var current = ApiSurfaceAnalyzer.Read(assembly); var previous = await ApiSurfaceAnalyzer.ReadBaselineAsync(baseline, cancellationToken); var diff = ApiSurfaceAnalyzer.Compare(previous, current);
         var evidenceId = canonical.NextId(root, "evidence", "EVIDENCE"); var summary = $"API compatibility {(diff.IsCompatible ? "passed" : "failed")}. Added: {diff.Added.Count}; removed: {diff.Removed.Count}; changed: {diff.Changed.Count}.";
         if (diff.Removed.Count > 0) summary += $"\nRemoved:\n{string.Join('\n', diff.Removed.Take(20))}";
-        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, "PUBLIC_API_SURFACE", $"arifce api compare {assemblyPath} --baseline {baselinePath}", diff.IsCompatible ? 0 : 1, summary, await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow, new EvidenceMetrics(current.Count, diff.Added.Count, diff.Removed.Count, diff.Changed.Count));
+        var snapshot = await git.CaptureAsync(root, cancellationToken);
+        var scope = await EvidenceScopeTracker.CaptureApiSurfaceAsync(root, assemblyPath, baselinePath, cancellationToken);
+        var evidence = new EvidenceRecord(1, evidenceId, claim.Id, "PUBLIC_API_SURFACE", $"arifce api compare {assemblyPath} --baseline {baselinePath}", diff.IsCompatible ? 0 : 1, summary, snapshot, DateTimeOffset.UtcNow, new EvidenceMetrics(current.Count, diff.Added.Count, diff.Removed.Count, diff.Changed.Count), scope);
         await canonical.WriteAsync(root, "evidence", evidenceId, evidence, cancellationToken);
         var status = diff.IsCompatible ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted;
         var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, currentClaim => currentClaim with { Status = status, Evidence = currentClaim.Evidence.Append(evidenceId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken); await RecordAsync(root, "evidence.recorded", evidenceId, evidence, cancellationToken); return (updated, evidence);
@@ -250,7 +254,9 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var claim = await GetClaimAsync(root, claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
         var database = ResolveRepositoryPath(root, databasePath); var baseline = ResolveRepositoryPath(root, baselinePath); var current = await SqliteSchemaAnalyzer.ReadAsync(database, cancellationToken); var diff = SqliteSchemaAnalyzer.Compare(await SqliteSchemaAnalyzer.ReadBaselineAsync(baseline, cancellationToken), current);
         var id = canonical.NextId(root, "evidence", "EVIDENCE"); var summary = $"SQLite schema compatibility {(diff.IsCompatible ? "passed" : "failed")}. Added: {diff.Added.Count}; removed: {diff.Removed.Count}; changed: {diff.Changed.Count}.";
-        var evidence = new EvidenceRecord(1, id, claim.Id, "SQLITE_SCHEMA", $"arifce schema compare {databasePath} --baseline {baselinePath}", diff.IsCompatible ? 0 : 1, summary, await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow, new EvidenceMetrics(current.Count, diff.Added.Count, diff.Removed.Count, diff.Changed.Count));
+        var snapshot = await git.CaptureAsync(root, cancellationToken);
+        var scope = await EvidenceScopeTracker.CaptureSqliteSchemaAsync(root, databasePath, baselinePath, cancellationToken);
+        var evidence = new EvidenceRecord(1, id, claim.Id, "SQLITE_SCHEMA", $"arifce schema compare {databasePath} --baseline {baselinePath}", diff.IsCompatible ? 0 : 1, summary, snapshot, DateTimeOffset.UtcNow, new EvidenceMetrics(current.Count, diff.Added.Count, diff.Removed.Count, diff.Changed.Count), scope);
         await canonical.WriteAsync(root, "evidence", id, evidence, cancellationToken); var status = diff.IsCompatible ? (claim.Risk == RiskLevel.Low ? ClaimStatus.Verified : ClaimStatus.Supported) : ClaimStatus.Contradicted; var updated = await canonical.UpdateAsync<ClaimRecord>(root, "claims", claim.Id, currentClaim => currentClaim with { Status = status, Evidence = currentClaim.Evidence.Append(id).Distinct(StringComparer.OrdinalIgnoreCase).ToArray() }, cancellationToken); await RecordAsync(root, "evidence.recorded", id, evidence, cancellationToken); return (updated, evidence);
     }
 
@@ -349,17 +355,18 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
                 try { claim = JsonSerializer.Deserialize<ClaimRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options); }
                 catch (JsonException) { warnings.Add($"Malformed claim record: {Path.GetFileName(path)}."); continue; }
                 if (claim is null || claim.Status is not (ClaimStatus.Supported or ClaimStatus.PartiallyVerified or ClaimStatus.Verified or ClaimStatus.Stale)) continue;
-                var isStale = claim.Status == ClaimStatus.Stale || claim.Evidence.Count == 0;
+                var hasCurrentEvidence = false;
                 foreach (var evidenceId in claim.Evidence)
                 {
                     var evidencePath = Path.Combine(root, ".arifce", "evidence", evidenceId.ToLowerInvariant() + ".json");
                     try
                     {
                         var evidence = File.Exists(evidencePath) ? JsonSerializer.Deserialize<EvidenceRecord>(await File.ReadAllTextAsync(evidencePath, cancellationToken), JsonDefaults.Options) : null;
-                        if (evidence is null || EvidenceEvaluator.Evaluate(evidence.Snapshot, current) != EvidenceFreshness.Current) isStale = true;
+                        if (evidence is not null && await EvidenceScopeTracker.EvaluateAsync(root, evidence, current, cancellationToken) == EvidenceFreshness.Current) hasCurrentEvidence = true;
                     }
-                    catch (JsonException) { isStale = true; }
+                    catch (JsonException) { }
                 }
+                var isStale = claim.Status == ClaimStatus.Stale || !hasCurrentEvidence;
                 if (!isStale) continue;
                 staleClaims.Add(claim.Id);
                 warnings.Add($"Claim {claim.Id} is stale and requires re-verification.");

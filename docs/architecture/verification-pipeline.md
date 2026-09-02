@@ -22,4 +22,4 @@ Claim
 
 ## Risk policy
 
-The typed `VerificationPolicy` maps `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL` to required build, test, independent-review, and human-approval flags. A critical claim cannot become verified from model agreement alone. Evidence remains scoped to its Git snapshot and can become stale.
+The typed `VerificationPolicy` maps `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL` to required build, test, independent-review, and human-approval flags. A critical claim cannot become verified from model agreement alone. Evidence may carry deterministic file/directory dependency digests; otherwise it remains conservatively scoped to its Git snapshot. Both forms can become stale.

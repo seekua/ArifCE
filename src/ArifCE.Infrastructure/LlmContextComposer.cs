@@ -177,8 +177,8 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
             {
                 "CLAIM" => await AssessClaimAsync(root, JsonSerializer.Deserialize<ClaimRecord>(json, JsonDefaults.Options), currentSnapshot, cancellationToken),
                 "DECISION" => AssessDecision(JsonSerializer.Deserialize<DecisionRecord>(json, JsonDefaults.Options)),
-                "EVIDENCE" => AssessEvidence(JsonSerializer.Deserialize<EvidenceRecord>(json, JsonDefaults.Options), currentSnapshot),
-                "ACCEPTANCE" => AssessAcceptance(JsonSerializer.Deserialize<AcceptanceRecord>(json, JsonDefaults.Options), currentSnapshot),
+                "EVIDENCE" => await AssessEvidenceAsync(root, JsonSerializer.Deserialize<EvidenceRecord>(json, JsonDefaults.Options), currentSnapshot, cancellationToken),
+                "ACCEPTANCE" => await AssessAcceptanceAsync(root, JsonSerializer.Deserialize<AcceptanceRecord>(json, JsonDefaults.Options), currentSnapshot, cancellationToken),
                 _ => TrustAssessment.Current
             };
         }
@@ -196,22 +196,19 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
         if (claim.Status == ClaimStatus.Disputed) return new(true, "DISPUTED", "claim is disputed; include only as an explicit warning");
         if (claim.Status == ClaimStatus.Unverified) return new(true, "UNVERIFIED", "claim is unverified; include only as an explicit warning");
         if (currentSnapshot is null || claim.Evidence.Count == 0) return new(false, "STALE", "supported claim has no current evidence");
+        var hasCurrentEvidence = false;
         foreach (var evidenceId in claim.Evidence)
         {
             var path = Path.Combine(root, ".arifce", "evidence", evidenceId.ToLowerInvariant() + ".json");
-            if (!File.Exists(path)) return new(false, "STALE", $"claim evidence {evidenceId} is missing");
+            if (!File.Exists(path)) continue;
             try
             {
                 var evidence = JsonSerializer.Deserialize<EvidenceRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options);
-                if (evidence is null || EvidenceEvaluator.Evaluate(evidence.Snapshot, currentSnapshot) != EvidenceFreshness.Current)
-                    return new(false, "STALE", $"claim evidence {evidenceId} does not match the current repository state");
+                if (evidence is not null && await EvidenceScopeTracker.EvaluateAsync(root, evidence, currentSnapshot, cancellationToken) == EvidenceFreshness.Current) hasCurrentEvidence = true;
             }
-            catch (JsonException)
-            {
-                return new(false, "STALE", $"claim evidence {evidenceId} is malformed");
-            }
+            catch (JsonException) { }
         }
-        return TrustAssessment.Current;
+        return hasCurrentEvidence ? TrustAssessment.Current : new(false, "STALE", "claim has no evidence matching the current dependency or repository state");
     }
 
     private static TrustAssessment AssessDecision(DecisionRecord? decision)
@@ -224,10 +221,10 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
                 : new(false, "INVALID", $"decision status {decision.Status} is not active");
     }
 
-    private static TrustAssessment AssessEvidence(EvidenceRecord? evidence, GitSnapshot? currentSnapshot)
+    private static async Task<TrustAssessment> AssessEvidenceAsync(string root, EvidenceRecord? evidence, GitSnapshot? currentSnapshot, CancellationToken cancellationToken)
     {
         if (evidence is null || currentSnapshot is null) return new(false, "INVALID", "evidence record or current repository snapshot is unavailable");
-        return EvidenceEvaluator.Evaluate(evidence.Snapshot, currentSnapshot) switch
+        return await EvidenceScopeTracker.EvaluateAsync(root, evidence, currentSnapshot, cancellationToken) switch
         {
             EvidenceFreshness.Current => TrustAssessment.Current,
             EvidenceFreshness.Stale => new(false, "STALE", "evidence snapshot no longer matches the repository state"),
@@ -235,14 +232,26 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
         };
     }
 
-    private static TrustAssessment AssessAcceptance(AcceptanceRecord? acceptance, GitSnapshot? currentSnapshot) => acceptance?.Status switch
+    private static async Task<TrustAssessment> AssessAcceptanceAsync(string root, AcceptanceRecord? acceptance, GitSnapshot? currentSnapshot, CancellationToken cancellationToken)
     {
-        AcceptanceStatus.Accepted when currentSnapshot is not null && EvidenceEvaluator.Evaluate(acceptance.Snapshot, currentSnapshot) == EvidenceFreshness.Current => TrustAssessment.Current,
-        AcceptanceStatus.Accepted => new(false, "STALE", "acceptance snapshot no longer matches the repository state"),
-        AcceptanceStatus.NeedsReview => new(false, "STALE", "acceptance requires review because its trust chain changed"),
-        null => new(false, "INVALID", "acceptance record is empty or invalid"),
-        _ => new(false, "INVALID", $"acceptance status {acceptance.Status} is not accepted")
-    };
+        if (acceptance is null) return new(false, "INVALID", "acceptance record is empty or invalid");
+        if (acceptance.Status == AcceptanceStatus.NeedsReview) return new(false, "STALE", "acceptance requires review because its trust chain changed");
+        if (acceptance.Status != AcceptanceStatus.Accepted) return new(false, "INVALID", $"acceptance status {acceptance.Status} is not accepted");
+        if (currentSnapshot is null || acceptance.EvidenceIds.Count == 0) return new(false, "STALE", "acceptance has no current evidence");
+        foreach (var evidenceId in acceptance.EvidenceIds)
+        {
+            var path = Path.Combine(root, ".arifce", "evidence", evidenceId.ToLowerInvariant() + ".json");
+            if (!File.Exists(path)) return new(false, "STALE", $"acceptance evidence {evidenceId} is missing");
+            try
+            {
+                var evidence = JsonSerializer.Deserialize<EvidenceRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options);
+                if (evidence is null || await EvidenceScopeTracker.EvaluateAsync(root, evidence, currentSnapshot, cancellationToken) != EvidenceFreshness.Current)
+                    return new(false, "STALE", $"acceptance evidence {evidenceId} is no longer current");
+            }
+            catch (JsonException) { return new(false, "STALE", $"acceptance evidence {evidenceId} is malformed"); }
+        }
+        return TrustAssessment.Current;
+    }
 
     private sealed record Candidate(string Path, string Kind, string Snippet, double Score, int Priority, TrustAssessment Trust);
     private sealed record TrustAssessment(bool Include, string Freshness, string Reason)

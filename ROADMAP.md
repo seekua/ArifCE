@@ -83,6 +83,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 50: capture tamper-evident raw run provenance and deterministic evaluator outcomes without accepting hand-authored success claims.
 - [x] Phase 51: execute and publish the first complete matched engineering benchmark, including negative results and limitations. The first run is inconclusive and makes no effectiveness claim because its only differing pass was permission-confounded.
 - [x] Phase 52: unify CLI, MCP, and provider context assembly behind deterministic ranking, trust filtering, budget telemetry, and per-candidate inclusion/exclusion explanations.
+- [x] Phase 53: add backward-compatible file and directory dependency scopes to evidence freshness, inferred by deterministic verification commands and optionally declared by generic verification.
 
 ## Explicit deferrals
 

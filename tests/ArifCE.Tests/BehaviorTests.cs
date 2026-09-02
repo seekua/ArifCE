@@ -196,6 +196,64 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Scoped_evidence_ignores_unrelated_changes_and_propagates_relevant_changes()
+    {
+        await Service.InitializeAsync(root, false);
+        var sourceDirectory = Path.Combine(root, "src");
+        Directory.CreateDirectory(sourceDirectory);
+        var source = Path.Combine(sourceDirectory, "service.cs");
+        await File.WriteAllTextAsync(source, "before");
+        var claim = await Service.CreateClaimAsync(root, "Scoped service remains correct", RiskLevel.Low);
+        var verified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true, ["src"]);
+        var acceptance = await Service.CreateAcceptanceAsync(root, claim.Id, "product-owner", "Scoped evidence reviewed");
+        Assert.NotNull(verified.Evidence.Scope);
+        Assert.Equal("src", Assert.Single(verified.Evidence.Scope!.Dependencies).Path);
+
+        await File.WriteAllTextAsync(Path.Combine(root, "unrelated.md"), "unrelated");
+        Assert.Equal(EvidenceFreshness.Current, await EvidenceScopeTracker.EvaluateAsync(root, verified.Evidence, await git.CaptureAsync(root)));
+        var unrelatedRefresh = await Service.RefreshTrustAsync(root);
+        Assert.Equal(0, unrelatedRefresh.ClaimsStaled);
+        Assert.Equal(AcceptanceStatus.Accepted, (await Service.GetAcceptanceAsync(root, acceptance.Id))!.Status);
+
+        await File.WriteAllTextAsync(Path.Combine(sourceDirectory, "new-service.cs"), "new dependency");
+        Assert.Equal(EvidenceFreshness.Stale, await EvidenceScopeTracker.EvaluateAsync(root, verified.Evidence, await git.CaptureAsync(root)));
+        var relevantRefresh = await Service.RefreshTrustAsync(root);
+        Assert.Equal(1, relevantRefresh.ClaimsStaled);
+        Assert.Equal(1, relevantRefresh.AcceptancesFlagged);
+        Assert.Equal(ClaimStatus.Stale, (await Service.GetClaimAsync(root, claim.Id))!.Status);
+        Assert.Equal(AcceptanceStatus.NeedsReview, (await Service.GetAcceptanceAsync(root, acceptance.Id))!.Status);
+
+        var reverified = await Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true, ["src"]);
+        Assert.Equal(ClaimStatus.Supported, reverified.Claim.Status);
+        Assert.Equal(2, reverified.Claim.Evidence.Count);
+        var afterReverification = await Service.RefreshTrustAsync(root);
+        Assert.Equal(0, afterReverification.ClaimsStaled);
+        var newAcceptance = await Service.CreateAcceptanceAsync(root, claim.Id, "product-owner", "Changed scope re-verified");
+        Assert.Equal(AcceptanceStatus.Accepted, newAcceptance.Status);
+        Assert.Single(newAcceptance.EvidenceIds);
+    }
+
+    [Fact]
+    public async Task Evidence_scope_rejects_paths_outside_the_repository()
+    {
+        await Service.InitializeAsync(root, false);
+        var claim = await Service.CreateClaimAsync(root, "Scope remains inside repository", RiskLevel.Low);
+        await Assert.ThrowsAsync<ArgumentException>(() => Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true, ["../outside"]));
+        await Assert.ThrowsAsync<ArgumentException>(() => Service.VerifyAsync(root, claim.Id, OperatingSystem.IsWindows() ? "ver" : "true", true, [".git/config"]));
+    }
+
+    [Fact]
+    public void Legacy_evidence_without_scope_remains_deserializable()
+    {
+        var snapshot = new GitSnapshot("abc", "main", false, [], "digest");
+        var json = JsonSerializer.Serialize(new { schemaVersion = 1, id = "EVIDENCE-0001", claimId = "CLAIM-0001", kind = "TEST_RUN", command = "dotnet test", exitCode = 0, summary = "Passed", snapshot, createdAtUtc = DateTimeOffset.UnixEpoch, metrics = (object?)null }, JsonDefaults.Options);
+        var evidence = JsonSerializer.Deserialize<EvidenceRecord>(json, JsonDefaults.Options);
+        Assert.NotNull(evidence);
+        Assert.Null(evidence!.Scope);
+        Assert.Equal(EvidenceFreshness.Current, EvidenceEvaluator.Evaluate(evidence.Snapshot, snapshot));
+    }
+
+    [Fact]
     public async Task Deterministic_code_graph_links_symbols_references_tests_and_projects()
     {
         await Service.InitializeAsync(root, false);
@@ -293,7 +351,7 @@ public sealed class BehaviorTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(source, "Boundary.cs"), "namespace Fixture;");
         var passingClaim = await Service.CreateClaimAsync(root, "No forbidden dependency exists", RiskLevel.Low);
         var passed = await Service.VerifyArchitectureBoundaryAsync(root, passingClaim.Id, ["Forbidden.Layer"], ["src"]);
-        Assert.Equal(ClaimStatus.Verified, passed.Claim.Status); Assert.Equal(0, passed.Evidence.ExitCode);
+        Assert.Equal(ClaimStatus.Verified, passed.Claim.Status); Assert.Equal(0, passed.Evidence.ExitCode); Assert.Equal("src", Assert.Single(passed.Evidence.Scope!.Dependencies).Path);
         await Assert.ThrowsAsync<ArgumentException>(() => Service.VerifyArchitectureBoundaryAsync(root, passingClaim.Id, ["Forbidden.Layer"], [".."]));
     }
 
@@ -305,7 +363,7 @@ public sealed class BehaviorTests : IDisposable
         await ApiSurfaceAnalyzer.WriteBaselineAsync(baseline, ApiSurfaceAnalyzer.Read(assembly));
         var claim = await Service.CreateClaimAsync(root, "Public API remains compatible", RiskLevel.Low);
         var result = await Service.VerifyApiSurfaceAsync(root, claim.Id, assembly, "api-baseline.json");
-        Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal("PUBLIC_API_SURFACE", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
+        Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal("PUBLIC_API_SURFACE", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode); Assert.Equal(2, result.Evidence.Scope!.Dependencies.Count); Assert.Contains(result.Evidence.Scope.Dependencies, dependency => dependency.Mode == "PUBLIC_API_SURFACE");
         var modified = new[] { "Removed.Public.Api.Entry" };
         await ApiSurfaceAnalyzer.WriteBaselineAsync(baseline, modified);
         var breaking = await Service.VerifyApiSurfaceAsync(root, claim.Id, assembly, "api-baseline.json");
@@ -327,7 +385,19 @@ public sealed class BehaviorTests : IDisposable
         await Service.InitializeAsync(root, false); var database = Path.Combine(root, ".arifce", "index", "arifce.db"); var baseline = Path.Combine(root, "schema.json");
         await SqliteSchemaAnalyzer.WriteBaselineAsync(baseline, await SqliteSchemaAnalyzer.ReadAsync(database)); var claim = await Service.CreateClaimAsync(root, "SQLite schema remains compatible", RiskLevel.Low);
         var result = await Service.VerifySqliteSchemaAsync(root, claim.Id, ".arifce/index/arifce.db", "schema.json");
-        Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal("SQLITE_SCHEMA", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode);
+        Assert.Equal(ClaimStatus.Verified, result.Claim.Status); Assert.Equal("SQLITE_SCHEMA", result.Evidence.Kind); Assert.Equal(0, result.Evidence.ExitCode); Assert.Equal(2, result.Evidence.Scope!.Dependencies.Count); Assert.Contains(result.Evidence.Scope.Dependencies, dependency => dependency.Mode == "SQLITE_SCHEMA");
+        await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={database}"))
+        {
+            await connection.OpenAsync();
+            await using var dataOnly = connection.CreateCommand(); dataOnly.CommandText = "PRAGMA user_version=7"; await dataOnly.ExecuteNonQueryAsync();
+        }
+        Assert.Equal(EvidenceFreshness.Current, await EvidenceScopeTracker.EvaluateAsync(root, result.Evidence, await git.CaptureAsync(root)));
+        await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={database}"))
+        {
+            await connection.OpenAsync();
+            await using var schemaChange = connection.CreateCommand(); schemaChange.CommandText = "CREATE TABLE scope_breaker(id INTEGER PRIMARY KEY)"; await schemaChange.ExecuteNonQueryAsync();
+        }
+        Assert.Equal(EvidenceFreshness.Stale, await EvidenceScopeTracker.EvaluateAsync(root, result.Evidence, await git.CaptureAsync(root)));
     }
 
     [Fact]

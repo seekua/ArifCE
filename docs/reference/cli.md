@@ -73,7 +73,7 @@ Omitted historical rationale is stored as `Unknown.`. Attempts must reference an
 ```text
 arifce claim create <statement>
 arifce claim status <claim-id>
-arifce verify <claim-id> --command <deterministic-command>
+arifce verify <claim-id> --command <deterministic-command> [--path <file-or-directory>] [--path <file-or-directory>]
 arifce architecture check <claim-id> --forbid <reference> --path <source-path>
 ```
 
@@ -86,7 +86,9 @@ arifce verify CLAIM-0001 --command "custom-local-check" --allow-unsafe-command
 
 The unsafe flag is a local execution approval, not evidence that the command is deterministic or trustworthy.
 
-Run `arifce trust refresh` after repository changes or before a handoff. It compares current repository content with recorded evidence snapshots, moves affected claims to `STALE`, and marks linked accepted records as `NEEDS_REVIEW`. Handoff generation performs the same refresh and prints trust warnings. Changes under `.arifce/` are excluded from the code-state fingerprint so recording evidence does not invalidate itself.
+One or more `--path` values opt evidence into dependency-scoped freshness. ArifCE hashes each selected file or directory at verification time; unrelated repository changes then leave the evidence current, while an edit, deletion, creation, or rename inside the selected scope makes it stale. Omitting `--path` preserves the conservative repository-wide snapshot behavior for backward compatibility. Architecture, public API, and SQLite schema verification infer their scopes from their required path arguments.
+
+Run `arifce trust refresh` after repository changes or before a handoff. It compares scoped path digests when present and otherwise compares the legacy repository snapshot, moves affected claims to `STALE`, and marks linked accepted records as `NEEDS_REVIEW`. Handoff generation performs the same refresh and prints trust warnings. Changes under `.arifce/` are excluded from the repository-wide code-state fingerprint so recording evidence does not invalidate itself.
 
 Build and query the disposable deterministic code graph:
 

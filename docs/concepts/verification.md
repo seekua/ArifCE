@@ -4,4 +4,6 @@ Verification starts with deterministic checks. Build, test, Git, and search evid
 
 Blind review separates independent inspection from reconciliation with the builder claim. Reviewer agreement remains evidence, not truth. Critical work cannot be verified without recorded human approval.
 
-Freshness propagates through the trust lifecycle. When repository content no longer matches an evidence snapshot, `arifce trust refresh` marks the claim `STALE` and any linked accepted record `NEEDS_REVIEW`. A stale claim must be re-verified; the refresh never silently promotes stale knowledge back to current. Handoffs include the resulting warnings.
+Freshness propagates through the trust lifecycle. When explicitly scoped dependencies no longer match their recorded digests—or, for legacy/unscoped evidence, when the repository snapshot changes—`arifce trust refresh` marks the claim `STALE` and any linked accepted record `NEEDS_REVIEW`. A stale claim must be re-verified; the refresh never silently promotes stale knowledge back to current. Handoffs include the resulting warnings.
+
+Re-verification appends a new immutable evidence record. If that new evidence is current, later refreshes evaluate it without requiring older historical evidence to become current again. Existing acceptances remain `NEEDS_REVIEW`; a new acceptance is required for the new trust state.

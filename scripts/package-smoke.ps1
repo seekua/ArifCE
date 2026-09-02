@@ -45,11 +45,12 @@ try {
         $contextOutput = (& $executable context 'package fixture continuity task' --budget 400 | Out-String)
         if ($LASTEXITCODE -ne 0 -or $contextOutput -notmatch 'tasks/task-\d{4}\.json' -or $contextOutput -match 'Estimated total:\s*0') { throw 'Budgeted context did not retrieve the fixture task.' }
 
+        Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'verification-scope.txt') -Value 'stable verification input'
         $claimId = (& $executable claim create 'The packaged CLI can execute a deterministic command' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $claimId -notmatch '^CLAIM-\d{4}$') { throw "Claim creation failed: $claimId" }
         # `dotnet --version` is intentionally outside the named build/test allowlist.
         # The smoke fixture opts in explicitly so packaging tests the guarded unsafe-command path.
-        $verificationOutput = (& $executable verify $claimId --command 'dotnet --version' --allow-unsafe-command | Out-String)
+        $verificationOutput = (& $executable verify $claimId --command 'dotnet --version' --path verification-scope.txt --allow-unsafe-command | Out-String)
         if ($LASTEXITCODE -ne 0 -or $verificationOutput -notmatch "${claimId}: Supported \(EVIDENCE-\d{4}\)") { throw 'Deterministic claim verification failed.' }
         New-Item -ItemType Directory -Force -Path (Join-Path $repositoryDirectory 'src') | Out-Null
         Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'src\Boundary.cs') -Value 'namespace PackageFixture;'
@@ -112,13 +113,19 @@ try {
         if ($taskRecord.status -ne 'COMPLETED') { throw 'Canonical task state is not completed.' }
         if ($decisionRecord.historicalRationale -ne 'Unknown.') { throw 'Decision did not preserve unknown historical rationale.' }
         if ($attemptRecord.taskId -ne $taskId -or $attemptRecord.result -ne 'rejected') { throw 'Canonical failed-attempt state is incomplete.' }
-        if ($claimRecord.status -ne 'STALE' -or $claimRecord.evidence.Count -lt 1) { throw 'Repository changes did not preserve evidence while invalidating the stale claim.' }
+        if ($claimRecord.status -ne 'SUPPORTED' -or $claimRecord.evidence.Count -lt 1) { throw 'Unrelated repository changes incorrectly invalidated scoped evidence.' }
         if ($architectureClaimRecord.evidence.Count -ne 1) { throw 'Canonical architecture-boundary state is incomplete.' }
         if ($apiClaimRecord.evidence.Count -ne 1) { throw 'Canonical API evidence state is incomplete.' }
         $schemaClaimRecord = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($schemaClaimId.ToLowerInvariant()).json") | ConvertFrom-Json
-        if ($schemaClaimRecord.evidence.Count -ne 1) { throw 'Canonical SQLite schema evidence state is incomplete.' }
+        if ($schemaClaimRecord.evidence.Count -ne 1 -or $schemaClaimRecord.status -notin @('SUPPORTED', 'VERIFIED')) { throw 'Canonical SQLite schema evidence was invalidated without a schema change.' }
         if ($findingRecord.status -ne 'COMPLETED' -or $reviewRecord.claimId -ne $claimId -or $reviewRecord.verdict -ne 'INCONCLUSIVE') { throw 'Canonical finding/review state is incomplete.' }
         if ($refactorRecord.status -ne 'COMPLETED' -or $refactorRecord.inventory.Count -ne 0 -or $refactorRecord.workstreams.Count -ne 1 -or $refactorRecord.safePoints.Count -ne 1) { throw 'Canonical refactor state is incomplete.' }
+
+        Set-Content -NoNewline -LiteralPath (Join-Path $repositoryDirectory 'verification-scope.txt') -Value 'changed verification input'
+        & $executable trust refresh
+        if ($LASTEXITCODE -ne 0) { throw 'Scoped trust refresh failed.' }
+        $staleScopedClaim = Get-Content -Raw -LiteralPath (Join-Path $repositoryDirectory ".arifce/claims/$($claimId.ToLowerInvariant()).json") | ConvertFrom-Json
+        if ($staleScopedClaim.status -ne 'STALE') { throw 'Relevant scoped change did not invalidate evidence.' }
 
         Remove-Item -Force -LiteralPath (Join-Path $repositoryDirectory '.arifce/index/arifce.db')
         & $executable rebuild

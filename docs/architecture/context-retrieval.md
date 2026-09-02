@@ -22,4 +22,4 @@ Every included block renders its path, kind, freshness, and inclusion reason. Ev
 
 Token cost is estimated as `ceil(rendered characters / 4)` and includes the metadata supplied to the agent. It is conservative but not tokenizer-exact. The selected estimate does not exceed the requested positive budget.
 
-Current freshness remains repository-snapshot scoped. File/symbol dependency invalidation and conflict detection are separate future work and must not be inferred from this pipeline. No token-reduction or effectiveness claim follows from candidate reduction alone.
+Freshness uses explicit evidence dependency paths when they exist and otherwise preserves the conservative repository-snapshot fallback. Symbol/dependency-graph invalidation and conflict detection remain separate future work and must not be inferred from this pipeline. No token-reduction or effectiveness claim follows from candidate reduction alone.
