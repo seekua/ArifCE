@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using System.Diagnostics;
 using System.Text.Json;
 using ArifCE.Core;
 using ArifCE.Infrastructure;
@@ -88,7 +89,7 @@ public sealed class LlmProviderTests
         var root = Directory.CreateTempSubdirectory("arifce-llm-");
         try
         {
-            Directory.CreateDirectory(Path.Combine(root.FullName, ".git"));
+            InitializeGit(root.FullName);
             var provider = new StubProvider("local", false);
             var router = new LlmRouter(new[] { (provider.Provider, provider.Profile) });
             var orchestrator = new LlmOrchestrator(router, new CanonicalStore(), new JournalStore(), new GitInspector());
@@ -107,7 +108,7 @@ public sealed class LlmProviderTests
         var root = Directory.CreateTempSubdirectory("arifce-llm-secret-");
         try
         {
-            Directory.CreateDirectory(Path.Combine(root.FullName, ".git"));
+            InitializeGit(root.FullName);
             var provider = new StubProvider("local", false);
             var orchestrator = new LlmOrchestrator(new LlmRouter(new[] { (provider.Provider, provider.Profile) }), new CanonicalStore(), new JournalStore(), new GitInspector());
             await Assert.ThrowsAsync<InvalidOperationException>(() => orchestrator.ExecuteAsync(root.FullName, new LlmRequest("review", "password=hunter2"), "CLAIM-0001"));
@@ -152,7 +153,7 @@ public sealed class LlmProviderTests
         var root = Directory.CreateTempSubdirectory("arifce-review-");
         try
         {
-            Directory.CreateDirectory(Path.Combine(root.FullName, ".git"));
+            InitializeGit(root.FullName);
             var provider = new StubProvider("local", false);
             var orchestrator = new LlmOrchestrator(new LlmRouter(new[] { (provider.Provider, provider.Profile) }), new CanonicalStore(), new JournalStore(), new GitInspector());
             var workflow = new LlmReviewerWorkflow(orchestrator, new CanonicalStore());
@@ -208,6 +209,7 @@ public sealed class LlmProviderTests
         var root = Directory.CreateTempSubdirectory("arifce-context-explain-");
         try
         {
+            InitializeGit(root.FullName);
             var canonical = new CanonicalStore();
             var snapshot = new GitSnapshot("abc", "main", false, [], "digest");
             await canonical.WriteAsync(root.FullName, "decisions", "ADR-0001", new DecisionRecord(1, "ADR-0001", "Token migration", "Use the current token migration", "Current architecture", "ACTIVE", "USER_CONFIRMED", null, DateTimeOffset.UnixEpoch));
@@ -237,6 +239,13 @@ public sealed class LlmProviderTests
             Assert.Empty(tiny.Content);
         }
         finally { root.Delete(true); }
+    }
+
+    private static void InitializeGit(string root)
+    {
+        using var process = Process.Start(new ProcessStartInfo("git", "init") { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false });
+        process!.WaitForExit();
+        Assert.Equal(0, process.ExitCode);
     }
 
     [Fact]
