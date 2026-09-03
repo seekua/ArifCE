@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0025",
+  "summary": "Phase 69 closed at 41b4fed; CI 33723265873 all 8 jobs passed. Safety tests pinned to 2e8b741: real Git/counting provider/persisted-secret checks and positive/negative high-risk acceptance. 85 product tests and good/seven-mutant calibration pass. ATTEMPT-0012 records bounded scanner fixture correction. FINDING-0005 stays open for eight remaining evaluator gaps; next real cross-process/index-rebuild proof. No A/B effectiveness claim; private reviews untouched.",
+  "snapshot": {
+    "commit": "41b4fed476a007323415d6021a62fd410fecbf6b",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "ROADMAP.md",
+      "docs/evidence/benchmark-safety-calibration-2026-09-03.md",
+      "docs/evidence/engineering-benchmark-readiness.md"
+    ],
+    "digest": "1fc97b3b24d8f33b24853cf050b614f680c964d5ca08cdceb82453186ba4efe4"
+  },
+  "createdAtUtc": "2026-09-03T06:33:52.0205001+00:00"
+}

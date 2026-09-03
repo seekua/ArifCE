@@ -30,7 +30,13 @@ The calibration script exports a pinned Git tree into a validated temporary dire
 
 All eight controls produced their expected outcomes on Windows against `2e8b7418391022997b95295369c0aa9766306593`. A build/restore/runner error would be ERROR and would fail calibration; it is not counted as detecting a mutant. Successful temporary fixtures are cleaned up; failed fixtures are retained for diagnosis.
 
-All 85 product behavior tests pass locally. Manifest, assessment and registry checks also pass. Both safety tasks pass independent completion integration through isolated Git/.NET trials and TRX scoring. CI's trusted source checkout fetches history so safety integration resolves the actual pinned commit; candidate checkouts still have isolated history. Remote CI is pending.
+All 85 product behavior tests pass locally. Manifest, assessment and registry checks also pass. Both safety tasks pass independent completion integration through isolated Git/.NET trials and TRX scoring. CI's trusted source checkout fetches history so safety integration resolves the actual pinned commit; candidate checkouts still have isolated history.
+
+The first CI run, 33722871828, rejected the intentionally synthetic password fixture because its new test path was not in the scanner's existing fixture policy. ATTEMPT-0012 records the failure. The correction adds only the same known synthetic value/pattern for BenchmarkSafetyTests.cs. A new regression confirms that a different value in that file and the same value in another file are still rejected; the complete local secret scan passes. No broad scanner rule was disabled.
+
+## Remote proof
+
+Commit `41b4fed` passed [GitHub Actions run 33723265873](https://github.com/seekua/ArifCE/actions/runs/33723265873). All three OS build/test/package jobs and five self-contained binary targets succeeded. Ubuntu independently ran both pinned safety evaluators and the good/seven-mutant calibration. Windows, macOS and Ubuntu ran all 85 product tests and the bounded scanner-fixture regression. Phase 69 is closed against this commit; the registry's safety source pin remains `2e8b7418391022997b95295369c0aa9766306593`.
 
 ## Limits and next work
 

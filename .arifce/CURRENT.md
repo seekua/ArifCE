@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 through 68 are closed. Phase 68 implementation `24d80d9` passed CI run 33713426843: all three OS test/package jobs and five native binaries succeeded. TASK-0018 covers equal public contracts for all ten tasks, contract hashes, and TRX-based assertion/error separation. All 83 behavior tests plus local contract/isolation/completion/registry/suite checks passed. FINDING-0005 remains OPEN: pinned evaluator coverage is insufficient for effectiveness claims, so productClaimEligible stays false. Prior timing, token provenance and graph corrections remain in place.
+Phase 56 through 69 are closed. Phase 69 at `41b4fed` passed CI run 33723265873: three OS test/package jobs and five binaries succeeded. All 85 product tests pass. Secret-boundary and acceptance evaluators are pinned to 2e8b741; both independent integrations and the good/seven-mutant calibration passed locally and on Ubuntu CI. TASK-0019 records the work. ATTEMPT-0012 records the initial synthetic-secret scanner omission and narrow, regression-protected correction. FINDING-0005 stays OPEN for the remaining evaluator gaps; productClaimEligible remains false.
 
 ## Blockers
 
@@ -14,6 +14,4 @@ The next comparative benchmark is gated on FINDING-0005 evaluator remediation an
 
 ## Next steps
 
-Phase 69 (TASK-0019) replaces two weak evaluators with pinned BenchmarkSafetyTests at 2e8b741. All 85 behavior tests, both independent completion integrations and known-good/seven-mutant calibration pass locally. Remote CI is pending. Public contracts are updated. FINDING-0005 stays open for remaining coverage; productClaimEligible remains false.
-
-Start with false-positive-prone secret-boundary and reject-only acceptance evaluators; use real Git, provider invocation counters, persisted outcomes and positive/negative controls. Then add real cross-process/index-rebuild checks and calibrate remaining task coverage before pinning the next evaluator revision. See docs/evidence/benchmark-contract-audit-2026-09-03.md. Only after calibration, establish equal permissions and rerun fresh matched sessions with captured usage/host timing. Active work remains unavailable because internal waits are not separated. Preserve evaluator/interruption errors, historical results and private reviews; no product-effectiveness result has been established.
+Next strengthen canonical-concurrency with real OS processes and index deletion/rebuild checks, then calibrate the other remaining evaluator objectives before a new study. Secret and acceptance coverage is now stronger but finite; see docs/evidence/benchmark-safety-calibration-2026-09-03.md for explicit limits. Only after evaluator calibration, establish equal permissions and rerun fresh matched sessions with captured usage/host timing. Active work remains unavailable because internal waits are not separated. Preserve evaluator/interruption errors, historical results and private reviews; no product-effectiveness result has been established.
