@@ -11,11 +11,12 @@
       "instruction": "Make evidence freshness change when the bytes of an already-dirty file change without changing its path.",
       "verification": "A regression test demonstrates different GitSnapshot digests for two contents at the same dirty path.",
       "acceptanceContract": [
-        "Preserve existing ProjectService.InitializeAsync/CreateClaimAsync/VerifyAsync and GitInspector.CaptureAsync entry points. This legacy fixture invokes VerifyAsync(root, claimId, platform true/ver) without an approval argument and expects Supported, evidence kind UNVERIFIED_COMMAND and exit code 0; it does not request stronger verification status.",
-        "GitSnapshot.Digest must change after a new untracked file and after changing that same file's bytes; EvidenceEvaluator.Evaluate(oldSnapshot, newSnapshot) must return EvidenceFreshness.Stale."
+        "Preserve GitInspector.CaptureAsync and EvidenceEvaluator.Evaluate. Unchanged clean and unchanged dirty state must be CURRENT; missing snapshot digests must be UNKNOWN; nested untracked byte edits, tracked edits/deletions, renames, branch changes and detached HEAD must produce changed digests and STALE.",
+        "ChangedFiles must retain literal Unicode and space-containing names and both rename endpoints. On Unix the fixture also checks quotes, newlines, arrow text and edge whitespace in names. Internal .arifce metadata alone must not invalidate the repository snapshot.",
+        "Non-repository capture must throw InvalidOperationException. Unexpanded Git directories such as an embedded repository must be rejected with a directory diagnostic, not fingerprinted as unchanged missing files. No generic shell verification or command evidence kind is a prerequisite."
       ],
       "evaluationLimitations": [
-        "Tests one untracked-file edit sequence, not the full rename, branch, configuration or dependency matrix. Legacy shell compatibility is a harness prerequisite, not a recommendation to weaken command policy."
+        "Bounded real-Git fixtures do not exhaust rebases, merges, shallow clones, ignored files, non-UTF8 filenames, concurrent edits during capture or scoped dependency freshness. An embedded repository is rejected rather than recursively modeled; submodule contents are not claimed supported."
       ]
     },
     {

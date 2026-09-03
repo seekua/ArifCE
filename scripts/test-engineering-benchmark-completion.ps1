@@ -51,7 +51,7 @@ try {
     $result | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $trial 'result.json') -Encoding utf8
     $registry = Get-Content -LiteralPath (Join-Path $repo 'benchmarks/evaluators.json') -Raw | ConvertFrom-Json
     $registry.evaluators = @($registry.evaluators | Where-Object taskId -eq $TaskId)
-    if ($registry.evaluators[0].fixture -notin @('safety','storage')) { $registry.evaluators[0].sourceCommit = $manifest.fixtureCommit }
+    if ($registry.evaluators[0].fixture -notin @('safety','storage','freshness')) { $registry.evaluators[0].sourceCommit = $manifest.fixtureCommit }
     $registryPath = Join-Path $root 'smoke-evaluators.json'
     $registry | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $registryPath -Encoding utf8
     & (Join-Path $PSScriptRoot 'run-engineering-task-evaluator.ps1') -TrialRoot $trial -EvaluatorRegistry $registryPath -SourceRepository $repo | Out-Null

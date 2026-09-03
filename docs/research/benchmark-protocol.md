@@ -24,6 +24,8 @@ Suite preparation and collection are separate. Preparation creates all twenty is
 
 Phase 70 adds a [pinned storage fixture](../evidence/benchmark-storage-calibration-2026-09-03.md) with real child test-host processes and index deletion/rebuild checks. Both parent assertions are selected for independent scoring; the worker entrypoint and barriers travel in the same pinned source, never in candidate-authored helpers. The evaluator requires the .NET SDK/test runner as development infrastructure; this does not add a runtime dependency to the distributed CLI. Reproduce controls with `./scripts/test-engineering-benchmark-storage-calibration.ps1 -SourceCommit <commit>`. This is not crash recovery, concurrent index rebuilding, or an actual SQL migration benchmark.
 
+Phase 71 replaces dirty-content scoring with a [pinned real-Git freshness fixture](../evidence/benchmark-freshness-calibration-2026-09-03.md). It removes unrelated legacy generic-command/evidence-kind requirements and checks both CURRENT and STALE, UNKNOWN digests, literal paths, nested untracked files, branch/deletion/rename changes and explicit failure cases. `./scripts/test-engineering-benchmark-freshness-calibration.ps1 -SourceCommit <commit>` calibrates good code and six wrong variants. Historical runs retain their original evaluator hashes; no retroactive rescore or effectiveness claim is permitted.
+
 `scripts/validate-engineering-benchmark.ps1` is a legacy shape/coverage validator for imported rows, not host-usage provenance verification. Its imported totals must not be presented as captured token measurements. Use the completion and collection pipeline above for log-bound measurements. Negative results remain in the published report.
 
 ## Captured token usage

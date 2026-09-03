@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "FINDING-0006",
+  "title": "Git snapshot misses nested untracked edits and misreads literal paths",
+  "description": "Regression tests reproduce an unchanged digest after nested untracked file content changes (false CURRENT), Windows Unicode path decoding failure, and failure on deleted tracked files before the missing marker. Fix machine-readable Git status parsing and explicit missing-file handling. Tests: BenchmarkFreshnessTests.",
+  "severity": "CRITICAL",
+  "status": "OPEN",
+  "taskId": "TASK-0021",
+  "path": "src/ArifCE.Infrastructure/Services.cs",
+  "createdAtUtc": "2026-09-03T08:51:10.2210516+00:00"
+}

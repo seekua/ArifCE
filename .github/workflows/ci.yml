@@ -81,6 +81,10 @@ jobs:
       - name: Package smoke test
         shell: pwsh
         run: ./scripts/package-smoke.ps1 -Configuration Release
+      - name: Freshness evaluator good and bad controls
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: ./scripts/test-engineering-benchmark-freshness-calibration.ps1
 
   self-contained-cli:
     name: Self-contained CLI (${{ matrix.rid }})

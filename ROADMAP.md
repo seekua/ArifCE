@@ -102,6 +102,8 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 69: replace secret-boundary and acceptance evaluators with persisted-state/positive-negative checks, pin their source, and calibrate against good code plus seven incorrect variants; verified by [CI run 33723265873](https://github.com/seekua/ArifCE/actions/runs/33723265873).
 - [x] Phase 70: replace single-process storage scoring with pinned three-process contention and disposable-index/canonical-byte checks; good/four-mutant calibration, independent integration and the three-OS/five-binary matrix pass in [CI run 33725187026](https://github.com/seekua/ArifCE/actions/runs/33725187026). See docs/evidence/benchmark-storage-calibration-2026-09-03.md.
 
+- [ ] Phase 71: fix nested-untracked/literal-path/deleted-file snapshot defects and replace legacy dirty-content scoring; 92 local tests, independent integration and good/six-mutant calibration pass; remote closure pending. See docs/evidence/benchmark-freshness-calibration-2026-09-03.md.
+
 ## Explicit deferrals
 
 - **Remaining evaluator calibration:** Phases 69–70 close three of ten evaluator replacements with finite good/bad calibration: secret boundary, acceptance policy, and cross-process storage/index reconstruction. Seven other evaluator gaps and fresh real A/B runs remain open. The password fixture and High-risk acceptance matrix do not establish every secret format, Critical-risk policy, reviewer identity independence or evidence issuer authenticity. Storage checks do not establish crash recovery, network-filesystem locking, concurrent rebuilds or real SQL schema migrations; these controls do not establish model effectiveness.

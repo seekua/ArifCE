@@ -10,6 +10,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'benchmark-assessment.ps1')
 . (Join-Path $PSScriptRoot 'benchmark-safety-source.ps1')
 . (Join-Path $PSScriptRoot 'benchmark-storage-source.ps1')
+. (Join-Path $PSScriptRoot 'benchmark-freshness-source.ps1')
 $repo = if ([string]::IsNullOrWhiteSpace($SourceRepository)) { Split-Path -Parent $PSScriptRoot } else { [IO.Path]::GetFullPath($SourceRepository) }
 $trial = [IO.Path]::GetFullPath($TrialRoot)
 $resultPath = Join-Path $trial 'result.json'
@@ -42,6 +43,7 @@ $tests = @($entry.methods | ForEach-Object { Extract-Test $sourceText $_ }) -joi
 $classBody = switch ($entry.fixture) {
     'safety' { ConvertTo-BenchmarkSafetySource $sourceText }
     'storage' { ConvertTo-BenchmarkStorageSource $sourceText }
+    'freshness' { ConvertTo-BenchmarkFreshnessSource $sourceText }
     'behavior' { @"
 using System.Diagnostics;
 using ArifCE.Core;

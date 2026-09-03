@@ -6,6 +6,8 @@ Historical audit snapshot: registry at `24d80d9`. Phase 69 [replaces and calibra
 
 Phase 70's [storage evaluator report](benchmark-storage-calibration-2026-09-03.md) tracks the subsequent cross-process/index replacement. The table below remains the historical audit, not a claim that newer tests still have the same coverage.
 
+Phase 71's [freshness report](benchmark-freshness-calibration-2026-09-03.md) tracks the dirty-content replacement and production path-handling defects it exposed.
+
 The first suite is not suitable for product-effectiveness claims. In addition to permission variance, pinned tests contain undisclosed API/message dependencies and partial behavioral coverage. Compilation or restore failures were previously collapsed into the same boolean as failed assertions. The historical report is retained, not retrospectively rewritten as a valid experiment.
 
 This audit reads the exact source commits and methods in `benchmarks/evaluators.json`, not current tests with similar names. Exposing their compatibility requirements fixes a fairness defect, but does not repair weak assertions. The original engineering objectives remain in the manifest; limitations do not redefine them downward.

@@ -4,10 +4,10 @@
   "evaluators": [
     {
       "taskId": "trust-dirty-content",
-      "sourceCommit": "1b5de55ecc0e6e97a34d5ec18b80c204d0e7a3ce",
-      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
-      "fixture": "behavior",
-      "methods": ["Claim_verification_and_git_freshness_are_snapshot_scoped"]
+      "sourceCommit": "d040501021a44c82b7c5bbfe643f1c6aa45e88a7",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkFreshnessTests.cs",
+      "fixture": "freshness",
+      "methods": ["Freshness_tracks_nested_untracked_bytes", "Freshness_tracks_literal_paths_and_renames", "Freshness_distinguishes_current_stale_unknown_and_git_failure", "Freshness_rejects_unexpanded_git_directories"]
     },
     {
       "taskId": "acceptance-risk-policy",
