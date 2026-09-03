@@ -25,7 +25,7 @@ param([string]$Literal)
 $prompt = [Console]::In.ReadToEnd()
 if ($prompt.Trim() -ne 'test prompt' -or (Split-Path -Leaf (Get-Location)) -ne 'checkout') { exit 9 }
 [Console]::Out.WriteLine($Literal)
-for ($i=0; $i -lt 3000; $i++) { [Console]::Out.WriteLine('output payload'); [Console]::Error.WriteLine('diagnostic payload') }
+for ($i=0; $i -lt 10000; $i++) { [Console]::Out.WriteLine('output payload'); [Console]::Error.WriteLine('diagnostic payload') }
 Start-Sleep -Milliseconds 150
 '@ | Set-Content -LiteralPath $fixture
     $outer = [Diagnostics.Stopwatch]::StartNew()
@@ -34,6 +34,7 @@ Start-Sleep -Milliseconds 150
     $measurement = Read-BenchmarkHostTiming $trial
     if ($measurement.hostExitCode -ne 0 -or $measurement.hostElapsedMs -lt 150 -or $measurement.hostElapsedMs -gt $outer.ElapsedMilliseconds -or $null -ne $measurement.activeWorkMs) { throw 'Process timing was misclassified or measured outside capture.' }
     if ((Get-Content -LiteralPath (Join-Path $trial 'agent.log') -First 1) -cne 'literal ; & argument') { throw 'Argument boundaries were lost.' }
+    if ([IO.File]::ReadAllLines((Join-Path $trial 'agent.log')).Count -ne 10001 -or [IO.File]::ReadAllLines((Join-Path $trial 'host.stderr.log')).Count -ne 10000) { throw 'Host output was truncated or lost.' }
     $result = [pscustomobject]@{timeMeasurement=$measurement}
     Assert-BenchmarkHostTiming $result $trial
     $summary = Get-BenchmarkHostTimeSummary @($result, $result)
