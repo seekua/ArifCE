@@ -6,9 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 73 is in progress under TASK-0023: four new graph evaluator tests pass with unchanged product implementation (101 local tests total). Source is pinned at 6af42086596a470d32d0d4844b5f3cf0378d5f8d; calibration, independent integration and remote closure are pending. See docs/evidence/benchmark-graph-calibration-2026-09-03.md.
-
-Phase 72 is closed at d469c7425a1964dd673c7e4e94e6a3fe9fc6a711 by CI 33740663018: 97 tests on each of three OS targets, five binaries, pinned independent integrations and good/six-mutant propagation calibration. TASK-0022 / FINDING-0008 record the acceptance-basis, ownership and repeated-warning fix. ATTEMPT-0014 preserves an initial compiler ERROR, not a caught mutant. See docs/evidence/benchmark-propagation-calibration-2026-09-03.md. Earlier freshness/storage closure and loss evidence remain in the Phase 71 report. FINDING-0005 remains OPEN; productClaimEligible stays false.
+Phase 73 is closed at b47f17aa66f2925cf1474ad4bdda9fae975fa009 by CI 33743344157: 101 tests on each of three OS targets, five binaries, six pinned independent integrations and good/six-mutant graph calibration. TASK-0023 strengthens scoring with unchanged product code. Fixture source is pinned at 6af42086596a470d32d0d4844b5f3cf0378d5f8d. See docs/evidence/benchmark-graph-calibration-2026-09-03.md. Previous phase reports preserve earlier defects and negative evidence. FINDING-0005 remains OPEN; productClaimEligible stays false.
 
 ## Blockers
 
@@ -16,4 +14,4 @@ The next comparative benchmark is gated on FINDING-0005 evaluator remediation an
 
 ## Next steps
 
-Next strengthen deterministic code-graph confidence, source-change and disposable-rebuild assertions with good/bad calibration. Five of ten evaluator objectives remain (graph, contracts, flight recorder, MCP, unfinished verification); five are calibrated with explicit limits. See docs/evidence/benchmark-propagation-calibration-2026-09-03.md. Only afterwards run fresh, permission-matched repeated model trials with captured usage/host timing. Active work remains unavailable. Preserve failures, historical results and private reviews; no product-effectiveness result is established.
+Next strengthen change-contract linkage, confidence, persisted lifecycle and trusted-scope assertions with good/bad calibration. Four of ten evaluator objectives remain (contracts, flight recorder, MCP, unfinished verification); six are calibrated with explicit limits. See docs/evidence/benchmark-graph-calibration-2026-09-03.md. Only afterwards run fresh, permission-matched repeated model trials with captured usage/host timing. Active work remains unavailable. Preserve failures, historical results and private reviews; no product-effectiveness result is established.

@@ -33,12 +33,16 @@ All four tests must execute exactly once. Compiler, restore and runner errors pr
 
 ## Verification status
 
-All 101 local product tests pass (zero skipped). The first compile of the new fixture was rejected by xUnit2031 for two `Assert.Single(Where(...))` expressions; using the predicate overload fixed the test code without weakening assertions or analyzer policy. Windows calibration at `6af42086596a470d32d0d4844b5f3cf0378d5f8d` passed good code and rejected all six wrong variants through executed assertions. Manifest, registry, assessment and secret-scan checks pass. Independent integration and remote closure are pending. No false product defect is inferred from a test-authoring error.
+All 101 local product tests pass (zero skipped). The first compile of the new fixture was rejected by xUnit2031 for two `Assert.Single(Where(...))` expressions; using the predicate overload fixed the test code without weakening assertions or analyzer policy. Windows calibration at `6af42086596a470d32d0d4844b5f3cf0378d5f8d` passed good code and rejected all six wrong variants through executed assertions. Manifest, registry, assessment and secret-scan checks pass. Independent completion integration passed with the actual pinned fixture, including token/timing/log tamper rejection. No false product defect is inferred from a test-authoring error.
+
+## Remote closure
+
+Commit `b47f17aa66f2925cf1474ad4bdda9fae975fa009` passed [CI run 33743344157](https://github.com/seekua/ArifCE/actions/runs/33743344157). All eight jobs succeeded: Windows/macOS/Ubuntu build-test-package and five self-contained binaries. Each OS test log reports 101 passed, zero failed and zero skipped. Ubuntu passed six pinned completion integrations, all previous calibration steps, and the graph good/six-mutant controls through executed assertions. TASK-0023 closes Phase 73 against this evidence; the broader FINDING-0005 remains open.
 
 ## Limits
 
 This is deterministic syntax-fixture coverage, not a real model task, compiler-bound receiver/overload resolution, full C#/MSBuild interpretation or a performance benchmark. The fixture uses slash-separated project paths; conditional imports, external references, path escapes/symlinks, concurrent rebuilds and crash recovery are not exhausted. Symbol identity stability across arbitrary edits and complete language coverage are not established. Heuristic same-name candidates can be ambiguous and are not promoted to trust.
 
-Canonical preservation covers seeded CURRENT/decision documents and deletion of the graph cache, not every memory entity or every SQLite table. Source edits during capture are not simulated. No speed, token savings or measured engineering benefit is claimed.
+Canonical preservation covers seeded CURRENT/decision documents and deletion of the graph cache, not every memory entity or every SQLite table. Source edits during capture and valid-JSON caches with forged contents are not simulated. No speed, token savings or measured engineering benefit is claimed.
 
-Five evaluator objectives were previously calibrated; this phase addresses the sixth. Change contracts, flight recorder, MCP validation and unfinished-verification policy remain, followed by a fresh permission-matched repeated model study with captured usage/host timing. FINDING-0005 remains open and productClaimEligible remains false.
+Six of ten evaluator objectives now have strengthened assertions and finite good/bad calibration. Change contracts, flight recorder, MCP validation and unfinished-verification policy remain, followed by a fresh permission-matched repeated model study with captured usage/host timing. FINDING-0005 remains open and productClaimEligible remains false.

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0029",
+  "summary": "Phase 73 closed at b47f17aa66f2925cf1474ad4bdda9fae975fa009 by CI 33743344157: 101 tests per OS, five self-contained binaries, six pinned independent integrations and graph good/six-mutant calibration. Product code unchanged; graph scoring now checks confidence, source/cache lifecycle, canonical bytes and trusted closure. Six of ten evaluator objectives calibrated; FINDING-0005 remains open and productClaimEligible false. Next: change contracts.",
+  "snapshot": {
+    "commit": "b47f17aa66f2925cf1474ad4bdda9fae975fa009",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "ROADMAP.md",
+      "docs/evidence/benchmark-graph-calibration-2026-09-03.md",
+      "docs/evidence/engineering-benchmark-readiness.md"
+    ],
+    "digest": "f83ee7e4293904934b6f2d18f0c15d256d4014fdd1e54631effd7ce989bf6517"
+  },
+  "createdAtUtc": "2026-09-03T10:29:40.8932041+00:00"
+}
