@@ -3,7 +3,7 @@
   "id": "TASK-0016",
   "title": "Bind benchmark token counts to captured host usage",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "MEDIUM",
   "createdAtUtc": "2026-09-03T03:06:11.0111216+00:00"
 }

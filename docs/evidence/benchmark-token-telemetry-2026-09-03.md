@@ -25,4 +25,4 @@ Log hashing and reparsing detect inconsistent artifacts, not a dishonest operato
 
 ## Remote proof
 
-Pending. Local success is not represented as cross-platform CI success.
+Implementation commit `5730474` passed [GitHub Actions run 33710861430](https://github.com/seekua/ArifCE/actions/runs/33710861430). All three operating-system build/test/package jobs and all five self-contained binary jobs succeeded. Token parser regressions ran on Windows, Ubuntu, and macOS; the full completion integration ran on Ubuntu in CI and Windows locally. Phase 66 is closed against this implementation.

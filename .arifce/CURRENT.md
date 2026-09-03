@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 through 65 are closed. Phase 64 correction `297a6a9` passed remote CI run 33687771905 after two adversarial regressions exposed same-line declaration collisions and wrong call ownership. Graph generator version 6 rebuilds earlier caches. Phase 65 correction `dd26ff9` passed remote CI run 33688503940 and all 83 local tests. Canonical impact-candidate confidence now reflects the connecting graph relationship rather than declaration certainty.
+Phase 56 through 66 are closed. Phase 66 implementation `5730474` passed remote CI run 33710861430: all three OS test/package jobs and five self-contained targets succeeded. Token counts are derived from captured single-turn Codex JSONL events and reparsed during verification; missing usage stays unavailable. All 83 local behavior tests and benchmark telemetry/completion/suite checks passed. TASK-0016 and ATTEMPT-0011 record the work and the corrected Windows parser file-handle failure. Earlier graph version 6 and relationship-confidence corrections remain in place.
 
 ## Blockers
 
@@ -14,6 +14,4 @@ No implementation or release blocker is known. Heuristic caller/test relationshi
 
 ## Next steps
 
-Phase 66 token telemetry ingestion passes local parser, completion, suite-rejection, and all 83 behavior tests. Remote CI is pending. TASK-0016 tracks this work. Missing counters now remain unavailable; synthetic telemetry fixtures are not real A/B results.
-
-The current implementation and packaging corrections are complete. Remaining V0.9 work includes unconfounded benchmark reruns with real token telemetry and compiler-bound relationship precision; see explicit ROADMAP deferrals. Keep heuristic graph relationships outside automatic trust decisions. Historical contracts retain their original snapshots; recreate them to obtain corrected candidate-confidence labels.
+Remaining V0.9 work: capture active execution time separately from preparation/approval/evaluation delay, then rerun matched real trials with equal pre-authorized permissions and captured usage. Phase 66 synthetic fixtures are not A/B measurements; the first real run remains inconclusive. Other host/multi-turn telemetry and compiler-bound relationship precision are explicitly deferred in ROADMAP. Keep heuristic graph relationships outside automatic trust decisions. Historical contracts retain their snapshots; recreate them for corrected candidate-confidence labels.

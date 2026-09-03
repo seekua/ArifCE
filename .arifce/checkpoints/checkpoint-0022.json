@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0022",
+  "summary": "Phase 66 closed: log-bound single-turn Codex usage, null unavailable aggregates, parser and completion regressions, 83 local tests, CI 33710861430 all 8 jobs passed at 5730474. No new A/B effectiveness result. Next: active-time telemetry and permission-controlled real trials; private review files remain untouched.",
+  "snapshot": {
+    "commit": "573047457d3bb3155c5c337382988dc29b0b63e6",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "ROADMAP.md",
+      "docs/evidence/benchmark-token-telemetry-2026-09-03.md"
+    ],
+    "digest": "2305613c17aae18f4ac35da34cdbe9f9a7e599cf3a78d7eee495f42ea57e2a83"
+  },
+  "createdAtUtc": "2026-09-03T03:26:57.2945534+00:00"
+}
