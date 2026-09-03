@@ -7,6 +7,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'benchmark-assessment.ps1')
 $repo = if ([string]::IsNullOrWhiteSpace($SourceRepository)) { Split-Path -Parent $PSScriptRoot } else { [IO.Path]::GetFullPath($SourceRepository) }
 $trial = [IO.Path]::GetFullPath($TrialRoot)
 $resultPath = Join-Path $trial 'result.json'
@@ -114,10 +115,12 @@ $($referenceXml -join "`n")
 $sourcePath = Join-Path $evaluatorRoot 'IndependentTests.cs'
 $projectPath = Join-Path $evaluatorRoot 'IndependentEvaluator.csproj'
 $outputPath = Join-Path $evaluatorRoot 'evaluator.log'
+$trxPath = Join-Path $evaluatorRoot 'results/evaluator.trx'
 Set-Content -LiteralPath $sourcePath -Value $classBody -Encoding utf8
 Set-Content -LiteralPath $projectPath -Value $project -Encoding utf8
 Push-Location $evaluatorRoot
-try { & dotnet test $projectPath --configuration Release --disable-build-servers --maxcpucount:1 *> $outputPath; $exitCode = $LASTEXITCODE } finally { Pop-Location }
+try { & dotnet test $projectPath --configuration Release --disable-build-servers --maxcpucount:1 --logger 'trx;LogFileName=evaluator.trx' --results-directory (Join-Path $evaluatorRoot 'results') *> $outputPath; $exitCode = $LASTEXITCODE } finally { Pop-Location }
+$assessment = Read-BenchmarkAssessment $trxPath $exitCode @($entry.methods)
 $evaluation = [ordered]@{
     registrySha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $registryPath).Hash.ToLowerInvariant()
     sourceCommit = $entry.sourceCommit
@@ -127,8 +130,10 @@ $evaluation = [ordered]@{
     projectSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $projectPath).Hash.ToLowerInvariant()
     outputSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $outputPath).Hash.ToLowerInvariant()
     exitCode = $exitCode
-    taskPassed = ($exitCode -eq 0)
+    taskPassed = $assessment.taskPassed
+    assessment = $assessment
+    testResultsSha256 = if (Test-Path -LiteralPath $trxPath) { (Get-FileHash -Algorithm SHA256 -LiteralPath $trxPath).Hash.ToLowerInvariant() } else { $null }
 }
 $result | Add-Member -NotePropertyName independentEvaluation -NotePropertyValue $evaluation
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8
-Write-Output "Independent evaluator $($entry.taskId): $(if ($exitCode -eq 0) { 'PASS' } else { 'FAIL' })"
+Write-Output "Independent evaluator $($entry.taskId): $($assessment.status)"

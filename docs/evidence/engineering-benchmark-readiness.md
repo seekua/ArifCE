@@ -1,6 +1,6 @@
 # Engineering benchmark execution status
 
-Status: **runner proven; first complete matched run recorded**.
+Status: **first matched run retained; comparative rerun gated on evaluator remediation**.
 
 On 2026-09-02 the repository completed ten matched task pairs with history-free trials, hash-bound candidate provenance, and withheld task-specific evaluators. The raw independent pass counts were three baseline and four ArifCE-assisted candidates, but a write-permission confound determined the only differing pass. No effectiveness claim is made.
 
@@ -22,3 +22,5 @@ Phase 66 adds [log-bound token ingestion](benchmark-token-telemetry-2026-09-03.m
 Phase 67 adds a [host-process stopwatch and capture wrapper](benchmark-host-timing-2026-09-03.md), separating process execution from outer preparation/evaluation delay. In-process waits cannot yet be subtracted, so active work remains unavailable. Capture integrity and completion integration pass local tests; no new model executions are included.
 
 Before the next real run, audit prompt/evaluator contract alignment: the first report records several failures involving required API shapes. Determine whether each expected public contract is stated in the task or is merely an implementation-specific evaluator assumption. Keep regression implementations withheld, but expose necessary acceptance requirements equally to both arms. This review is still open; telemetry alone does not make the experiment fair.
+
+The [Phase 68 audit](benchmark-contract-audit-2026-09-03.md) now records all ten pinned evaluators' actual coverage. Required contracts are disclosed equally and evaluator errors are separated from assertion failures. However, false-positive-prone secret/acceptance tests, in-process-only concurrency coverage, and other partial assertions still require remediation and good/bad calibration. No comparative model run should be advertised as valid before that work is complete.

@@ -21,6 +21,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'benchmark-contract.ps1')
 $repo = Split-Path -Parent $PSScriptRoot
 function Resolve-RepoPath([string]$Path) {
     if ([IO.Path]::IsPathRooted($Path)) { return [IO.Path]::GetFullPath($Path) }
@@ -36,6 +37,7 @@ $manifestPath = Resolve-RepoPath $Manifest
 $definition = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 $task = @($definition.tasks | Where-Object id -eq $TaskId)
 if ($task.Count -ne 1) { throw "Benchmark task '$TaskId' was not found exactly once in $Manifest." }
+$acceptanceContract = Get-BenchmarkAcceptanceContract $definition $task[0]
 if ([string]::IsNullOrWhiteSpace($Model)) { throw 'Model must not be blank.' }
 
 $fixtureCommit = [string]$definition.fixtureCommit
@@ -117,6 +119,8 @@ $($task[0].instruction)
 
 $($task[0].verification)
 
+$acceptanceContract
+
 ## Arm boundary
 
 $armGuidance
@@ -141,6 +145,7 @@ $session = [ordered]@{
     remoteCount = $remotes.Count
     model = $Model
     tokenBudget = $TokenBudget
+    acceptanceContractSha256 = Get-BenchmarkContractHash $acceptanceContract
     checkout = 'checkout'
     prompt = 'prompt.md'
 }

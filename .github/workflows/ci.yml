@@ -44,6 +44,7 @@ jobs:
         run: |
           ./scripts/validate-engineering-benchmark.ps1 -ValidateManifestOnly
           ./scripts/test-engineering-benchmark-registry.ps1
+          ./scripts/test-engineering-benchmark-assessment.ps1
       - name: Engineering benchmark isolation
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-trial.ps1

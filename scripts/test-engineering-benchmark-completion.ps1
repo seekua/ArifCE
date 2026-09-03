@@ -57,6 +57,7 @@ try {
     & (Join-Path $PSScriptRoot 'run-engineering-task-evaluator.ps1') -TrialRoot $trial -EvaluatorRegistry $registryPath -SourceRepository $repo | Out-Null
     $result = Get-Content -LiteralPath (Join-Path $trial 'result.json') -Raw | ConvertFrom-Json
     if (-not $result.independentEvaluation.taskPassed -or $result.independentEvaluation.exitCode -ne 0) { throw 'Independent trusted evaluator did not pass.' }
+    if ($result.independentEvaluation.assessment.status -ne 'PASSED' -or [string]::IsNullOrWhiteSpace($result.independentEvaluation.testResultsSha256)) { throw 'Executed test evidence is missing.' }
     $evaluatorProject = Join-Path $trial 'independent-evaluator/IndependentEvaluator.csproj'
     $projectHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $evaluatorProject).Hash.ToLowerInvariant()
     if ($result.independentEvaluation.projectSha256 -ne $projectHash) { throw 'Independent evaluator project provenance is missing or invalid.' }

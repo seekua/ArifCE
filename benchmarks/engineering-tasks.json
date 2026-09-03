@@ -1,19 +1,136 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "https://github.com/seekua/ArifCE.git",
   "fixtureCommit": "be05904",
   "minimumTasks": 10,
   "requiredCategories": ["BUG_FIX", "FEATURE", "REFACTOR", "REGRESSION", "API_CHANGE", "DATABASE_MIGRATION", "CONTINUATION", "HANDOFF", "OLD_DECISION", "KNOWN_FAILED_APPROACH"],
   "tasks": [
-    { "id": "trust-dirty-content", "category": "BUG_FIX", "instruction": "Make evidence freshness change when the bytes of an already-dirty file change without changing its path.", "verification": "A regression test demonstrates different GitSnapshot digests for two contents at the same dirty path." },
-    { "id": "acceptance-risk-policy", "category": "REGRESSION", "instruction": "Prevent high-risk claims from being accepted without current build, test, and independent-review evidence.", "verification": "Acceptance fails closed until every risk-policy requirement exists." },
-    { "id": "llm-secret-boundary", "category": "KNOWN_FAILED_APPROACH", "instruction": "Prevent detectable secrets from leaving through LLM prompts or entering canonical evidence through model output.", "verification": "A secret prompt never calls the provider and a secret response is redacted before persistence." },
-    { "id": "canonical-concurrency", "category": "DATABASE_MIGRATION", "instruction": "Preserve every evidence link when multiple processes update one canonical claim concurrently without making SQLite authoritative.", "verification": "Concurrent updates retain all links and the index remains disposable." },
-    { "id": "stale-propagation", "category": "OLD_DECISION", "instruction": "Propagate stale evidence to its claim, accepted record, and handoff warning without self-invalidating on .arifce metadata writes.", "verification": "The claim becomes STALE, acceptance needs review, and handoff names the warning." },
-    { "id": "deterministic-code-graph", "category": "FEATURE", "instruction": "Add a dependency-light deterministic C# graph for declarations, references, project dependencies, and related-test candidates.", "verification": "Derived graph rebuilds from source and labels heuristic relationships separately from exact ones." },
-    { "id": "change-impact-contract", "category": "API_CHANGE", "instruction": "Create a pre-change contract for a code symbol using impact candidates, tests, history, invariants, and the existing claim lifecycle.", "verification": "No duplicate evidence or acceptance lifecycle is introduced." },
-    { "id": "structured-flight-recorder", "category": "HANDOFF", "instruction": "Record bounded agent investigations, attempts, evidence, decisions, and results without storing raw transcripts.", "verification": "A failed task-linked attempt becomes searchable canonical memory and appears in handoff." },
-    { "id": "mcp-validation", "category": "REFACTOR", "instruction": "Make MCP schemas enforceable at runtime and reject oversized input, invalid enums, unknown fields, and path-like IDs.", "verification": "Malformed calls return typed JSON-RPC errors before canonical access." },
-    { "id": "unfinished-verification-policy", "category": "CONTINUATION", "instruction": "Continue the unfinished verification hardening by separating named dotnet checks from explicitly approved shell commands.", "verification": "Named checks avoid a shell; unsafe success never produces VERIFIED." }
+    {
+      "id": "trust-dirty-content",
+      "category": "BUG_FIX",
+      "instruction": "Make evidence freshness change when the bytes of an already-dirty file change without changing its path.",
+      "verification": "A regression test demonstrates different GitSnapshot digests for two contents at the same dirty path.",
+      "acceptanceContract": [
+        "Preserve existing ProjectService.InitializeAsync/CreateClaimAsync/VerifyAsync and GitInspector.CaptureAsync entry points. This legacy fixture invokes VerifyAsync(root, claimId, platform true/ver) without an approval argument and expects Supported, evidence kind UNVERIFIED_COMMAND and exit code 0; it does not request stronger verification status.",
+        "GitSnapshot.Digest must change after a new untracked file and after changing that same file's bytes; EvidenceEvaluator.Evaluate(oldSnapshot, newSnapshot) must return EvidenceFreshness.Stale."
+      ],
+      "evaluationLimitations": [
+        "Tests one untracked-file edit sequence, not the full rename, branch, configuration or dependency matrix. Legacy shell compatibility is a harness prerequisite, not a recommendation to weaken command policy."
+      ]
+    },
+    {
+      "id": "acceptance-risk-policy",
+      "category": "REGRESSION",
+      "instruction": "Prevent high-risk claims from being accepted without current build, test, and independent-review evidence.",
+      "verification": "Acceptance fails closed until every risk-policy requirement exists.",
+      "acceptanceContract": [
+        "Preserve ProjectService.CreateAcceptanceAsync(root, claimId, approver, rationale). After a High-risk claim has only successful generic-command evidence (VerifyAsync with platform true/ver), acceptance must throw InvalidOperationException."
+      ],
+      "evaluationLimitations": [
+        "This evaluator tests only rejection with insufficient evidence. It does not prove each required evidence kind or successful acceptance when all requirements are met; an implementation rejecting every acceptance could pass."
+      ]
+    },
+    {
+      "id": "llm-secret-boundary",
+      "category": "KNOWN_FAILED_APPROACH",
+      "instruction": "Prevent detectable secrets from leaving through LLM prompts or entering canonical evidence through model output.",
+      "verification": "A secret prompt never calls the provider and a secret response is redacted before persistence.",
+      "acceptanceContract": [
+        "Preserve LlmOrchestrator(LlmRouter, CanonicalStore, JournalStore, GitInspector) and ExecuteAsync(root, new LlmRequest(task, prompt), claimId). A prompt containing a plaintext password assignment must raise InvalidOperationException."
+      ],
+      "evaluationLimitations": [
+        "Diagnostic only: the legacy fixture creates an empty .git directory, does not count provider calls, and does not test secret response persistence. An unrelated repository error can satisfy its assertion. Passing does not establish the full secret-boundary requirement."
+      ]
+    },
+    {
+      "id": "canonical-concurrency",
+      "category": "DATABASE_MIGRATION",
+      "instruction": "Preserve every evidence link when multiple processes update one canonical claim concurrently without making SQLite authoritative.",
+      "verification": "Concurrent updates retain all links and the index remains disposable.",
+      "acceptanceContract": [
+        "Preserve CanonicalStore.UpdateAsync<ClaimRecord>(root, \"claims\", claimId, updater), ClaimRecord.Evidence, and ProjectService.GetClaimAsync. Twenty concurrent in-process updates adding distinct evidence IDs must retain all IDs without loss."
+      ],
+      "evaluationLimitations": [
+        "Task.WhenAll here exercises concurrency in one process, not competing OS processes. Index deletion/rebuild and crash recovery are not tested by this evaluator."
+      ]
+    },
+    {
+      "id": "stale-propagation",
+      "category": "OLD_DECISION",
+      "instruction": "Propagate stale evidence to its claim, accepted record, and handoff warning without self-invalidating on .arifce metadata writes.",
+      "verification": "The claim becomes STALE, acceptance needs review, and handoff names the warning.",
+      "acceptanceContract": [
+        "Provide ProjectService.RefreshTrustAsync(root) returning ClaimsStaled and AcceptancesFlagged counters; GetClaimAsync and GetAcceptanceAsync must expose ClaimStatus.Stale and AcceptanceStatus.NeedsReview.",
+        "After a Low-risk claim gets generic command evidence and an acceptance, changing the source file must stale one claim and flag one acceptance. HandoffAsync(root).Markdown must include the exact compatibility phrases 'Trust Warnings' and 'requires re-verification'."
+      ],
+      "evaluationLimitations": [
+        "The fixture checks one propagation path and fixed English phrases. It does not prove the metadata-only non-invalidation requirement or general transitive dependency propagation."
+      ]
+    },
+    {
+      "id": "deterministic-code-graph",
+      "category": "FEATURE",
+      "instruction": "Add a dependency-light deterministic C# graph for declarations, references, project dependencies, and related-test candidates.",
+      "verification": "Derived graph rebuilds from source and labels heuristic relationships separately from exact ones.",
+      "acceptanceContract": [
+        "Provide ArifCE.Infrastructure.CodeGraphStore with BuildAsync(root) and QueryAsync(root, symbolName). Returned graph exposes Nodes (Kind, Name) and Edges (Kind, Confidence); query result exposes Edges.",
+        "For a C# method and caller/test fixture, expose a METHOD node, REFERENCES and RELATED_TEST query edges, and a PROJECT_REFERENCE edge with EXACT confidence. Persist disposable graph data at .arifce/index/code-graph.json."
+      ],
+      "evaluationLimitations": [
+        "Only exact project-reference confidence is asserted. Heuristic edge confidence, deletion/rebuild equivalence and correctness of symbol resolution are not comprehensively tested."
+      ]
+    },
+    {
+      "id": "change-impact-contract",
+      "category": "API_CHANGE",
+      "instruction": "Create a pre-change contract for a code symbol using impact candidates, tests, history, invariants, and the existing claim lifecycle.",
+      "verification": "No duplicate evidence or acceptance lifecycle is introduced.",
+      "acceptanceContract": [
+        "Provide CodeGraphStore.BuildAsync(root) and ProjectService.CreateChangeContractAsync(root, symbolName, RiskLevel, invariants). Contract exposes Id, ClaimId, PotentialImpact/RelatedTests items with Path, HistoricalRecords, Invariants and RequiredVerification.",
+        "Use CONTRACT- and CLAIM- ID prefixes. Include the caller source and related test paths, matching decisions/ historical record paths and supplied invariants. High-risk RequiredVerification entries must contain BUILD and 'independent review'. GetClaimAsync(contract.ClaimId) must retrieve the linked canonical claim."
+      ],
+      "evaluationLimitations": [
+        "This checks selected contract contents and an existing claim. It does not prove absence of every duplicate lifecycle, full impact completeness, or post-change acceptance correctness."
+      ]
+    },
+    {
+      "id": "structured-flight-recorder",
+      "category": "HANDOFF",
+      "instruction": "Record bounded agent investigations, attempts, evidence, decisions, and results without storing raw transcripts.",
+      "verification": "A failed task-linked attempt becomes searchable canonical memory and appears in handoff.",
+      "acceptanceContract": [
+        "Provide ProjectService.StartAgentRunAsync(root, agent, role, goal, taskId), RecordAgentRunStepAsync(root, runId, AgentStepKind, summary, outcome?, attemptNumber?), and FinishAgentRunAsync(root, runId, summary, success).",
+        "Support AgentStepKind.Investigation/Attempt/Result, returned Steps with Summary/RelatedIds/Kind and AgentRunStatus.Completed. A FAILED task-linked attempt creates an ATTEMPT- related ID retrievable by GetAttemptAsync; redact plaintext password values in step summaries and handoff. Successful finish adds a Result step; handoff includes the failed attempt ID."
+      ],
+      "evaluationLimitations": [
+        "The fixture does not exercise record size/count limits, every sensitive field, or automatic capture from an external host."
+      ]
+    },
+    {
+      "id": "mcp-validation",
+      "category": "REFACTOR",
+      "instruction": "Make MCP schemas enforceable at runtime and reject oversized input, invalid enums, unknown fields, and path-like IDs.",
+      "verification": "Malformed calls return typed JSON-RPC errors before canonical access.",
+      "acceptanceContract": [
+        "Keep the stdio ArifCE.Mcp.dll server and ARIFCE_PROJECT_ROOT environment selection. tools/call for arifce_task_create with an invalid risk, arifce_refactor_status with a path-like ID, and arifce_status with an unknown argument must return JSON-RPC code -32602.",
+        "For compatibility with the current test, messages must include 'Invalid risk value', 'valid repository entity ID', and 'Unknown argument' respectively. An input line of 262145 characters must return code -32600 with 'Request exceeds'."
+      ],
+      "evaluationLimitations": [
+        "Fixed error phrases and one size boundary are checked. The fixture does not inspect canonical files for side effects or prove rejection precedes every filesystem access."
+      ]
+    },
+    {
+      "id": "unfinished-verification-policy",
+      "category": "CONTINUATION",
+      "instruction": "Continue the unfinished verification hardening by separating named dotnet checks from explicitly approved shell commands.",
+      "verification": "Named checks avoid a shell; unsafe success never produces VERIFIED.",
+      "acceptanceContract": [
+        "Provide VerificationCommandPolicy.Classify and VerificationCommandKind.NamedDotNet/UnsafeShell. Classify 'dotnet test --no-restore' as NamedDotNet and a shell-chained dotnet test command as UnsafeShell.",
+        "ProjectService.VerifyAsync(root, claimId, command, optionalUnsafeApproval) must reject an unapproved generic command and reject a secret-bearing command even with explicit approval, using InvalidOperationException. No evidence should be added to the claim."
+      ],
+      "evaluationLimitations": [
+        "The fixture inspects the original claim instance, not a reloaded persisted claim; it does not prove named checks avoid a shell or that successful unsafe execution never becomes VERIFIED."
+      ]
+    }
   ]
 }

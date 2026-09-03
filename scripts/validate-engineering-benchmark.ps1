@@ -9,6 +9,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'benchmark-contract.ps1')
 $repo = Split-Path -Parent $PSScriptRoot
 function Resolve-RepoPath([string]$Path) { if ([IO.Path]::IsPathRooted($Path)) { return $Path }; return Join-Path $repo $Path }
 function Require-Property($Object, [string]$Name, [string]$Context) { if ($null -eq $Object.PSObject.Properties[$Name] -or $null -eq $Object.$Name) { throw "$Context is missing '$Name'." } }
@@ -16,13 +17,14 @@ function Require-Property($Object, [string]$Name, [string]$Context) { if ($null 
 $manifestPath = Resolve-RepoPath $Manifest
 $definition = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 foreach ($name in @('schemaVersion','repository','fixtureCommit','minimumTasks','requiredCategories','tasks')) { Require-Property $definition $name 'Manifest' }
-if ($definition.schemaVersion -ne 1) { throw 'Unsupported benchmark manifest schema.' }
+if ($definition.schemaVersion -notin @(1,2)) { throw 'Unsupported benchmark manifest schema.' }
 if ($definition.tasks.Count -lt $definition.minimumTasks -or $definition.tasks.Count -lt 10) { throw 'The engineering benchmark requires at least 10 tasks.' }
 $ids = @($definition.tasks | ForEach-Object id)
 if (($ids | Sort-Object -Unique).Count -ne $ids.Count) { throw 'Benchmark task IDs must be unique.' }
 $categories = @($definition.tasks | ForEach-Object category | Sort-Object -Unique)
 foreach ($category in $definition.requiredCategories) { if ($category -notin $categories) { throw "Required category '$category' is missing." } }
 foreach ($task in $definition.tasks) { foreach ($name in @('id','category','instruction','verification')) { Require-Property $task $name "Task $($task.id)" } }
+foreach ($task in $definition.tasks) { Get-BenchmarkAcceptanceContract $definition $task | Out-Null }
 $evaluatorPath = Resolve-RepoPath $EvaluatorRegistry
 $evaluatorDefinition = Get-Content -LiteralPath $evaluatorPath -Raw | ConvertFrom-Json
 foreach ($name in @('schemaVersion','policy','evaluators')) { Require-Property $evaluatorDefinition $name 'Evaluator registry' }

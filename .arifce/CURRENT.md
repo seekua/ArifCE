@@ -14,4 +14,6 @@ No implementation or release blocker is known. Heuristic caller/test relationshi
 
 ## Next steps
 
+Phase 68 (TASK-0018) discloses ten public evaluator contracts equally and binds their hashes; TRX assessments separate test assertion failures from evaluator errors. All 83 behavior tests and local contract/isolation/completion/registry/suite checks pass; remote CI is pending. The coverage audit blocks product-effectiveness claims until weak evaluators are strengthened and calibrated.
+
 Before another real matched run, audit prompt/evaluator contract alignment (first-run API-shape mismatches), establish equal pre-authorized permissions, and capture host usage/time. Process timing now excludes outer delay but not internal approval/network waits: active-work measurement remains open, not silently completed. Handle interrupted runs explicitly; never omit them. Synthetic fixtures are not A/B measurements and the first real run remains inconclusive. Other host/multi-turn telemetry and compiler-bound precision remain deferred. Keep heuristic graph relationships outside automatic trust decisions. Historical contracts retain their snapshots; recreate them for corrected candidate-confidence labels.

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "FINDING-0005",
+  "title": "Pinned benchmark assertions are insufficient for product-effectiveness claims",
+  "description": "Audit of all ten pinned evaluators found a secret test without provider-call counts or real Git setup, a reject-only acceptance test, in-process rather than cross-process concurrency, and other partial assertions. Public contracts and TRX error classification improve honesty but do not repair coverage. Keep productClaimEligible false until evaluator replacement and good/bad calibration. See docs/evidence/benchmark-contract-audit-2026-09-03.md.",
+  "severity": "HIGH",
+  "status": "OPEN",
+  "taskId": "TASK-0018",
+  "path": "benchmarks/evaluators.json",
+  "createdAtUtc": "2026-09-03T03:59:36.5106317+00:00"
+}

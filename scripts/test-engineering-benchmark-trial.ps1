@@ -2,6 +2,7 @@
 param()
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'benchmark-contract.ps1')
 $repo = Split-Path -Parent $PSScriptRoot
 $root = Join-Path ([IO.Path]::GetTempPath()) ('arifce-benchmark-smoke-' + [Guid]::NewGuid().ToString('N'))
 try {
@@ -23,6 +24,9 @@ try {
         $trial = Join-Path (Join-Path $root 'trust-dirty-content') $arm
         $session = Get-Content -LiteralPath (Join-Path $trial 'session.json') -Raw | ConvertFrom-Json
         $checkout = Join-Path $trial 'checkout'
+        $expectedContract = Get-BenchmarkAcceptanceContract $manifest $manifest.tasks[0]
+        $promptText = Get-Content -LiteralPath (Join-Path $trial 'prompt.md') -Raw
+        if (-not $promptText.Contains($expectedContract) -or $session.acceptanceContractSha256 -cne (Get-BenchmarkContractHash $expectedContract)) { throw "$arm did not receive the same hash-bound public contract." }
         if ($session.state -ne 'PREPARED' -or $session.arm -ne $arm) { throw "$arm session metadata is invalid." }
         $historyCount = [int](& git -C $checkout rev-list --count HEAD)
         $remoteCount = @(& git -C $checkout remote | Where-Object { $_ }).Count
@@ -56,5 +60,8 @@ try {
     Write-Output 'Engineering benchmark trial isolation smoke test passed.'
 }
 finally {
+    $parent = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    $root = [IO.Path]::GetFullPath($root)
+    if (-not $root.StartsWith($parent, [StringComparison]::OrdinalIgnoreCase) -or -not [IO.Path]::GetFileName($root).StartsWith('arifce-benchmark-smoke-', [StringComparison]::Ordinal)) { throw 'Unsafe fixture cleanup path.' }
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
 }
