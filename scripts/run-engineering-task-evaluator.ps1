@@ -8,6 +8,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'benchmark-assessment.ps1')
+. (Join-Path $PSScriptRoot 'benchmark-safety-source.ps1')
 $repo = if ([string]::IsNullOrWhiteSpace($SourceRepository)) { Split-Path -Parent $PSScriptRoot } else { [IO.Path]::GetFullPath($SourceRepository) }
 $trial = [IO.Path]::GetFullPath($TrialRoot)
 $resultPath = Join-Path $trial 'result.json'
@@ -38,6 +39,7 @@ function Extract-Test([string]$Text, [string]$Method) {
 }
 $tests = @($entry.methods | ForEach-Object { Extract-Test $sourceText $_ }) -join "`n`n"
 $classBody = switch ($entry.fixture) {
+    'safety' { ConvertTo-BenchmarkSafetySource $sourceText }
     'behavior' { @"
 using System.Diagnostics;
 using ArifCE.Core;
@@ -119,7 +121,8 @@ $trxPath = Join-Path $evaluatorRoot 'results/evaluator.trx'
 Set-Content -LiteralPath $sourcePath -Value $classBody -Encoding utf8
 Set-Content -LiteralPath $projectPath -Value $project -Encoding utf8
 Push-Location $evaluatorRoot
-try { & dotnet test $projectPath --configuration Release --disable-build-servers --maxcpucount:1 --logger 'trx;LogFileName=evaluator.trx' --results-directory (Join-Path $evaluatorRoot 'results') *> $outputPath; $exitCode = $LASTEXITCODE } finally { Pop-Location }
+$testFilter = ($entry.methods | ForEach-Object { "FullyQualifiedName=ArifCE.IndependentEvaluator.IndependentTests.$_" }) -join '|'
+try { & dotnet test $projectPath --configuration Release --disable-build-servers --maxcpucount:1 --filter $testFilter --logger 'trx;LogFileName=evaluator.trx' --results-directory (Join-Path $evaluatorRoot 'results') *> $outputPath; $exitCode = $LASTEXITCODE } finally { Pop-Location }
 $assessment = Read-BenchmarkAssessment $trxPath $exitCode @($entry.methods)
 $evaluation = [ordered]@{
     registrySha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $registryPath).Hash.ToLowerInvariant()
