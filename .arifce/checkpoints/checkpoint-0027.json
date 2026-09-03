@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0027",
+  "summary": "Phase 71 and storage follow-up closed: c7dbdef passed CI 33737427375, 92 tests on three OS targets and five binaries. Fixed false-CURRENT literal/nested paths and stale ID reservation data loss. Freshness good/six-mutant and storage two-positive/five-negative controls pass. FINDING-0006/0007 resolved; FINDING-0005 open. Four of ten evaluators calibrated; six remain. No effectiveness claim.",
+  "snapshot": {
+    "commit": "c7dbdefdaccf959207a1b764706abc61075f1847",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "ROADMAP.md",
+      "docs/evidence/benchmark-freshness-calibration-2026-09-03.md",
+      "docs/evidence/benchmark-storage-calibration-2026-09-03.md"
+    ],
+    "digest": "a0f91ee706b5c011bad020650bc73ce834bafaed1abb600355878c6cfb4485a4"
+  },
+  "createdAtUtc": "2026-09-03T09:23:40.4899777+00:00"
+}

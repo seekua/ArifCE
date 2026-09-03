@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 71 under TASK-0021 is pending remote closure. Freshness fix/tests pinned at d040501 pass 92 local tests, independent integration and good/six-mutant calibration (FINDING-0006). Reviewing later Phase 70 closure CI 33735216710 exposed real lost ID data: 29/30 task records. FINDING-0007 and ATTEMPT-0013 record the stale scan/reservation race; target recheck and forced-stale-scan controls are being validated. Do not dismiss that failure because the earlier storage CI passed. FINDING-0005/0006/0007 remain OPEN; productClaimEligible stays false.
+Phase 71 and the Phase 70 storage follow-up are closed at c7dbdef by CI 33737427375: 92 tests on each of three OS targets, five binaries, pinned independent integrations, good/six-mutant freshness controls and two-positive/five-negative storage controls. TASK-0021 and CHECKPOINT-0027 record closure. FINDING-0006 (false-current/path handling) and FINDING-0007 (stale ID reservation overwrites) are resolved. ATTEMPT-0013 and two earlier failing CI runs preserve the 29/30 loss evidence. FINDING-0005 remains OPEN; productClaimEligible stays false.
 
 ## Blockers
 
@@ -14,4 +14,4 @@ The next comparative benchmark is gated on FINDING-0005 evaluator remediation an
 
 ## Next steps
 
-Validate the ID race fix with the full regression suite, forced-stale-scan success/rejected-no-recheck controls, then rerun CI and close FINDING-0006/0007 only with evidence. Afterwards strengthen stale propagation and other evaluator objectives. See docs/evidence/benchmark-freshness-calibration-2026-09-03.md. Only after calibration, establish equal permissions and rerun fresh matched sessions with captured usage/host timing. Active work remains unavailable. Preserve errors, historical results and private reviews; no product-effectiveness result is established.
+Next strengthen stale propagation without legacy generic-command prerequisites, covering positive/current and stale claim/acceptance/handoff behavior plus good/bad calibration. Six of ten evaluator objectives remain (stale propagation, graph, contracts, flight recorder, MCP, unfinished verification); four are calibrated with explicit limits. See docs/evidence/benchmark-freshness-calibration-2026-09-03.md. Only afterwards run fresh, permission-matched repeated model trials with captured usage/host timing. Active work remains unavailable. Preserve failures, historical results and private reviews; no product-effectiveness result is established.
