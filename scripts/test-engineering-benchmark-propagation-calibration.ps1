@@ -33,8 +33,8 @@ try {
         foreach ($variant in @('good', 'never-stale', 'always-stale', 'skip-acceptance-basis', 'forget-review-warning', 'skip-ownership', 'skip-handoff-refresh')) {
             $source = $original
             switch ($variant) {
-                'never-stale' { $source = Replace-Once $source 'var isStale = claim.Status == ClaimStatus.Stale || !hasCurrentEvidence;' 'var isStale = claim.Id.Length < 0;' }
-                'always-stale' { $source = Replace-Once $source 'var isStale = claim.Status == ClaimStatus.Stale || !hasCurrentEvidence;' 'var isStale = claim.Id.Length >= 0;' }
+                'never-stale' { $source = Replace-Once $source 'var isStale = claim.Status == ClaimStatus.Stale || !hasCurrentEvidence;' '_ = hasCurrentEvidence; var isStale = claim.Id.Length < 0;' }
+                'always-stale' { $source = Replace-Once $source 'var isStale = claim.Status == ClaimStatus.Stale || !hasCurrentEvidence;' '_ = hasCurrentEvidence; var isStale = claim.Id.Length >= 0;' }
                 'skip-acceptance-basis' { $source = Replace-Once $source 'if (basisIsCurrent) continue;' 'if (basisIsCurrent || !staleClaims.Contains(acceptance.ClaimId)) continue;' }
                 'forget-review-warning' { $source = Replace-Once $source 'warnings.Add($"Acceptance {acceptance.Id} needs review; its earlier approval has not been renewed.");' 'warnings.Add("Review pending");' }
                 'skip-ownership' { $source = Replace-Once $source '&& string.Equals(evidence.ClaimId, claimId, StringComparison.OrdinalIgnoreCase)' '' }

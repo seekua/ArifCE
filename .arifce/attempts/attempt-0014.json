@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0014",
+  "taskId": "TASK-0022",
+  "approach": "Propagation calibration with always/never-stale variants",
+  "result": "FAILED",
+  "reason": "The first never-stale variant failed compilation with CS0219 rather than an executed assertion; assessment correctly returned ERROR. Corrected only the temporary mutant to consume the otherwise unused variable and restarted calibration. No test or warning policy was weakened.",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-09-03T09:43:38.3070359+00:00"
+}

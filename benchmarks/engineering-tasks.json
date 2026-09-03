@@ -67,10 +67,13 @@
       "verification": "The claim becomes STALE, acceptance needs review, and handoff names the warning.",
       "acceptanceContract": [
         "Provide ProjectService.RefreshTrustAsync(root) returning ClaimsStaled and AcceptancesFlagged counters; GetClaimAsync and GetAcceptanceAsync must expose ClaimStatus.Stale and AcceptanceStatus.NeedsReview.",
-        "After a Low-risk claim gets generic command evidence and an acceptance, changing the source file must stale one claim and flag one acceptance. HandoffAsync(root).Markdown must include the exact compatibility phrases 'Trust Warnings' and 'requires re-verification'."
+        "For Supported, PartiallyVerified and Verified Low-risk claims with explicit source-file scopes, metadata-only and out-of-scope changes preserve current trust. Editing the dependency stales the claim and flags acceptance once; repeated refreshes are idempotent.",
+        "An acceptance must keep its original evidence basis: fresh sibling evidence may support a claim but cannot renew old approval. Missing, malformed, foreign or unknown-freshness evidence, and missing, malformed or contradicted claims must flag acceptance. New acceptance must reject foreign evidence and disputed claims without persisting records.",
+        "An explicit new acceptance may bind only current evidence. Revoked records remain revoked. HandoffAsync refreshes trust and repeats NeedsReview warnings, even after original source bytes are restored; it must not promote stale claims. Canonical handoff Markdown matches the return value and includes record IDs between the exact headings '## Trust Warnings' and '## Knowledge Warnings'."
       ],
       "evaluationLimitations": [
-        "The fixture checks one propagation path and fixed English phrases. It does not prove the metadata-only non-invalidation requirement or general transitive dependency propagation."
+        "Five real-Git tests seed synthetic Low-risk FIXTURE evidence using CanonicalStore and EvidenceScopeTracker. No generic shell command is required and no real build/review or issuer authenticity is established. Fixed trust-section headings are a disclosed compatibility requirement.",
+        "This does not prove full decision/invariant graph propagation, concurrent refresh transaction isolation, every malformed schema shape, or acceptance-policy re-evaluation after configuration changes. OLD_DECISION remains a trust-lifecycle proxy, not a measured historical-decision revisit by a model."
       ]
     },
     {

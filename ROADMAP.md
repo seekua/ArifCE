@@ -103,6 +103,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 70: replace single-process storage scoring with pinned three-process contention and disposable-index/canonical-byte checks; good/four-mutant calibration, independent integration and the three-OS/five-binary matrix pass in [CI run 33725187026](https://github.com/seekua/ArifCE/actions/runs/33725187026). See docs/evidence/benchmark-storage-calibration-2026-09-03.md.
 
 - [x] Phase 71: fix nested-untracked/literal-path/deleted-file snapshots and replace legacy dirty-content scoring; fix the stale ID-scan loss exposed by two later CI runs (29/30 tasks). Both critical findings, extended storage controls, freshness calibration, 92 tests on three OS targets and five binaries close with [CI run 33737427375](https://github.com/seekua/ArifCE/actions/runs/33737427375). See docs/evidence/benchmark-freshness-calibration-2026-09-03.md.
+- [ ] Phase 72: bind acceptance freshness to original owned evidence, retain repeated handoff warnings and replace stale-propagation scoring with five pinned positive/negative tests and good/six-mutant calibration. Local product tests pass (97); calibration, independent integration and remote closure are pending. See docs/evidence/benchmark-propagation-calibration-2026-09-03.md.
 
 ## Explicit deferrals
 

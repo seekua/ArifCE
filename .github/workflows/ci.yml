@@ -66,6 +66,7 @@ jobs:
           ./scripts/test-engineering-benchmark-completion.ps1 -TaskId llm-secret-boundary
           ./scripts/test-engineering-benchmark-completion.ps1 -TaskId acceptance-risk-policy
           ./scripts/test-engineering-benchmark-completion.ps1 -TaskId canonical-concurrency
+          ./scripts/test-engineering-benchmark-completion.ps1 -TaskId stale-propagation
           ./scripts/test-engineering-benchmark-suite.ps1
       - name: Safety evaluator good and bad controls
         if: runner.os == 'Linux'
@@ -85,6 +86,10 @@ jobs:
         if: runner.os == 'Linux'
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-freshness-calibration.ps1
+      - name: Propagation evaluator good and bad controls
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: ./scripts/test-engineering-benchmark-propagation-calibration.ps1
 
   self-contained-cli:
     name: Self-contained CLI (${{ matrix.rid }})

@@ -32,10 +32,10 @@
     },
     {
       "taskId": "stale-propagation",
-      "sourceCommit": "9eb36641ba9ca99fc5567bdddc5e895cfe86f11f",
-      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
-      "fixture": "behavior",
-      "methods": ["Stale_evidence_propagates_to_claim_acceptance_and_handoff"]
+      "sourceCommit": "f6c35003242d87806ee3002e70497adbba6dffd9",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkPropagationTests.cs",
+      "fixture": "propagation",
+      "methods": ["Current_metadata_and_scoped_changes_preserve_only_valid_trust", "Acceptance_keeps_its_original_evidence_basis_after_new_evidence", "Broken_evidence_or_claim_cannot_leave_acceptance_current", "Handoff_refreshes_and_repeats_warnings_without_promoting_stale_claims", "New_acceptance_rejects_foreign_evidence_and_disputed_claim"]
     },
     {
       "taskId": "deterministic-code-graph",
