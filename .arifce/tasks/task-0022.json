@@ -3,7 +3,7 @@
   "id": "TASK-0022",
   "title": "Calibrate stale claim acceptance and handoff propagation",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "HIGH",
   "createdAtUtc": "2026-09-03T09:25:32.5522431+00:00"
 }

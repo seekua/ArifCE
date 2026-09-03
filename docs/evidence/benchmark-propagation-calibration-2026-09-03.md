@@ -34,7 +34,11 @@ ATTEMPT-0014 records the first calibration failure: the never-stale mutation lef
 
 ## Verification status
 
-All 97 local product tests pass after the fix. Manifest, evaluator registry, executed-assessment and secret-scan checks pass. Local calibration and independent completion integration are in progress; remote closure is pending. This report deliberately does not mark Phase 72 closed before those results exist.
+All 97 local product tests pass after the fix. Manifest, evaluator registry, executed-assessment and secret-scan checks pass. Windows calibration against source `f6c35003242d87806ee3002e70497adbba6dffd9` passed the good control and rejected all six incorrect variants through executed assertions. Independent completion integration passed using the actual pinned source, including tampered token/timing/log rejection.
+
+## Remote closure
+
+Commit `d469c7425a1964dd673c7e4e94e6a3fe9fc6a711` passed [CI run 33740663018](https://github.com/seekua/ArifCE/actions/runs/33740663018). All eight jobs succeeded: Ubuntu, macOS and Windows build/test/package plus five self-contained binaries. Each OS test log reports 97 passed, zero failed and zero skipped. Ubuntu passed the five pinned completion integrations, existing safety/storage/freshness controls, and the new good/six-mutant propagation calibration. TASK-0022 closes Phase 72 and FINDING-0008 is resolved against this bounded evidence. ATTEMPT-0014 retains the initial calibration ERROR; FINDING-0005 remains open.
 
 ## Limits and remaining work
 
@@ -42,4 +46,4 @@ The fixture uses real Git repositories and synthetic Low-risk FIXTURE evidence. 
 
 Full decision/invariant graph transitivity, concurrent refresh transaction isolation, every malformed schema shape, and policy re-evaluation after configuration changes remain unproven. These are not silently claimed covered by this patch. There is no new dependency, canonical schema migration or weakened generic-command policy.
 
-FINDING-0005 remains open and productClaimEligible remains false. Four of ten objectives were previously calibrated; this phase addresses the fifth. The remaining five objectives are deterministic code graph, change contracts, flight recorder, MCP validation and unfinished-verification policy. Fresh, permission-matched repeated model trials are separate work; no speed, token-saving or effectiveness percentage is established here.
+FINDING-0005 remains open and productClaimEligible remains false. Five of ten evaluator objectives now have strengthened assertions and finite good/bad calibration. The remaining five objectives are deterministic code graph, change contracts, flight recorder, MCP validation and unfinished-verification policy. Fresh, permission-matched repeated model trials are separate work; no speed, token-saving or effectiveness percentage is established here.

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0028",
+  "summary": "Phase 72 closed at d469c7425a1964dd673c7e4e94e6a3fe9fc6a711 by CI 33740663018: 97 tests on each of three OS targets, five binaries, pinned propagation integration and good/six-mutant controls. Original acceptance basis, evidence ownership and persistent handoff warnings fixed. FINDING-0008 resolved; ATTEMPT-0014 preserves initial calibration ERROR. Five of ten evaluator objectives calibrated; FINDING-0005 remains open and productClaimEligible false. Next: deterministic code graph.",
+  "snapshot": {
+    "commit": "d469c7425a1964dd673c7e4e94e6a3fe9fc6a711",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "ROADMAP.md",
+      "docs/evidence/benchmark-contract-audit-2026-09-03.md",
+      "docs/evidence/benchmark-propagation-calibration-2026-09-03.md",
+      "docs/evidence/engineering-benchmark-readiness.md",
+      "docs/research/benchmark-protocol.md"
+    ],
+    "digest": "70fe2fb8dbf230ff006589332952a43df73fee44c3a6aeee4af6c6cb18524452"
+  },
+  "createdAtUtc": "2026-09-03T09:59:52.5099629+00:00"
+}

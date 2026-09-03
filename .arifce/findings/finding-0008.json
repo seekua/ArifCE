@@ -4,7 +4,7 @@
   "title": "Fresh sibling evidence masks stale acceptance basis",
   "description": "New propagation regressions at 2b09254 show that adding current evidence keeps an old acceptance ACCEPTED even though its own EvidenceIds are stale. NeedsReview acceptance warnings also disappear on subsequent refresh/handoff. Bind refresh to each acceptance basis, validate evidence ownership and missing claims, preserve review warnings without automatic reacceptance.",
   "severity": "CRITICAL",
-  "status": "OPEN",
+  "status": "COMPLETED",
   "taskId": "TASK-0022",
   "path": "src/ArifCE.Infrastructure/ProjectService.cs",
   "createdAtUtc": "2026-09-03T09:29:43.8181261+00:00"
