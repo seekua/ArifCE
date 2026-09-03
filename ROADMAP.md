@@ -100,6 +100,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 - [x] Phase 67: capture monotonic host-process elapsed time separately from preparation/evaluation, bind it to trial artifacts, and retain unavailable active work; verified by [CI run 33712166726](https://github.com/seekua/ArifCE/actions/runs/33712166726).
 - [x] Phase 68: disclose all ten public evaluator contracts equally, bind their hashes, and separate executed assertions from unscorable evaluator errors; verified by [CI run 33713426843](https://github.com/seekua/ArifCE/actions/runs/33713426843). Partial-coverage effectiveness claims remain disabled.
 - [x] Phase 69: replace secret-boundary and acceptance evaluators with persisted-state/positive-negative checks, pin their source, and calibrate against good code plus seven incorrect variants; verified by [CI run 33723265873](https://github.com/seekua/ArifCE/actions/runs/33723265873).
+- [ ] Phase 70: replace single-process storage scoring with pinned three-process contention and disposable-index/canonical-byte checks; local suite passes, calibration/integration/remote closure pending. See docs/evidence/benchmark-storage-calibration-2026-09-03.md.
 
 ## Explicit deferrals
 

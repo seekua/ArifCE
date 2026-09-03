@@ -25,10 +25,10 @@
     },
     {
       "taskId": "canonical-concurrency",
-      "sourceCommit": "1b5de55ecc0e6e97a34d5ec18b80c204d0e7a3ce",
-      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
-      "fixture": "behavior",
-      "methods": ["Concurrent_updates_preserve_every_claim_evidence_link"]
+      "sourceCommit": "2850fd56eaa6bfab84ee4f8418c52679a371e3d9",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkStorageTests.cs",
+      "fixture": "storage",
+      "methods": ["Separate_processes_preserve_claim_links_and_distinct_ids", "Deleted_index_rebuild_preserves_canonical_bytes_and_retrieval"]
     },
     {
       "taskId": "stale-propagation",

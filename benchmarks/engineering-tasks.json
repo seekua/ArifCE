@@ -50,10 +50,13 @@
       "instruction": "Preserve every evidence link when multiple processes update one canonical claim concurrently without making SQLite authoritative.",
       "verification": "Concurrent updates retain all links and the index remains disposable.",
       "acceptanceContract": [
-        "Preserve CanonicalStore.UpdateAsync<ClaimRecord>(root, \"claims\", claimId, updater), ClaimRecord.Evidence, and ProjectService.GetClaimAsync. Twenty concurrent in-process updates adding distinct evidence IDs must retain all IDs without loss."
+        "Preserve CanonicalStore.UpdateAsync<ClaimRecord>, ClaimRecord.Evidence, and ProjectService.GetClaimAsync. Three separate OS processes update one claim; a held update must exclude competing callbacks until released, and all three distinct evidence links must survive.",
+        "CanonicalStore.NextId and WriteAsync must retain thirty distinct task records created by those processes, with unique IDs/titles, valid JSON, and no leftover reservation or temporary write files after success.",
+        "After deleting the entire .arifce/index directory, IndexStore.RebuildAsync must recreate retrieval for a task, decision, failed attempt, claim and evidence, preserving ordered SearchAsync paths/snippets/scores and all non-index/non-cache canonical bytes (including the journal). Claim evidence links and the failed-attempt result must remain readable."
       ],
       "evaluationLimitations": [
-        "Task.WhenAll here exercises concurrency in one process, not competing OS processes. Index deletion/rebuild and crash recovery are not tested by this evaluator."
+        "This is a bounded local-filesystem three-process contention test, not a distributed lock or crash/power-loss recovery test. A timed observation window checks exclusion; final content assertions separately detect lost updates.",
+        "Five seeded memory kinds and journal preservation are checked; this is not exhaustive coverage of every entity, schema migration, simultaneous index rebuild/read, or network filesystem. The DATABASE_MIGRATION category remains an index-rebuild proxy, not a SQL schema migration benchmark."
       ]
     },
     {

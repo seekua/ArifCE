@@ -65,6 +65,7 @@ jobs:
           ./scripts/test-engineering-benchmark-completion.ps1
           ./scripts/test-engineering-benchmark-completion.ps1 -TaskId llm-secret-boundary
           ./scripts/test-engineering-benchmark-completion.ps1 -TaskId acceptance-risk-policy
+          ./scripts/test-engineering-benchmark-completion.ps1 -TaskId canonical-concurrency
           ./scripts/test-engineering-benchmark-suite.ps1
       - name: Safety evaluator good and bad controls
         if: runner.os == 'Linux'
@@ -73,6 +74,10 @@ jobs:
       - name: Release workflow policy
         shell: pwsh
         run: ./scripts/check-release-workflow-policy.ps1
+      - name: Storage evaluator good and bad controls
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: ./scripts/test-engineering-benchmark-storage-calibration.ps1
       - name: Package smoke test
         shell: pwsh
         run: ./scripts/package-smoke.ps1 -Configuration Release

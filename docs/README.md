@@ -35,6 +35,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Benchmark host timing evidence and limits](evidence/benchmark-host-timing-2026-09-03.md)
 - [Benchmark contract and scoring audit](evidence/benchmark-contract-audit-2026-09-03.md)
 - [Secret and acceptance evaluator calibration](evidence/benchmark-safety-calibration-2026-09-03.md)
+- [Cross-process storage and index-rebuild evaluator](evidence/benchmark-storage-calibration-2026-09-03.md)
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Dependency policy](architecture/dependency-policy.md)
 - [Binary releases](release/binary-releases.md)

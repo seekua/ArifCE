@@ -22,6 +22,8 @@ Phase 69 replaces secret-boundary and acceptance-policy scoring with a [calibrat
 
 Suite preparation and collection are separate. Preparation creates all twenty isolated directories but never invokes a model. Collection rejects partial or unmatched suites and verifies provenance plus independent-evaluator artifacts again before aggregating results. Execution status is recorded in `docs/evidence/engineering-benchmark-readiness.md`; the first complete run is reported in `docs/evidence/engineering-benchmark-results-2026-09-02.md`.
 
+Phase 70 adds a [pinned storage fixture](../evidence/benchmark-storage-calibration-2026-09-03.md) with real child test-host processes and index deletion/rebuild checks. Both parent assertions are selected for independent scoring; the worker entrypoint and barriers travel in the same pinned source, never in candidate-authored helpers. The evaluator requires the .NET SDK/test runner as development infrastructure; this does not add a runtime dependency to the distributed CLI. Reproduce controls with `./scripts/test-engineering-benchmark-storage-calibration.ps1 -SourceCommit <commit>`. This is not crash recovery, concurrent index rebuilding, or an actual SQL migration benchmark.
+
 `scripts/validate-engineering-benchmark.ps1` is a legacy shape/coverage validator for imported rows, not host-usage provenance verification. Its imported totals must not be presented as captured token measurements. Use the completion and collection pipeline above for log-bound measurements. Negative results remain in the published report.
 
 ## Captured token usage
