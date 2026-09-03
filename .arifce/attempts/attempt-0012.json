@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0012",
+  "taskId": "TASK-0019",
+  "approach": "Introduce a safety fixture without its exact synthetic-secret scan exception",
+  "result": "FAILED",
+  "reason": "CI 33722871828 and local scan rejected the deliberate password fixture in BenchmarkSafetyTests.cs. Added the same exact path/pattern/value exception policy already used by existing tests; no global scanner rule was disabled.",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-09-03T06:25:51.2650555+00:00"
+}

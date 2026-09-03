@@ -31,7 +31,9 @@ jobs:
         run: dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
       - name: Secret scan
         shell: pwsh
-        run: ./scripts/secret-scan.ps1
+        run: |
+          ./scripts/secret-scan.ps1
+          ./scripts/test-secret-scan-fixtures.ps1
       - name: README locale parity
         shell: pwsh
         run: ./scripts/check-readme-locales.ps1
