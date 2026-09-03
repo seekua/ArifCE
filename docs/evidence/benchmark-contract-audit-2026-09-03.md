@@ -32,7 +32,9 @@ These are findings about evaluator strength, not evidence that the corresponding
 
 ## Tests and proof
 
-Local contract/assessment fixtures pass malformed XML, disabled external entities, missing/duplicate/skipped tests, wrong identity, exit-code disagreement, blank contracts and legacy schema cases. Trial isolation tests verify both arms receive the same contract and digest. All 83 behavior tests pass; completion integration passes with a real isolated Git/.NET candidate and a hashed TRX artifact containing the expected executed test. Registry and suite-rejection checks also pass. The classifier's failure-mode cases use synthetic TRX fixtures; they are not a live model study. Remote CI is pending.
+Local contract/assessment fixtures pass malformed XML, disabled external entities, missing/duplicate/skipped tests, wrong identity, exit-code disagreement, blank contracts and legacy schema cases. Trial isolation tests verify both arms receive the same contract and digest. All 83 behavior tests pass; completion integration passes with a real isolated Git/.NET candidate and a hashed TRX artifact containing the expected executed test. Registry and suite-rejection checks also pass. The classifier's failure-mode cases use synthetic TRX fixtures; they are not a live model study.
+
+Implementation `24d80d9` passed [GitHub Actions run 33713426843](https://github.com/seekua/ArifCE/actions/runs/33713426843): three OS build/test/package jobs and all five self-contained binary targets succeeded. Phase 68's disclosure/scoring safeguards are closed against this commit. Coverage remediation remains OPEN as FINDING-0005; successful CI does not close that finding.
 
 ## Next remediation before a real comparative rerun
 

@@ -3,7 +3,7 @@
   "id": "TASK-0018",
   "title": "Expose benchmark acceptance contracts and separate evaluator errors",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "HIGH",
   "createdAtUtc": "2026-09-03T03:50:04.6528232+00:00"
 }
