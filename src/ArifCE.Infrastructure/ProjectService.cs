@@ -160,13 +160,12 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (string.IsNullOrWhiteSpace(actor)) throw new ArgumentException("Acceptance actor is required.");
         if (string.IsNullOrWhiteSpace(rationale)) throw new ArgumentException("Acceptance rationale is required.");
         var claim = await GetClaimAsync(root, claimId, cancellationToken) ?? throw new InvalidOperationException($"Claim {claimId} was not found.");
-        if (claim.Status is ClaimStatus.Contradicted or ClaimStatus.Stale or ClaimStatus.Unverified) throw new InvalidOperationException($"Claim {claimId} must have current supporting evidence before acceptance.");
+        if (claim.Status is not (ClaimStatus.Supported or ClaimStatus.PartiallyVerified or ClaimStatus.Verified)) throw new InvalidOperationException($"Claim {claimId} must have current supporting evidence before acceptance.");
         var current = await git.CaptureAsync(root, cancellationToken);
         var evidence = new List<string>();
         foreach (var evidenceId in claim.Evidence)
         {
-            var item = await canonical.ReadAsync<EvidenceRecord>(root, "evidence", evidenceId, cancellationToken);
-            if (item is not null && await EvidenceScopeTracker.EvaluateAsync(root, item, current, cancellationToken) == EvidenceFreshness.Current) evidence.Add(evidenceId);
+            if (await IsCurrentOwnedEvidenceAsync(root, evidenceId, claimId, current, cancellationToken)) evidence.Add(evidenceId);
         }
         if (evidence.Count == 0) throw new InvalidOperationException($"Claim {claimId} has no current supporting evidence.");
         await ValidateAcceptancePolicyAsync(root, claim, evidence, cancellationToken);
@@ -390,6 +389,7 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var current = await git.CaptureAsync(root, cancellationToken);
         var warnings = new List<string>();
         var staleClaims = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var knownClaims = new Dictionary<string, ClaimRecord>(StringComparer.OrdinalIgnoreCase);
         var claimsStaled = 0;
         var claimDirectory = Path.Combine(root, ".arifce", "claims");
         if (Directory.Exists(claimDirectory))
@@ -399,17 +399,13 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
                 ClaimRecord? claim;
                 try { claim = JsonSerializer.Deserialize<ClaimRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options); }
                 catch (JsonException) { warnings.Add($"Malformed claim record: {Path.GetFileName(path)}."); continue; }
-                if (claim is null || claim.Status is not (ClaimStatus.Supported or ClaimStatus.PartiallyVerified or ClaimStatus.Verified or ClaimStatus.Stale)) continue;
+                if (claim is null) continue;
+                knownClaims[claim.Id] = claim;
+                if (claim.Status is not (ClaimStatus.Supported or ClaimStatus.PartiallyVerified or ClaimStatus.Verified or ClaimStatus.Stale)) continue;
                 var hasCurrentEvidence = false;
                 foreach (var evidenceId in claim.Evidence)
                 {
-                    var evidencePath = Path.Combine(root, ".arifce", "evidence", evidenceId.ToLowerInvariant() + ".json");
-                    try
-                    {
-                        var evidence = File.Exists(evidencePath) ? JsonSerializer.Deserialize<EvidenceRecord>(await File.ReadAllTextAsync(evidencePath, cancellationToken), JsonDefaults.Options) : null;
-                        if (evidence is not null && await EvidenceScopeTracker.EvaluateAsync(root, evidence, current, cancellationToken) == EvidenceFreshness.Current) hasCurrentEvidence = true;
-                    }
-                    catch (JsonException) { }
+                    if (await IsCurrentOwnedEvidenceAsync(root, evidenceId, claim.Id, current, cancellationToken)) hasCurrentEvidence = true;
                 }
                 var isStale = claim.Status == ClaimStatus.Stale || !hasCurrentEvidence;
                 if (!isStale) continue;
@@ -430,9 +426,24 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
                 AcceptanceRecord? acceptance;
                 try { acceptance = JsonSerializer.Deserialize<AcceptanceRecord>(await File.ReadAllTextAsync(path, cancellationToken), JsonDefaults.Options); }
                 catch (JsonException) { warnings.Add($"Malformed acceptance record: {Path.GetFileName(path)}."); continue; }
-                if (acceptance is null || acceptance.Status != AcceptanceStatus.Accepted || !staleClaims.Contains(acceptance.ClaimId)) continue;
+                if (acceptance is null) continue;
+                if (acceptance.Status == AcceptanceStatus.NeedsReview)
+                {
+                    warnings.Add($"Acceptance {acceptance.Id} needs review; its earlier approval has not been renewed.");
+                    continue;
+                }
+                if (acceptance.Status != AcceptanceStatus.Accepted) continue;
+                var basisIsCurrent = knownClaims.TryGetValue(acceptance.ClaimId, out var acceptedClaim)
+                    && acceptedClaim.Status is ClaimStatus.Supported or ClaimStatus.PartiallyVerified or ClaimStatus.Verified
+                    && !staleClaims.Contains(acceptance.ClaimId)
+                    && acceptance.EvidenceIds is { Count: > 0 };
+                if (basisIsCurrent)
+                    foreach (var evidenceId in acceptance.EvidenceIds)
+                        if (!acceptedClaim!.Evidence.Contains(evidenceId, StringComparer.OrdinalIgnoreCase)
+                            || !await IsCurrentOwnedEvidenceAsync(root, evidenceId, acceptance.ClaimId, current, cancellationToken)) { basisIsCurrent = false; break; }
+                if (basisIsCurrent) continue;
                 await canonical.UpdateAsync<AcceptanceRecord>(root, "acceptances", acceptance.Id, value => value.Status == AcceptanceStatus.Accepted ? value with { Status = AcceptanceStatus.NeedsReview } : value, cancellationToken);
-                warnings.Add($"Acceptance {acceptance.Id} needs review because claim {acceptance.ClaimId} is stale.");
+                warnings.Add($"Acceptance {acceptance.Id} needs review because its claim or accepted evidence is no longer current.");
                 acceptancesFlagged++;
             }
         }
@@ -440,6 +451,20 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         if (claimsStaled > 0 || acceptancesFlagged > 0)
             await RecordAsync(root, "trust.refreshed", "TRUST", new { claimsStaled, acceptancesFlagged, warnings }, cancellationToken);
         return new TrustRefreshResult(claimsStaled, acceptancesFlagged, warnings);
+    }
+
+    private async Task<bool> IsCurrentOwnedEvidenceAsync(string root, string evidenceId, string claimId, GitSnapshot current, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(evidenceId) || evidenceId.IndexOfAny(['/', '\\', ':']) >= 0) return false;
+        try
+        {
+            var evidence = await canonical.ReadAsync<EvidenceRecord>(root, "evidence", evidenceId, cancellationToken);
+            return evidence is not null
+                && string.Equals(evidence.Id, evidenceId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(evidence.ClaimId, claimId, StringComparison.OrdinalIgnoreCase)
+                && await EvidenceScopeTracker.EvaluateAsync(root, evidence, current, cancellationToken) == EvidenceFreshness.Current;
+        }
+        catch (JsonException) { return false; }
     }
 
     public async Task<HandoffRecord> HandoffAsync(string root, CancellationToken cancellationToken = default)

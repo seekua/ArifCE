@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Bind acceptance refresh to its original, claim-owned evidence; preserve review warnings across handoffs and reject new acceptance of foreign evidence or disputed claims. Add five positive/negative propagation regression tests.
 - Replace two weak benchmark evaluators with real-Git secret-boundary and positive/negative acceptance checks; calibrate them against a known-good implementation and seven deliberately incorrect temporary variants.
 - Replace the single-process storage evaluator with pinned three-process contention and canonical-byte/index-rebuild checks; disclose the finite coverage and keep product-effectiveness claims disabled.
 - Fix repository freshness for nested untracked file edits, literal Unicode/escaped filenames, rename endpoints and deleted files. Use NUL-separated Git status and reject unexpanded Git directories rather than silently treating their contents as unchanged.
