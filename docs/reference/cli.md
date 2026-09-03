@@ -98,6 +98,8 @@ One or more `--path` values opt evidence into dependency-scoped freshness. ArifC
 
 Run `arifce trust refresh` after repository changes or before a handoff. It compares scoped path digests when present and otherwise compares the legacy repository snapshot, moves affected claims to `STALE`, and marks linked accepted records as `NEEDS_REVIEW`. Handoff generation performs the same refresh and prints trust warnings. Changes under `.arifce/` are excluded from the repository-wide code-state fingerprint so recording evidence does not invalidate itself.
 
+Repository snapshots expand untracked directories into their individual files and preserve literal Git filenames/rename endpoints. Git-reported unexpanded directories (for example an embedded repository) are rejected because their contents cannot be proved current by this snapshotter. Ignored files are not automatically included. Historical evidence is retained; corrected path handling can require re-verification of affected snapshots.
+
 Build and query the disposable deterministic code graph:
 
 ```text

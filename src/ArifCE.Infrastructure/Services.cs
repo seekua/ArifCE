@@ -37,16 +37,31 @@ public sealed class GitInspector
 {
     public async Task<GitSnapshot> CaptureAsync(string root, CancellationToken cancellationToken = default)
     {
-        var status = await RunAsync(root, "status --porcelain=v1 -b", cancellationToken);
+        var status = await RunAsync(root, "status --porcelain=v1 -z -b --untracked-files=all", cancellationToken);
         if (status.ExitCode != 0)
         {
             throw new InvalidOperationException("Unable to capture repository state because git status failed.");
         }
-        var lines = status.Output.Replace("\r", "", StringComparison.Ordinal).Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        var branchLine = lines.FirstOrDefault(x => x.StartsWith("## ", StringComparison.Ordinal));
+        // NUL records preserve literal Unicode, whitespace, quotes and newlines in filenames.
+        // With -z, rename/copy destinations precede a second record containing the source path.
+        var records = status.Output.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+        var branchLine = records.FirstOrDefault(x => x.StartsWith("## ", StringComparison.Ordinal));
         var branch = branchLine?[3..].Split("...", StringSplitOptions.None)[0];
         if (branch?.StartsWith("No commits yet on ", StringComparison.Ordinal) == true) branch = branch[18..];
-        var changed = lines.Where(x => !x.StartsWith("## ", StringComparison.Ordinal)).Select(x => x.Length > 3 ? x[3..].Trim() : x.Trim()).Where(path => !IsInternalArifcePath(path)).Order(StringComparer.Ordinal).ToArray();
+        var paths = new List<string>();
+        for (var position = 0; position < records.Length; position++)
+        {
+            var record = records[position];
+            if (record.StartsWith("## ", StringComparison.Ordinal)) continue;
+            if (record.Length < 4 || record[2] != ' ') throw new InvalidOperationException("Invalid Git status path record.");
+            paths.Add(record[3..]);
+            if (record[0] is 'R' or 'C' || record[1] is 'R' or 'C')
+            {
+                if (++position >= records.Length) throw new InvalidOperationException("Missing Git rename source path.");
+                paths.Add(records[position]);
+            }
+        }
+        var changed = paths.Where(path => !IsInternalArifcePath(path)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
         var head = await RunAsync(root, "rev-parse HEAD", cancellationToken);
         var commit = head.ExitCode == 0 ? head.Output.Trim() : null;
         // A path-only fingerprint misses edits made in a dirty worktree. Include the
@@ -60,43 +75,40 @@ public sealed class GitInspector
     private static IEnumerable<string> SnapshotPath(string root, string statusPath)
     {
         var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
-        var paths = statusPath.Contains(" -> ", StringComparison.Ordinal)
-            ? statusPath.Split(" -> ", 2, StringSplitOptions.None)
-            : [statusPath];
-        foreach (var path in paths)
+        var relative = statusPath;
+        if (relative.Length == 0) throw new InvalidOperationException("Git reported an empty path.");
+        var full = Path.GetFullPath(Path.Combine(root, relative));
+        if (!full.StartsWith(fullRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
         {
-            var relative = path.Trim().Trim('"');
-            if (string.IsNullOrWhiteSpace(relative)) continue;
-            var full = Path.GetFullPath(Path.Combine(root, relative));
-            if (!full.StartsWith(fullRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException("Git reported a path outside the repository root.");
-            }
-            var resolved = new FileInfo(full).ResolveLinkTarget(returnFinalTarget: true);
-            if (resolved is not null && !resolved.FullName.StartsWith(fullRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException("Git reported a symbolic link that resolves outside the repository root.");
-            }
-            if (!File.Exists(full))
-            {
-                yield return $"{relative}\n<MISSING>";
-                continue;
-            }
-
-            var hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(full))).ToLowerInvariant();
-            yield return $"{relative}\n{hash}";
+            throw new InvalidOperationException("Git reported a path outside the repository root.");
         }
+        // Submodule/embedded-repository directories are not byte-snapshotted here. Do not
+        // silently fingerprint them as missing and claim freshness for their contents.
+        if (Directory.Exists(full)) throw new InvalidOperationException("Git reported a directory whose contents cannot be safely snapshotted.");
+        if (!File.Exists(full))
+        {
+            yield return $"{relative}\n<MISSING>";
+            yield break;
+        }
+        var resolved = new FileInfo(full).ResolveLinkTarget(returnFinalTarget: true);
+        if (resolved is not null && !resolved.FullName.StartsWith(fullRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Git reported a symbolic link that resolves outside the repository root.");
+        }
+        var hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(full))).ToLowerInvariant();
+        yield return $"{relative}\n{hash}";
     }
 
-    private static bool IsInternalArifcePath(string statusPath) => statusPath.Split(" -> ", StringSplitOptions.None)
-        .All(path => path.Trim().Trim('"').Replace('\\', '/').StartsWith(".arifce/", StringComparison.OrdinalIgnoreCase));
+    private static bool IsInternalArifcePath(string path) => path.StartsWith(".arifce/", OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 
     private static async Task<(int ExitCode, string Output)> RunAsync(string root, string arguments, CancellationToken cancellationToken)
     {
         using var process = new Process { StartInfo = new ProcessStartInfo("git", arguments) { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true } };
         process.Start();
+        var stderr = process.StandardError.ReadToEndAsync(cancellationToken);
         var output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
         await process.WaitForExitAsync(cancellationToken);
+        await stderr;
         return (process.ExitCode, output);
     }
 }
