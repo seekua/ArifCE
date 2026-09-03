@@ -109,7 +109,7 @@ arifce codegraph query Calculate
 
 Project-reference edges are exact, declarations are structural, and identifier-based references or related-test candidates are explicitly heuristic. Code-graph output identifies possible impact; it is not verification evidence by itself.
 
-The derived graph stores a digest of repository `.cs` and `.csproj` paths and contents plus its generator version. `codegraph query` and contract creation automatically rebuild after source edits, additions, deletions, renames, or scanner upgrades. Contract creation requires an exact symbol name. Legacy files and malformed derived graph JSON are rebuilt safely; continuously changing sources make the build fail instead of publishing a mixed snapshot. The dependency-free scanner covers common C# declarations but is not a complete compiler symbol model.
+The derived graph stores a digest of repository `.cs` and `.csproj` paths and contents plus its generator version. `codegraph query` and contract creation automatically rebuild after source edits, additions, deletions, renames, or scanner upgrades. Contract creation requires an exact symbol name. Legacy files and malformed derived graph JSON are rebuilt; continuously changing sources make the build fail instead of publishing a mixed snapshot. The Roslyn syntax-based scanner covers common C# declarations but does not perform compiler-bound receiver or overload resolution. Same-name caller candidates remain heuristic, not proven dependencies.
 
 Create a pre-change engineering contract from a graph symbol:
 
