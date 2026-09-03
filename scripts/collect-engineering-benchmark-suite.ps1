@@ -8,6 +8,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'benchmark-telemetry.ps1')
+. (Join-Path $PSScriptRoot 'benchmark-timing.ps1')
 $repo = Split-Path -Parent $PSScriptRoot
 function Repo-Path([string]$Path) { if ([IO.Path]::IsPathRooted($Path)) { return [IO.Path]::GetFullPath($Path) }; return [IO.Path]::GetFullPath((Join-Path $repo $Path)) }
 function Hash([string]$Path) { if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "Evidence file missing: $Path" }; return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant() }
@@ -43,8 +44,10 @@ $baseline = @($rows | Where-Object arm -eq 'baseline')
 $arifce = @($rows | Where-Object arm -eq 'arifce')
 $baselineUsage = Get-BenchmarkTokenSummary $baseline
 $arifceUsage = Get-BenchmarkTokenSummary $arifce
+$baselineTime = Get-BenchmarkHostTimeSummary $baseline
+$arifceTime = Get-BenchmarkHostTimeSummary $arifce
 $report = [ordered]@{
-    schemaVersion = 3
+    schemaVersion = 4
     generatedAtUtc = [DateTime]::UtcNow.ToString('O')
     fixtureCommit = $definition.fixtureCommit
     taskCount = $definition.tasks.Count
@@ -59,6 +62,8 @@ $report = [ordered]@{
         baselineMeasuredTrials = $baselineUsage.availableTrials
         arifceMeasuredTrials = $arifceUsage.availableTrials
         tokenComparisonAvailable = ($null -ne $baselineUsage.totalTokens -and $null -ne $arifceUsage.totalTokens)
+        baselineHostTime = $baselineTime
+        arifceHostTime = $arifceTime
     }
     interpretation = 'Complete matched raw results. Negative outcomes are retained. Association is not causation.'
 }

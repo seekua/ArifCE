@@ -14,4 +14,6 @@ No implementation or release blocker is known. Heuristic caller/test relationshi
 
 ## Next steps
 
+Phase 67 (TASK-0017, ADR-0014) passes local host timing, token, completion integration, suite, and all 83 behavior tests. Remote CI is pending. The new runner captures process elapsed time only; activeWorkMs remains null. See docs/evidence/benchmark-host-timing-2026-09-03.md.
+
 Remaining V0.9 work: capture active execution time separately from preparation/approval/evaluation delay, then rerun matched real trials with equal pre-authorized permissions and captured usage. Phase 66 synthetic fixtures are not A/B measurements; the first real run remains inconclusive. Other host/multi-turn telemetry and compiler-bound relationship precision are explicitly deferred in ROADMAP. Keep heuristic graph relationships outside automatic trust decisions. Historical contracts retain their snapshots; recreate them for corrected candidate-confidence labels.

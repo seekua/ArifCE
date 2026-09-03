@@ -15,6 +15,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'benchmark-telemetry.ps1')
+. (Join-Path $PSScriptRoot 'benchmark-timing.ps1')
 $trial = [IO.Path]::GetFullPath($TrialRoot)
 $sessionPath = Join-Path $trial 'session.json'
 $promptPath = Join-Path $trial 'prompt.md'
@@ -55,6 +56,7 @@ if ($VerifyOnly) {
     if ($head -ne $result.provenance.finalCommit -or $tree -ne $result.provenance.finalTree) { throw 'Checkout no longer matches the recorded final commit and tree.' }
     if ([bool]$result.evaluation.checksPassed -ne ([int]$result.evaluation.exitCode -eq 0)) { throw 'Evaluator outcome is internally inconsistent.' }
     Assert-BenchmarkTokenUsage $result $agentLogPath
+    Assert-BenchmarkHostTiming $result $trial
     Write-Output "Verified benchmark provenance for $($result.taskId)/$($result.arm)."
     return
 }
@@ -63,6 +65,8 @@ if (Test-Path -LiteralPath $resultPath) { throw "Completed trial will not be ove
 if ([string]::IsNullOrWhiteSpace($RawLog) -or -not (Test-Path -LiteralPath $RawLog -PathType Leaf)) { throw '-RawLog must name the captured agent-host log.' }
 $tokenMeasurement = $null
 $recordedTokens = $null
+$timeMeasurement = Read-BenchmarkHostTiming $trial
+if ($null -ne $timeMeasurement -and (Hash-File $RawLog) -cne (Hash-File $agentLogPath)) { throw 'RawLog does not match the timed host capture.' }
 if ($UsageFormat -eq 'codex-exec-jsonl') {
     $tokenMeasurement = Read-BenchmarkTokenUsage $RawLog
     if ($PSBoundParameters.ContainsKey('TokensConsumed') -and $TokensConsumed -ne $tokenMeasurement.totalTokens) { throw 'Manual token total does not match captured usage.' }
@@ -110,7 +114,7 @@ finally { Pop-Location }
 $completed = [DateTimeOffset]::UtcNow
 
 $result = [ordered]@{
-    schemaVersion = 2
+    schemaVersion = 3
     runId = $session.runId
     taskId = $session.taskId
     arm = $session.arm
@@ -118,6 +122,7 @@ $result = [ordered]@{
     model = $session.model
     tokenBudget = $session.tokenBudget
     durationMs = [Math]::Max(0, [long]($completed - $started).TotalMilliseconds)
+    timeMeasurement = $timeMeasurement
     tokensConsumed = $recordedTokens
     tokenSource = $TokenSource
     tokenMeasurement = $tokenMeasurement

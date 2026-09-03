@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "ADR-0014",
+  "title": "Benchmark process duration is not active model work",
+  "decision": "Capture monotonic host process elapsed time separately from trial duration; retain activeWorkMs as null until host wait intervals can be measured. Do not infer approval or network waits from silence.",
+  "historicalRationale": "The existing preparation-to-evaluation duration includes queue and approval delays. A process stopwatch removes outer delays but cannot identify internal waiting, so calling it active work would create a misleading benchmark claim.",
+  "status": "ACTIVE",
+  "provenance": "USER_CONFIRMED",
+  "supersededBy": null,
+  "createdAtUtc": "2026-09-03T03:35:03.2130257+00:00"
+}

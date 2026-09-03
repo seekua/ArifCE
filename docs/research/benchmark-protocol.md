@@ -33,3 +33,22 @@ Completion hashes the raw log and stores its parsed counters in `tokenMeasuremen
 Absent, failed, unsupported, or multi-turn telemetry must be preserved with the default `-UsageFormat none` and `-TokenSource unavailable`, not estimated. New records use null tokens; legacy unavailable zero sentinels remain readable. Any unavailable trial makes that arm's aggregate token total null. `tokenComparisonAvailable` means complete counters exist in both arms, not that a causal effectiveness comparison is valid.
 
 This bounded parser deliberately rejects concatenated threads, repeated completion events, and host errors. Multi-turn aggregation and other hosts require documented counter semantics and fixtures before support. Active execution time is still not measured: `durationMs` includes preparation, queue, approval, and evaluation time. Equal permissions and repeated matched real executions are still required. Parser tests use synthetic events and do not constitute an A/B measurement.
+
+## Host-process elapsed time
+
+`scripts/invoke-engineering-benchmark-host.ps1` wraps an explicitly chosen executable. It supplies the prepared prompt on standard input, starts in the isolated checkout, captures stdout as `agent.log` and stderr as `host.stderr.log`, and writes `host-timing.json` after exit. Pass arguments as an array, not a shell command string:
+
+```powershell
+./scripts/invoke-engineering-benchmark-host.ps1 -TrialRoot <trial-directory> -Executable <host-executable> -HostArguments @('<argument-1>', '<argument-2>') -TimeoutSeconds 1800
+# Complete using <trial-directory>/agent.log; select UsageFormat only if that log matches it.
+```
+
+Choose host arguments that read the prompt from stdin. The runner does not select a model, enforce its token budget, approve tool requests, or provide an OS sandbox. Apply equal, externally enforced permissions to both arms before running. Do not use it to bypass approval controls. Command arguments and environment values are not copied into the timing record, but host logs may still contain secrets and must remain private until reviewed.
+
+The monotonic stopwatch covers process launch through observed process exit. Preparation, queueing before launch, and the later independent evaluator are excluded. Startup, model-internal queueing, network waits, and any in-process approval waits are included. Therefore `timeMeasurement.hostElapsedMs` is **not active model time**; `activeWorkMs` remains null. `durationMs` retains its legacy preparation-through-repository-test meaning. Do not compare unlike clocks.
+
+Completion and collection verify the timing record against the session, prompt, stdout, stderr, and parsed result. Missing capture remains unavailable. The collector reports a host-time total only when every trial in the arm has a measurement; active work is never inferred. A captured nonzero exit is retained as `hostExitCode`, not silently discarded or treated as task success.
+
+The persistent `host-capture.started` reservation prevents concurrent/repeated capture from overwriting a trial. Timeout, launch failure, changed instructions, or incomplete output leave an interrupted capture: preserve its artifacts and record the failure before preparing a separately identified retry. An interrupted capture cannot be completed as if its timing were absent. This does not yet score interrupted runs automatically, so do not silently omit them from a published experiment.
+
+Hash consistency is not operator attestation. A party controlling all artifacts could replace them. Time capture tests use local fixture processes, not real model work. Approval-wait segmentation, active-work timing, host identity attestation, and a permission-controlled real rerun remain open.

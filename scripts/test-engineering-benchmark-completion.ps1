@@ -23,6 +23,10 @@ try {
     $rawLog = Join-Path $root 'raw-agent.log'
     # Synthetic host protocol events test ingestion, not product effectiveness.
     Set-Content -LiteralPath $rawLog -Value @('{"type":"thread.started","thread_id":"fixture-thread"}', '{"type":"turn.started"}', '{"type":"turn.completed","usage":{"input_tokens":100,"cached_input_tokens":60,"output_tokens":20}}') -Encoding utf8
+    $hostFixture = Join-Path $root 'host.ps1'
+    'param([string]$Log); [Console]::In.ReadToEnd() | Out-Null; Get-Content -LiteralPath $Log' | Set-Content -LiteralPath $hostFixture
+    & (Join-Path $PSScriptRoot 'invoke-engineering-benchmark-host.ps1') -TrialRoot $trial -Executable (Get-Process -Id $PID).Path -HostArguments @('-NoProfile','-File',$hostFixture,$rawLog) | Out-Null
+    $rawLog = Join-Path $trial 'agent.log'
     $manualRejected = $false
     try { & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -RawLog $rawLog -TokensConsumed 120 -TokenSource provider | Out-Null } catch { $manualRejected = $true }
     if (-not $manualRejected -or (Test-Path -LiteralPath (Join-Path $trial 'result.json'))) { throw 'Unbound manual token counts were accepted.' }
@@ -31,6 +35,13 @@ try {
     if ($null -ne $result.PSObject.Properties['success']) { throw 'Completion must not emit a hand-authored task-success field.' }
     if (-not $result.evaluation.checksPassed -or $result.evaluation.exitCode -ne 0) { throw 'Deterministic evaluator did not pass.' }
     if ($result.tokensConsumed -ne 120 -or $result.tokenSource -ne 'agent-host') { throw 'Host token telemetry was not recorded.' }
+    if ($null -eq $result.timeMeasurement -or $result.timeMeasurement.hostExitCode -ne 0 -or $null -ne $result.timeMeasurement.activeWorkMs) { throw 'Host timing was omitted or misclassified.' }
+    $result.timeMeasurement.hostElapsedMs++
+    $result | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $trial 'result.json') -Encoding utf8
+    $timeRejected = $false
+    try { & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null } catch { $timeRejected = $true }
+    if (-not $timeRejected) { throw 'Tampered host elapsed time was accepted.' }
+    $result.timeMeasurement.hostElapsedMs--
     $result.tokensConsumed = 999
     $result | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $trial 'result.json') -Encoding utf8
     $counterRejected = $false

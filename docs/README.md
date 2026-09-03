@@ -32,6 +32,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [C# type-member ownership evidence](evidence/type-member-ownership-2026-09-03.md)
 - [Change-contract relationship confidence evidence](evidence/contract-relationship-confidence-2026-09-03.md)
 - [Benchmark token telemetry evidence and limits](evidence/benchmark-token-telemetry-2026-09-03.md)
+- [Benchmark host timing evidence and limits](evidence/benchmark-host-timing-2026-09-03.md)
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Dependency policy](architecture/dependency-policy.md)
 - [Binary releases](release/binary-releases.md)

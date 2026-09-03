@@ -50,6 +50,9 @@ jobs:
       - name: Engineering benchmark token telemetry
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-telemetry.ps1
+      - name: Engineering benchmark host timing
+        shell: pwsh
+        run: ./scripts/test-engineering-benchmark-timing.ps1
       - name: Engineering benchmark completion provenance
         if: runner.os == 'Linux'
         shell: pwsh
