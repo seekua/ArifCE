@@ -14,4 +14,6 @@ No implementation or release blocker is known. Heuristic caller/test relationshi
 
 ## Next steps
 
+Phase 66 token telemetry ingestion passes local parser, completion, suite-rejection, and all 83 behavior tests. Remote CI is pending. TASK-0016 tracks this work. Missing counters now remain unavailable; synthetic telemetry fixtures are not real A/B results.
+
 The current implementation and packaging corrections are complete. Remaining V0.9 work includes unconfounded benchmark reruns with real token telemetry and compiler-bound relationship precision; see explicit ROADMAP deferrals. Keep heuristic graph relationships outside automatic trust decisions. Historical contracts retain their original snapshots; recreate them to obtain corrected candidate-confidence labels.

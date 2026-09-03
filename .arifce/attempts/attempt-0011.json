@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0011",
+  "taskId": "TASK-0016",
+  "approach": "Enumerate host logs with File.ReadLines in a throwing PowerShell loop",
+  "result": "FAILED",
+  "reason": "Malformed-event regression left fixture.jsonl open on Windows and prevented rewriting it. Explicit StreamReader disposal fixes the reproduced lock; telemetry regression now passes.",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-09-03T03:16:24.2140384+00:00"
+}

@@ -7,11 +7,14 @@ param(
     [long]$TokensConsumed = 0,
     [ValidateSet('provider', 'agent-host', 'unavailable')]
     [string]$TokenSource = 'unavailable',
+    [ValidateSet('none', 'codex-exec-jsonl')]
+    [string]$UsageFormat = 'none',
     [switch]$AllowNoCandidate,
     [switch]$VerifyOnly
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'benchmark-telemetry.ps1')
 $trial = [IO.Path]::GetFullPath($TrialRoot)
 $sessionPath = Join-Path $trial 'session.json'
 $promptPath = Join-Path $trial 'prompt.md'
@@ -51,12 +54,23 @@ if ($VerifyOnly) {
     $tree = Git-One @('rev-parse', 'HEAD^{tree}')
     if ($head -ne $result.provenance.finalCommit -or $tree -ne $result.provenance.finalTree) { throw 'Checkout no longer matches the recorded final commit and tree.' }
     if ([bool]$result.evaluation.checksPassed -ne ([int]$result.evaluation.exitCode -eq 0)) { throw 'Evaluator outcome is internally inconsistent.' }
+    Assert-BenchmarkTokenUsage $result $agentLogPath
     Write-Output "Verified benchmark provenance for $($result.taskId)/$($result.arm)."
     return
 }
 
 if (Test-Path -LiteralPath $resultPath) { throw "Completed trial will not be overwritten: $resultPath" }
 if ([string]::IsNullOrWhiteSpace($RawLog) -or -not (Test-Path -LiteralPath $RawLog -PathType Leaf)) { throw '-RawLog must name the captured agent-host log.' }
+$tokenMeasurement = $null
+$recordedTokens = $null
+if ($UsageFormat -eq 'codex-exec-jsonl') {
+    $tokenMeasurement = Read-BenchmarkTokenUsage $RawLog
+    if ($PSBoundParameters.ContainsKey('TokensConsumed') -and $TokensConsumed -ne $tokenMeasurement.totalTokens) { throw 'Manual token total does not match captured usage.' }
+    if ($PSBoundParameters.ContainsKey('TokenSource') -and $TokenSource -ne 'agent-host') { throw 'Codex event usage must use agent-host as its source.' }
+    $TokenSource = 'agent-host'
+    $recordedTokens = $tokenMeasurement.totalTokens
+}
+elseif ($TokensConsumed -ne 0 -or $TokenSource -ne 'unavailable') { throw 'Measured tokens require -UsageFormat and a supported captured log.' }
 $status = @(& git -C $checkout status --porcelain)
 if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect the trial checkout.' }
 if ($status.Count -ne 0) { throw 'Commit all trial changes before completion; dirty results are rejected.' }
@@ -96,7 +110,7 @@ finally { Pop-Location }
 $completed = [DateTimeOffset]::UtcNow
 
 $result = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
     runId = $session.runId
     taskId = $session.taskId
     arm = $session.arm
@@ -104,8 +118,9 @@ $result = [ordered]@{
     model = $session.model
     tokenBudget = $session.tokenBudget
     durationMs = [Math]::Max(0, [long]($completed - $started).TotalMilliseconds)
-    tokensConsumed = $TokensConsumed
+    tokensConsumed = $recordedTokens
     tokenSource = $TokenSource
+    tokenMeasurement = $tokenMeasurement
     candidateChanged = $candidateChanged
     provenance = [ordered]@{
         sessionSha256 = Hash-File $sessionPath

@@ -16,4 +16,20 @@ The repository's engineering suite is defined in `benchmarks/engineering-tasks.j
 
 Suite preparation and collection are separate. Preparation creates all twenty isolated directories but never invokes a model. Collection rejects partial or unmatched suites and verifies provenance plus independent-evaluator artifacts again before aggregating results. Execution status is recorded in `docs/evidence/engineering-benchmark-readiness.md`; the first complete run is reported in `docs/evidence/engineering-benchmark-results-2026-09-02.md`.
 
-`scripts/validate-engineering-benchmark.ps1` validates manifest coverage and matched raw arm results. A normalized report is evidence only after every task has a real recorded execution. Empty values, invented measurements, unmatched tasks, and silently removed failures are invalid. Negative results remain in the published report.
+`scripts/validate-engineering-benchmark.ps1` is a legacy shape/coverage validator for imported rows, not host-usage provenance verification. Its imported totals must not be presented as captured token measurements. Use the completion and collection pipeline above for log-bound measurements. Negative results remain in the published report.
+
+## Captured token usage
+
+For a captured `codex exec --json` stdout log, complete a committed trial with:
+
+```powershell
+./scripts/complete-engineering-benchmark-trial.ps1 -TrialRoot <trial-directory> -RawLog <captured-jsonl-file> -UsageFormat codex-exec-jsonl
+```
+
+The parser follows the [documented host event format](https://learn.chatgpt.com/docs/non-interactive-mode): one `thread.started`, one `turn.started`, and one `turn.completed` with integer `input_tokens`, `cached_input_tokens`, and `output_tokens`. Total usage is input plus output; cached input is a subset, not an additional charge. This is a token count, not a monetary cost calculation.
+
+Completion hashes the raw log and stores its parsed counters in `tokenMeasurement`. Verification and collection reparse the log and reject counters that disagree. Manual `-TokensConsumed` values alone are not accepted; with a supported log, an explicitly supplied value must match. This checks consistency, not cryptographic host authenticity: someone controlling all artifacts can forge a log. Do not publish raw logs without a separate secret/privacy review.
+
+Absent, failed, unsupported, or multi-turn telemetry must be preserved with the default `-UsageFormat none` and `-TokenSource unavailable`, not estimated. New records use null tokens; legacy unavailable zero sentinels remain readable. Any unavailable trial makes that arm's aggregate token total null. `tokenComparisonAvailable` means complete counters exist in both arms, not that a causal effectiveness comparison is valid.
+
+This bounded parser deliberately rejects concatenated threads, repeated completion events, and host errors. Multi-turn aggregation and other hosts require documented counter semantics and fixtures before support. Active execution time is still not measured: `durationMs` includes preparation, queue, approval, and evaluation time. Equal permissions and repeated matched real executions are still required. Parser tests use synthetic events and do not constitute an A/B measurement.

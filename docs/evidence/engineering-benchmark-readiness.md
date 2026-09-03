@@ -16,3 +16,5 @@ The repeatable workflow remains:
 ```
 
 The collector refuses missing arms, mismatched models or budgets, duplicate run IDs, altered provenance, evaluator-registry drift, changed evaluator artifacts, and hand-authored evaluator outcomes. The next run must also remove approval variance and capture host-reported token and active-time telemetry before aggregate comparison is meaningful.
+
+Phase 66 adds [log-bound token ingestion](benchmark-token-telemetry-2026-09-03.md) for a single completed Codex JSONL turn. The parser, tamper rejection, missing-value aggregation, and completion integration pass local tests. This prepares measurement; it does not add real runs or active-time telemetry. Prior results remain unchanged and inconclusive.
