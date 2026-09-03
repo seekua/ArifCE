@@ -82,11 +82,14 @@
       "instruction": "Add a dependency-light deterministic C# graph for declarations, references, project dependencies, and related-test candidates.",
       "verification": "Derived graph rebuilds from source and labels heuristic relationships separately from exact ones.",
       "acceptanceContract": [
-        "Provide ArifCE.Infrastructure.CodeGraphStore with BuildAsync(root) and QueryAsync(root, symbolName). Returned graph exposes Nodes (Kind, Name) and Edges (Kind, Confidence); query result exposes Edges.",
-        "For a C# method and caller/test fixture, expose a METHOD node, REFERENCES and RELATED_TEST query edges, and a PROJECT_REFERENCE edge with EXACT confidence. Persist disposable graph data at .arifce/index/code-graph.json."
+        "Preserve CodeGraphStore BuildAsync, ReadAsync, QueryAsync (including exactMatch and path::symbol selectors), and TrustedClosureAsync. Return graph Nodes/Edges, SourceDigest and query Matches/RelatedNodes/Edges; persist disposable .arifce/index/code-graph.json.",
+        "Declarations and CONTAINS edges are STRUCTURAL; file/project nodes and PROJECT_REFERENCE edges are EXACT; REFERENCES, RELATED_TEST and CALLS are HEURISTIC. Preserve unique same-line overload identities, constructor/test declarations, valid edge endpoints, caller ownership and path-qualified selection; absent/exact-prefix symbols must not match. Blank queries throw ArgumentException.",
+        "Reads/queries must refresh after source addition, editing, deletion, rename or project-reference removal. Internal metadata and excluded obj/node_modules source noise do not change graph semantics or SourceDigest. Deleted, malformed or legacy graph cache must rebuild to equal ordered node/edge/query semantics, excluding generation timestamp, without changing canonical fixture bytes.",
+        "Trusted closure for a qualified method includes its declaration file but excludes heuristic caller/test files. A qualified project closure follows reverse transitive PROJECT_REFERENCE dependents, excludes unrelated projects and updates its paths/digest when a reference is removed. Unknown exact targets throw InvalidOperationException."
       ],
       "evaluationLimitations": [
-        "Only exact project-reference confidence is asserted. Heuristic edge confidence, deletion/rebuild equivalence and correctness of symbol resolution are not comprehensively tested."
+        "Four deterministic source fixtures exercise syntax-derived relationships, not compiler-bound receiver/overload resolution. Same-name candidates may remain ambiguous and heuristic; this does not establish complete C# language/MSBuild semantics, cross-language support or performance at scale.",
+        "Canonical preservation is checked for seeded CURRENT/decision documents and deletion of the graph cache, not every memory kind or all SQLite data. Fixtures use slash-separated project paths and do not exhaust symlinks, path escapes, conditional imports, concurrent writers/builds or crash recovery. The fixture does not require Git, a provider or generic shell verification."
       ]
     },
     {

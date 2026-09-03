@@ -10,6 +10,8 @@ Phase 71's [freshness report](benchmark-freshness-calibration-2026-09-03.md) tra
 
 Phase 72's [propagation report](benchmark-propagation-calibration-2026-09-03.md) tracks the stale-propagation replacement and false-ACCEPTED defects it exposed. Consult that report's verification status; this historical table is not the current coverage inventory.
 
+Phase 73's [graph report](benchmark-graph-calibration-2026-09-03.md) tracks stronger relationship-confidence, source/cache lifecycle and trusted-closure scoring. The historical existence-only assertions below are not the newer fixture.
+
 The first suite is not suitable for product-effectiveness claims. In addition to permission variance, pinned tests contain undisclosed API/message dependencies and partial behavioral coverage. Compilation or restore failures were previously collapsed into the same boolean as failed assertions. The historical report is retained, not retrospectively rewritten as a valid experiment.
 
 This audit reads the exact source commits and methods in `benchmarks/evaluators.json`, not current tests with similar names. Exposing their compatibility requirements fixes a fairness defect, but does not repair weak assertions. The original engineering objectives remain in the manifest; limitations do not redefine them downward.

@@ -39,10 +39,10 @@
     },
     {
       "taskId": "deterministic-code-graph",
-      "sourceCommit": "03700da8407ea340ea4202908be6b54f12c3d916",
-      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
-      "fixture": "behavior",
-      "methods": ["Deterministic_code_graph_links_symbols_references_tests_and_projects"]
+      "sourceCommit": "6af42086596a470d32d0d4844b5f3cf0378d5f8d",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkGraphTests.cs",
+      "fixture": "graph",
+      "methods": ["Graph_preserves_declarations_and_relationship_confidence", "Graph_tracks_source_lifecycle_and_ignores_derived_noise", "Graph_rebuild_is_equivalent_and_preserves_canonical_bytes", "Graph_trusted_closure_excludes_heuristics_and_follows_project_dependents"]
     },
     {
       "taskId": "change-impact-contract",

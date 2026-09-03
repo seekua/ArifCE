@@ -104,6 +104,7 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 - [x] Phase 71: fix nested-untracked/literal-path/deleted-file snapshots and replace legacy dirty-content scoring; fix the stale ID-scan loss exposed by two later CI runs (29/30 tasks). Both critical findings, extended storage controls, freshness calibration, 92 tests on three OS targets and five binaries close with [CI run 33737427375](https://github.com/seekua/ArifCE/actions/runs/33737427375). See docs/evidence/benchmark-freshness-calibration-2026-09-03.md.
 - [x] Phase 72: bind acceptance freshness to original owned evidence, retain repeated handoff warnings and replace stale-propagation scoring with five pinned positive/negative tests and good/six-mutant calibration. FINDING-0008, independent integration, 97 tests on three OS targets and five binaries close with [CI run 33740663018](https://github.com/seekua/ArifCE/actions/runs/33740663018). See docs/evidence/benchmark-propagation-calibration-2026-09-03.md.
+- [ ] Phase 73: replace graph existence-only scoring with four pinned confidence, source-lifecycle, canonical-preserving cache-rebuild and trusted-closure tests. Existing product code passes 101 local tests; good/six-mutant calibration, independent integration and remote closure are pending. See docs/evidence/benchmark-graph-calibration-2026-09-03.md.
 
 ## Explicit deferrals
 

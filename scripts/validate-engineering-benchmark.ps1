@@ -37,7 +37,7 @@ foreach ($evaluator in $evaluatorRows) {
     foreach ($name in @('taskId','sourceCommit','sourceFile','fixture','methods')) { Require-Property $evaluator $name "Evaluator $($evaluator.taskId)" }
     if ($evaluator.sourceCommit -notmatch '^[0-9a-f]{40}$') { throw "Evaluator $($evaluator.taskId) must pin a full Git commit." }
     if ($evaluator.sourceFile -notmatch '^tests/ArifCE\.Tests/[A-Za-z0-9.]+\.cs$') { throw "Evaluator $($evaluator.taskId) has an unsafe source file." }
-    if ($evaluator.fixture -notin @('behavior','llm','mcp','safety','storage','freshness','propagation')) { throw "Evaluator $($evaluator.taskId) has an unknown fixture." }
+    if ($evaluator.fixture -notin @('behavior','llm','mcp','safety','storage','freshness','propagation','graph')) { throw "Evaluator $($evaluator.taskId) has an unknown fixture." }
     if (@($evaluator.methods).Count -eq 0 -or @($evaluator.methods | Where-Object { $_ -notmatch '^[A-Za-z][A-Za-z0-9_]+$' }).Count -gt 0) { throw "Evaluator $($evaluator.taskId) has invalid method names." }
 }
 if ($ValidateManifestOnly) { Write-Output "Validated engineering benchmark manifest and independent evaluator registry with $($definition.tasks.Count) tasks."; return }

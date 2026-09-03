@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0023",
+  "title": "Calibrate deterministic code graph confidence and rebuild behavior",
+  "description": null,
+  "status": "OPEN",
+  "risk": "HIGH",
+  "createdAtUtc": "2026-09-03T10:01:21.9518154+00:00"
+}

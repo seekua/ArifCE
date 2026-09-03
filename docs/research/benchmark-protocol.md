@@ -28,6 +28,8 @@ Phase 71 replaces dirty-content scoring with a [pinned real-Git freshness fixtur
 
 Phase 72 replaces stale-propagation scoring with a [pinned five-test lifecycle fixture](../evidence/benchmark-propagation-calibration-2026-09-03.md). It checks acceptance's original owned evidence, scoped/metadata positive cases, broken support, explicit reacceptance, revocation and repeated handoff warnings. Run `./scripts/test-engineering-benchmark-propagation-calibration.ps1 -SourceCommit <commit>` for good/six-mutant controls. Synthetic Low-risk evidence and fixed trust-section headings are disclosed; the fixture does not prove real evidence provenance, complete graph propagation or model effectiveness.
 
+Phase 73 adds a [pinned four-test graph fixture](../evidence/benchmark-graph-calibration-2026-09-03.md) covering relationship confidence, source invalidation, semantic cache-rebuild equivalence, seeded canonical preservation and trusted closure. Run `./scripts/test-engineering-benchmark-graph-calibration.ps1 -SourceCommit <commit>` for good/six-mutant controls. This tests syntax-derived behavior, not compiler-bound semantic correctness or model performance.
+
 `scripts/validate-engineering-benchmark.ps1` is a legacy shape/coverage validator for imported rows, not host-usage provenance verification. Its imported totals must not be presented as captured token measurements. Use the completion and collection pipeline above for log-bound measurements. Negative results remain in the published report.
 
 ## Captured token usage

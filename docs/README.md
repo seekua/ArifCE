@@ -38,6 +38,7 @@ ArifCE documentation is organized like a product handbook: start with the goal, 
 - [Cross-process storage and index-rebuild evaluator](evidence/benchmark-storage-calibration-2026-09-03.md)
 - [Repository freshness remediation and calibration](evidence/benchmark-freshness-calibration-2026-09-03.md)
 - [Acceptance-basis propagation remediation and calibration](evidence/benchmark-propagation-calibration-2026-09-03.md)
+- [Deterministic code-graph evaluator calibration](evidence/benchmark-graph-calibration-2026-09-03.md)
 - [NativeAOT distribution plan](release/native-aot-distribution.md)
 - [Dependency policy](architecture/dependency-policy.md)
 - [Binary releases](release/binary-releases.md)
