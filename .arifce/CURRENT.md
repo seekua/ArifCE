@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 through 70 are closed. Phase 71 under TASK-0021 found FINDING-0006: nested untracked edits retained the same snapshot digest; Windows quoted Unicode/deleted paths also failed. Fix and four real-Git tests are pinned at d040501. All 92 local tests, independent integration and good/six-mutant calibration pass. Remote closure is pending. FINDING-0005 and FINDING-0006 remain OPEN until their respective proof gates; productClaimEligible remains false.
+Phase 71 under TASK-0021 is pending remote closure. Freshness fix/tests pinned at d040501 pass 92 local tests, independent integration and good/six-mutant calibration (FINDING-0006). Reviewing later Phase 70 closure CI 33735216710 exposed real lost ID data: 29/30 task records. FINDING-0007 and ATTEMPT-0013 record the stale scan/reservation race; target recheck and forced-stale-scan controls are being validated. Do not dismiss that failure because the earlier storage CI passed. FINDING-0005/0006/0007 remain OPEN; productClaimEligible stays false.
 
 ## Blockers
 
@@ -14,4 +14,4 @@ The next comparative benchmark is gated on FINDING-0005 evaluator remediation an
 
 ## Next steps
 
-Close Phase 71 with calibration, independent integration and CI evidence before resolving FINDING-0006. Then strengthen stale propagation and the other remaining evaluator objectives. See docs/evidence/benchmark-freshness-calibration-2026-09-03.md for bounded coverage and compatibility implications. Only after calibration, establish equal permissions and rerun fresh matched sessions with captured usage/host timing. Active work remains unavailable because internal waits are not separated. Preserve evaluator errors, historical results and private reviews; no product-effectiveness result has been established.
+Validate the ID race fix with the full regression suite, forced-stale-scan success/rejected-no-recheck controls, then rerun CI and close FINDING-0006/0007 only with evidence. Afterwards strengthen stale propagation and other evaluator objectives. See docs/evidence/benchmark-freshness-calibration-2026-09-03.md. Only after calibration, establish equal permissions and rerun fresh matched sessions with captured usage/host timing. Active work remains unavailable. Preserve errors, historical results and private reviews; no product-effectiveness result is established.

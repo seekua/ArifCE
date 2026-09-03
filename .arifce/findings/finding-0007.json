@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "FINDING-0007",
+  "title": "Stale ID scan can reserve an already committed record and overwrite it",
+  "description": "Windows CI 33735216710 at f6667a4 completed three storage workers but retained 29 rather than 30 tasks. NextId can compute an old maximum, then create a reservation after another writer committed the same ID and removed its reservation. No target recheck prevents reuse. Keep the failing assertion; recheck the canonical target after reservation acquisition and calibrate forced stale scans.",
+  "severity": "CRITICAL",
+  "status": "OPEN",
+  "taskId": "TASK-0021",
+  "path": "src/ArifCE.Infrastructure/Services.cs",
+  "createdAtUtc": "2026-09-03T09:03:39.9787633+00:00"
+}

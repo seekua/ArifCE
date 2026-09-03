@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ATTEMPT-0013",
+  "taskId": "TASK-0021",
+  "approach": "Rely on one successful cross-process CI pass for ID allocation",
+  "result": "FAILED",
+  "reason": "The subsequent closure CI 33735216710 reproduced lost task data: 29 of 30 records. A stale ID scan raced reservation removal. Reopen the storage correctness boundary and fix the algorithm rather than retrying or relaxing the test.",
+  "evidenceIds": [],
+  "createdAtUtc": "2026-09-03T09:03:45.035071+00:00"
+}

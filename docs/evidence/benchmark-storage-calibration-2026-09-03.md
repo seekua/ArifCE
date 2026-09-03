@@ -43,6 +43,12 @@ Commit `4fbf61b96778faac85409e9832ae7331a3b4ace1` passed [GitHub Actions run 337
 
 ## Limits and next work
 
+### Follow-up failure: stale ID reservation scan
+
+The later documentation closure commit `f6667a4` failed Windows [CI run 33735216710](https://github.com/seekua/ArifCE/actions/runs/33735216710): all worker processes exited, but the assertion found only 29 of 30 tasks. The earlier successful run is historical evidence, not proof that this race cannot occur. FINDING-0007 and ATTEMPT-0013 record the discovered data-loss defect under the Phase 71 follow-up.
+
+NextId could calculate an old maximum, then reserve an ID whose previous writer had already committed its canonical file and removed the reservation. The fix checks the canonical target again while owning the new reservation, releasing it and advancing if the ID is already used. The assertion is retained unchanged. Calibration now also forces the scanned maximum to zero: corrected code must still pass, while removing the target recheck must fail. This scheduling control is injected only into temporary exported sources, not through a production test hook. Follow-up proof is tracked in the freshness remediation report.
+
 The exclusion observation uses a bounded wait and is not a scheduler-independent proof; content assertions separately check successful completion. This does not establish crash/power-loss durability, killed-writer recovery, distributed/network-filesystem locking, concurrent index rebuild/read correctness, every canonical entity, or schema migrations. DATABASE_MIGRATION remains an index-rebuild proxy rather than an actual SQL schema migration task.
 
 FINDING-0005 remains open. Seven other evaluator objectives still need strengthening/calibration, beginning with repository freshness. No product speed, token saving or effectiveness claim follows from these synthetic controls; `productClaimEligible=false` remains unchanged. A fresh, permission-matched, repeated A/B study is still required.

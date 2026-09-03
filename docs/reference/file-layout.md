@@ -21,4 +21,6 @@ At the repository root, `README.md` is the canonical English entry point. Transl
 
 Canonical entity files are UTF-8 JSON with kebab-case filenames equal to the lower-cased entity ID, and contain `schemaVersion`. Human-maintained project and memory documents are Markdown. Events are one JSON object per line. Temporary writes use a sibling temporary file followed by atomic replacement where the platform permits.
 
+Automatic ID allocation reserves a `.json.reserve` file exclusively, then checks again that the canonical `.json` target is absent before returning the ID. The initial directory scan can be stale; reservation ownership alone is insufficient after another writer has committed and removed its marker. An already-used candidate is released and skipped. This does not make arbitrary caller-selected writes create-only or establish crash/network-filesystem guarantees.
+
 `cache/` and `index/` are derived and should be ignored by Git. Canonical files may be committed. `raw/` is opt-in and must be reviewed for sensitive data before commit. Deleting derived directories must not lose intelligence.

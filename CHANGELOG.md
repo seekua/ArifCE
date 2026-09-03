@@ -30,6 +30,7 @@ All notable changes will be documented here. The project follows semantic versio
 - Replace two weak benchmark evaluators with real-Git secret-boundary and positive/negative acceptance checks; calibrate them against a known-good implementation and seven deliberately incorrect temporary variants.
 - Replace the single-process storage evaluator with pinned three-process contention and canonical-byte/index-rebuild checks; disclose the finite coverage and keep product-effectiveness claims disabled.
 - Fix repository freshness for nested untracked file edits, literal Unicode/escaped filenames, rename endpoints and deleted files. Use NUL-separated Git status and reject unexpanded Git directories rather than silently treating their contents as unchanged.
+- Recheck canonical ID availability after acquiring a reservation so a stale directory scan cannot reuse and overwrite another process's completed record; retain the cross-process loss regression and add forced-stale-scan calibration.
 - Publish hash-bound benchmark acceptance contracts for both arms; distinguish executed test assertions from evaluator errors using TRX evidence, and mark partial-coverage scores as diagnostic only.
 - Capture benchmark host-process elapsed time with a monotonic stopwatch, hash-bound stdout/stderr and trial identity, bounded execution, and explicit unavailable active-work time.
 - Bind benchmark token totals to captured single-turn Codex JSONL usage, reparse usage during provenance verification, and report incomplete telemetry as null rather than zero.

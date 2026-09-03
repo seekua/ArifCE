@@ -34,6 +34,10 @@ Run `./scripts/test-engineering-benchmark-freshness-calibration.ps1 -SourceCommi
 
 ## Limits and remaining work
 
+### Additional P0 discovered during CI review
+
+Reviewing the previous phase's later closure CI exposed FINDING-0007: Windows run 33735216710 retained only 29/30 tasks despite successful worker exits. Windows run 33736561125 at `8d17abe` reproduced exactly the same loss before the ID fix. The [storage report](benchmark-storage-calibration-2026-09-03.md) records the stale ID scan/reservation race. Phase 71 therefore also rechecks canonical ID availability after acquiring the reservation and extends storage calibration with a forced-stale-scan positive control plus the same control without the recheck (must fail). ATTEMPT-0013 preserves the failed earlier confidence assumption. Fix `28ea327b3e3f50a3dd7818bb11e516b0a55ec1cd` passes all 92 local tests; extended calibration and remote proof are pending. The prior successful CI must not be used to dismiss the later loss.
+
 This is not complete Git correctness. Ignored files, non-UTF8 filenames, all submodule configurations, rebase/merge/shallow-clone matrices, staged-only content changes, parent-symlink/path races, and edits during snapshot capture are not established by this fixture. Explicit dependency scopes use a separate hashing path. Snapshot capture deliberately rejects Git-reported directories instead of claiming recursive submodule support.
 
 FINDING-0005 remains open and productClaimEligible remains false. After this phase, six evaluator objectives still require strengthening/calibration: stale propagation, deterministic code graph, change contracts, flight recorder, MCP validation and unfinished-verification policy. A fresh, permission-matched repeated model benchmark remains separate work. No speed, token saving or effectiveness percentage is established here.
