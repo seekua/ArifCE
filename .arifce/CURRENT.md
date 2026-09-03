@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 through 66 are closed. Phase 66 implementation `5730474` passed remote CI run 33710861430: all three OS test/package jobs and five self-contained targets succeeded. Token counts are derived from captured single-turn Codex JSONL events and reparsed during verification; missing usage stays unavailable. All 83 local behavior tests and benchmark telemetry/completion/suite checks passed. TASK-0016 and ATTEMPT-0011 record the work and the corrected Windows parser file-handle failure. Earlier graph version 6 and relationship-confidence corrections remain in place.
+Phase 56 through 67 are closed. Host timing implementation `0c0a808` and strengthened regression `c282d58` passed remote CI run 33712166726: all three OS test/package jobs and five self-contained targets succeeded. TASK-0017 and ADR-0014 record the work. Process elapsed time is monotonic, artifact-bound, and distinct from unavailable activeWorkMs. Local timing, token, completion, suite checks and all 83 behavior tests passed. Phase 66 token provenance, graph version 6, and relationship-confidence corrections remain in place.
 
 ## Blockers
 
@@ -14,6 +14,4 @@ No implementation or release blocker is known. Heuristic caller/test relationshi
 
 ## Next steps
 
-Phase 67 (TASK-0017, ADR-0014) passes local host timing, token, completion integration, suite, and all 83 behavior tests. Remote CI is pending. The new runner captures process elapsed time only; activeWorkMs remains null. See docs/evidence/benchmark-host-timing-2026-09-03.md.
-
-Remaining V0.9 work: capture active execution time separately from preparation/approval/evaluation delay, then rerun matched real trials with equal pre-authorized permissions and captured usage. Phase 66 synthetic fixtures are not A/B measurements; the first real run remains inconclusive. Other host/multi-turn telemetry and compiler-bound relationship precision are explicitly deferred in ROADMAP. Keep heuristic graph relationships outside automatic trust decisions. Historical contracts retain their snapshots; recreate them for corrected candidate-confidence labels.
+Before another real matched run, audit prompt/evaluator contract alignment (first-run API-shape mismatches), establish equal pre-authorized permissions, and capture host usage/time. Process timing now excludes outer delay but not internal approval/network waits: active-work measurement remains open, not silently completed. Handle interrupted runs explicitly; never omit them. Synthetic fixtures are not A/B measurements and the first real run remains inconclusive. Other host/multi-turn telemetry and compiler-bound precision remain deferred. Keep heuristic graph relationships outside automatic trust decisions. Historical contracts retain their snapshots; recreate them for corrected candidate-confidence labels.

@@ -3,7 +3,7 @@
   "id": "TASK-0017",
   "title": "Capture benchmark host elapsed time without claiming active work",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "MEDIUM",
   "createdAtUtc": "2026-09-03T03:28:06.2531637+00:00"
 }

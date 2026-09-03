@@ -12,7 +12,11 @@ The runner launches a user-selected executable with an argument array, streams s
 
 The elapsed assertion checks a known delay against an outer stopwatch, not a tight machine-dependent performance threshold. These are fixture-process measurements, not a live model benchmark or a speedup result.
 
-`test-engineering-benchmark-completion.ps1` also passes locally: a captured fixture process is bound to a real isolated Git/.NET trial, altered elapsed time is rejected, and the existing token/evaluator provenance checks remain green. `test-engineering-benchmark-suite.ps1` passes matched preparation and incomplete-suite rejection. Remote CI proof is pending.
+`test-engineering-benchmark-completion.ps1` also passes locally: a captured fixture process is bound to a real isolated Git/.NET trial, altered elapsed time is rejected, and the existing token/evaluator provenance checks remain green. `test-engineering-benchmark-suite.ps1` passes matched preparation and incomplete-suite rejection. The strengthened capture fixture verifies exactly 10,001 stdout and 10,000 stderr lines, not merely process exit.
+
+## Remote proof
+
+Implementation `0c0a808` plus strengthened regression `c282d58` passed [GitHub Actions run 33712166726](https://github.com/seekua/ArifCE/actions/runs/33712166726). Windows, Ubuntu, and macOS build/test/package jobs and all five self-contained binary jobs succeeded. The host-timing regression ran on all three operating systems; completion integration ran on Ubuntu in CI and Windows locally. Phase 67 is closed against `c282d58`.
 
 ## Boundaries
 
