@@ -16,6 +16,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
@@ -59,7 +61,13 @@ jobs:
         shell: pwsh
         run: |
           ./scripts/test-engineering-benchmark-completion.ps1
+          ./scripts/test-engineering-benchmark-completion.ps1 -TaskId llm-secret-boundary
+          ./scripts/test-engineering-benchmark-completion.ps1 -TaskId acceptance-risk-policy
           ./scripts/test-engineering-benchmark-suite.ps1
+      - name: Safety evaluator good and bad controls
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: ./scripts/test-engineering-benchmark-safety-calibration.ps1
       - name: Release workflow policy
         shell: pwsh
         run: ./scripts/check-release-workflow-policy.ps1

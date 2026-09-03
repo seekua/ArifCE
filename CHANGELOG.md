@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Replace two weak benchmark evaluators with real-Git secret-boundary and positive/negative acceptance checks; calibrate them against a known-good implementation and seven deliberately incorrect temporary variants.
 - Publish hash-bound benchmark acceptance contracts for both arms; distinguish executed test assertions from evaluator errors using TRX evidence, and mark partial-coverage scores as diagnostic only.
 - Capture benchmark host-process elapsed time with a monotonic stopwatch, hash-bound stdout/stderr and trial identity, bounded execution, and explicit unavailable active-work time.
 - Bind benchmark token totals to captured single-turn Codex JSONL usage, reparse usage during provenance verification, and report incomplete telemetry as null rather than zero.

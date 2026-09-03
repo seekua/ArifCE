@@ -73,3 +73,5 @@ finally {
     # Keep failed fixtures for diagnosis; remove only after the complete calibration succeeded.
     if ($succeeded -and (Test-Path -LiteralPath $resolved)) { Remove-Item -LiteralPath $resolved -Recurse -Force }
 }
+# Expected mutant failures must not leak their native exit code into the CI shell.
+exit 0

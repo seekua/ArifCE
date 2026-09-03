@@ -11,17 +11,17 @@
     },
     {
       "taskId": "acceptance-risk-policy",
-      "sourceCommit": "1b5de55ecc0e6e97a34d5ec18b80c204d0e7a3ce",
-      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
-      "fixture": "behavior",
-      "methods": ["High_risk_acceptance_requires_build_tests_and_review"]
+      "sourceCommit": "2e8b7418391022997b95295369c0aa9766306593",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkSafetyTests.cs",
+      "fixture": "safety",
+      "methods": ["High_risk_acceptance_checks_each_requirement_and_success"]
     },
     {
       "taskId": "llm-secret-boundary",
-      "sourceCommit": "1b5de55ecc0e6e97a34d5ec18b80c204d0e7a3ce",
-      "sourceFile": "tests/ArifCE.Tests/LlmProviderTests.cs",
-      "fixture": "llm",
-      "methods": ["Orchestrator_blocks_secret_prompts_before_provider_call"]
+      "sourceCommit": "2e8b7418391022997b95295369c0aa9766306593",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkSafetyTests.cs",
+      "fixture": "safety",
+      "methods": ["Secret_boundary_checks_provider_calls_and_persisted_response"]
     },
     {
       "taskId": "canonical-concurrency",

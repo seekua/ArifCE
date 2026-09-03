@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0019",
+  "title": "Calibrate secret-boundary and acceptance benchmark evaluators",
+  "description": null,
+  "status": "OPEN",
+  "risk": "HIGH",
+  "createdAtUtc": "2026-09-03T06:08:43.2064953+00:00"
+}

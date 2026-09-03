@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([ValidateSet('trust-dirty-content','llm-secret-boundary','acceptance-risk-policy')][string]$TaskId = 'trust-dirty-content')
 
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
@@ -10,8 +10,8 @@ try {
     $manifest.fixtureCommit = (& git -C $repo rev-parse HEAD).Trim()
     $manifestPath = Join-Path $root 'manifest.json'
     $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding utf8
-    & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId 'trust-dirty-content' -Arm baseline -Model fixture-model-v1 -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
-    $trial = Join-Path $root 'trust-dirty-content/baseline'
+    & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId $TaskId -Arm baseline -Model fixture-model-v1 -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
+    $trial = Join-Path $root "$TaskId/baseline"
     $checkout = Join-Path $trial 'checkout'
     Set-Content -LiteralPath (Join-Path $checkout 'BENCHMARK-SMOKE.txt') -Value 'candidate change' -Encoding utf8
     & git -C $checkout add BENCHMARK-SMOKE.txt
@@ -50,8 +50,8 @@ try {
     $result.tokensConsumed = 120
     $result | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $trial 'result.json') -Encoding utf8
     $registry = Get-Content -LiteralPath (Join-Path $repo 'benchmarks/evaluators.json') -Raw | ConvertFrom-Json
-    $registry.evaluators = @($registry.evaluators | Where-Object taskId -eq 'trust-dirty-content')
-    $registry.evaluators[0].sourceCommit = $manifest.fixtureCommit
+    $registry.evaluators = @($registry.evaluators | Where-Object taskId -eq $TaskId)
+    if ($registry.evaluators[0].fixture -ne 'safety') { $registry.evaluators[0].sourceCommit = $manifest.fixtureCommit }
     $registryPath = Join-Path $root 'smoke-evaluators.json'
     $registry | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $registryPath -Encoding utf8
     & (Join-Path $PSScriptRoot 'run-engineering-task-evaluator.ps1') -TrialRoot $trial -EvaluatorRegistry $registryPath -SourceRepository $repo | Out-Null
@@ -66,8 +66,8 @@ try {
     try { & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null } catch { $tamperRejected = $true }
     if (-not $tamperRejected) { throw 'Tampered provenance was accepted.' }
 
-    & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId 'trust-dirty-content' -Arm arifce -Model fixture-model-v1 -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
-    $unchangedTrial = Join-Path $root 'trust-dirty-content/arifce'
+    & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId $TaskId -Arm arifce -Model fixture-model-v1 -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
+    $unchangedTrial = Join-Path $root "$TaskId/arifce"
     & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $unchangedTrial -RawLog $rawLog -TokenSource unavailable -AllowNoCandidate | Out-Null
     $unchanged = Get-Content -LiteralPath (Join-Path $unchangedTrial 'result.json') -Raw | ConvertFrom-Json
     if ($unchanged.candidateChanged -ne $false) { throw 'No-candidate run was not recorded honestly.' }

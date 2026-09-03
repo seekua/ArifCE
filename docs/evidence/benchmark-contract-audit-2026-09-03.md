@@ -2,6 +2,8 @@
 
 ## Verdict
 
+Historical audit snapshot: registry at `24d80d9`. Phase 69 [replaces and calibrates the secret-boundary and acceptance evaluators](benchmark-safety-calibration-2026-09-03.md); the remaining gaps below are not automatically closed by that work.
+
 The first suite is not suitable for product-effectiveness claims. In addition to permission variance, pinned tests contain undisclosed API/message dependencies and partial behavioral coverage. Compilation or restore failures were previously collapsed into the same boolean as failed assertions. The historical report is retained, not retrospectively rewritten as a valid experiment.
 
 This audit reads the exact source commits and methods in `benchmarks/evaluators.json`, not current tests with similar names. Exposing their compatibility requirements fixes a fairness defect, but does not repair weak assertions. The original engineering objectives remain in the manifest; limitations do not redefine them downward.

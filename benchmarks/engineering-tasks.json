@@ -24,10 +24,11 @@
       "instruction": "Prevent high-risk claims from being accepted without current build, test, and independent-review evidence.",
       "verification": "Acceptance fails closed until every risk-policy requirement exists.",
       "acceptanceContract": [
-        "Preserve ProjectService.CreateAcceptanceAsync(root, claimId, approver, rationale). After a High-risk claim has only successful generic-command evidence (VerifyAsync with platform true/ver), acceptance must throw InvalidOperationException."
+        "Preserve ProjectService.CreateAcceptanceAsync(root, claimId, approver, rationale) and GetAcceptanceAsync. Fixtures seed canonical Supported High-risk claims with repository-scoped BUILD/TEST_RUN evidence and agreeing reviews using CanonicalStore; no shell command compatibility is required.",
+        "Accept and persist an Accepted record when all requirements are present. Independently reject missing BUILD, missing TEST_RUN, missing review, failed build, failed tests, disagreeing review, and stale source snapshots. Rejected attempts must not persist an acceptance."
       ],
       "evaluationLimitations": [
-        "This evaluator tests only rejection with insufficient evidence. It does not prove each required evidence kind or successful acceptance when all requirements are met; an implementation rejecting every acceptance could pass."
+        "Synthetic canonical records test acceptance policy, not whether actual builds/tests ran or who issued evidence. Critical-risk policy, reviewer identity independence and the full evidence freshness matrix remain outside this fixture."
       ]
     },
     {
@@ -36,10 +37,11 @@
       "instruction": "Prevent detectable secrets from leaving through LLM prompts or entering canonical evidence through model output.",
       "verification": "A secret prompt never calls the provider and a secret response is redacted before persistence.",
       "acceptanceContract": [
-        "Preserve LlmOrchestrator(LlmRouter, CanonicalStore, JournalStore, GitInspector) and ExecuteAsync(root, new LlmRequest(task, prompt), claimId). A prompt containing a plaintext password assignment must raise InvalidOperationException."
+        "Preserve LlmOrchestrator(LlmRouter, CanonicalStore, JournalStore, GitInspector) and ExecuteAsync(root, LlmRequest, claimId). A clean request in a real Git repository must invoke the provider and persist canonical evidence.",
+        "A password-bearing prompt must throw InvalidOperationException before calling the provider or persisting evidence. On a clean prompt with a password-bearing provider response, preserve safe response text but remove the secret from returned response, reloaded evidence JSON and journal. Returned RawResponse must be absent or empty."
       ],
       "evaluationLimitations": [
-        "Diagnostic only: the legacy fixture creates an empty .git directory, does not count provider calls, and does not test secret response persistence. An unrelated repository error can satisfy its assertion. Passing does not establish the full secret-boundary requirement."
+        "A deterministic counting provider is used; no cloud API is invoked. The tested password assignment does not exhaust every secret format, nested structure, metadata field or logging destination."
       ]
     },
     {
