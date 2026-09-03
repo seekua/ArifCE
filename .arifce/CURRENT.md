@@ -6,7 +6,7 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phase 56 through 69 are closed. Phase 70 is in progress under TASK-0020: storage evaluator source pinned to 2850fd5, with three real child processes and index deletion/rebuild plus canonical-byte checks. All 88 test records pass locally (includes the worker-host entrypoint); good/four-mutant calibration and independent integration pass. Remote closure is pending. Production storage code is unchanged. FINDING-0005 stays OPEN; productClaimEligible remains false.
+Phase 56 through 70 are closed. Phase 70 at 4fbf61b passed CI run 33725187026: three OS test/package jobs and five binaries. All 88 test records pass on each OS (includes the worker-host entrypoint); good/four-mutant storage calibration and pinned independent integration pass locally and on Ubuntu CI. TASK-0020 records the work. Evaluator source stays pinned to 2850fd5; production storage code is unchanged. FINDING-0005 stays OPEN; productClaimEligible remains false.
 
 ## Blockers
 
@@ -14,4 +14,4 @@ The next comparative benchmark is gated on FINDING-0005 evaluator remediation an
 
 ## Next steps
 
-Finish Phase 70 calibration/integration and CI proof; then strengthen repository freshness and the other remaining evaluator objectives before a new study. See docs/evidence/benchmark-storage-calibration-2026-09-03.md for exact coverage and limits. Only after evaluator calibration, establish equal permissions and rerun fresh matched sessions with captured usage/host timing. Active work remains unavailable because internal waits are not separated. Preserve evaluator/interruption errors, historical results and private reviews; no product-effectiveness result has been established.
+Next strengthen the trust-dirty-content evaluator without legacy shell prerequisites: test unchanged/current, changed/stale and repository-read failure behavior, with good/bad calibration. Audit Git status path handling (untracked directories and quoted paths) before declaring coverage. Seven of ten evaluator objectives remain after the three calibrated safety/storage replacements. See docs/evidence/benchmark-storage-calibration-2026-09-03.md for limits. Only after calibration, establish equal permissions and rerun fresh matched sessions with captured usage/host timing. Active work remains unavailable because internal waits are not separated. Preserve evaluator errors, historical results and private reviews; no product-effectiveness result has been established.

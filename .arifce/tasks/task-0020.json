@@ -3,7 +3,7 @@
   "id": "TASK-0020",
   "title": "Calibrate cross-process canonical writes and disposable index rebuild",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "HIGH",
   "createdAtUtc": "2026-09-03T06:38:37.5183106+00:00"
 }

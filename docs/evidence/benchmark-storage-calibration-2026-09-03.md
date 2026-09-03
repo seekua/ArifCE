@@ -35,7 +35,11 @@ All five Windows calibration controls at `2850fd56eaa6bfab84ee4f8418c52679a371e3
 | Omit failed attempts from search | FAILED: expected attempt retrieval missing |
 | Rewrite canonical bytes during rebuild | FAILED: canonical hash snapshot changed |
 
-Every mutant result came from an executed failing assertion, not a compiler/restore error. Successful calibration copies were removed. Remote matrix proof remains pending; Phase 70 is not closed by local results alone.
+Every mutant result came from an executed failing assertion, not a compiler/restore error. Successful calibration copies were removed.
+
+## Remote proof
+
+Commit `4fbf61b96778faac85409e9832ae7331a3b4ace1` passed [GitHub Actions run 33725187026](https://github.com/seekua/ArifCE/actions/runs/33725187026). All eight jobs succeeded: three OS build/test/package jobs and five self-contained binary targets. The test logs explicitly report 88/88 on Windows, macOS and Ubuntu. Ubuntu additionally passed independent completion integration and all five storage calibration controls against that commit, retaining the same fixture source as the pinned `2850fd5` revision. Phase 70 is closed against this implementation commit; the evaluator registry remains pinned to the original fixture commit.
 
 ## Limits and next work
 

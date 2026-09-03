@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0026",
+  "summary": "Phase 70 closed: 4fbf61b passed CI 33725187026, 88 tests on three OS and five binaries; pinned three-process/index evaluator and good/four-mutant controls pass. Three of ten evaluators calibrated; seven remain, next repository freshness. No product-effectiveness claim.",
+  "snapshot": {
+    "commit": "4fbf61b96778faac85409e9832ae7331a3b4ace1",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "ROADMAP.md",
+      "docs/evidence/benchmark-storage-calibration-2026-09-03.md"
+    ],
+    "digest": "2ba06a6e66149be0ef491262fc208dae64e0e79a83ced7a8a6d4e2831d8a391b"
+  },
+  "createdAtUtc": "2026-09-03T08:46:36.3642972+00:00"
+}
