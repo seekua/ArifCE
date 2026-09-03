@@ -32,8 +32,16 @@ try {
     try {
         & dotnet restore tests/ArifCE.Tests/ArifCE.Tests.csproj --disable-build-servers --maxcpucount:1 *> (Join-Path $root 'restore.log')
         if ($LASTEXITCODE -ne 0) { throw "Storage calibration restore failed; see $root" }
-        foreach ($variant in @('good', 'unlocked-update', 'discard-update', 'omit-failed-attempts', 'rewrite-canonical-on-rebuild')) {
+        foreach ($variant in @('good', 'stale-id-scan', 'stale-id-scan-without-target-check', 'unlocked-update', 'discard-update', 'omit-failed-attempts', 'rewrite-canonical-on-rebuild')) {
             $source = $original
+            if ($variant.StartsWith('stale-id-scan', [StringComparison]::Ordinal)) {
+                # Force the legitimately possible stale maximum to zero, deterministically.
+                # Correct code must still skip every already-committed canonical ID.
+                $source = Replace-Once $source '.DefaultIfEmpty().Max();' '.Select(_ => 0).DefaultIfEmpty().Max();'
+                if ($variant -eq 'stale-id-scan-without-target-check') {
+                    $source = Replace-Once $source 'if (!File.Exists(Path.Combine(folder, id.ToLowerInvariant() + ".json"))) return id;' 'if (id.Length > 0) return id; // deliberately reuse a committed ID'
+                }
+            }
             switch ($variant) {
                 'unlocked-update' { $source = Replace-Once $source $lockAndRead $read }
                 'discard-update' { $source = Replace-Once $source 'var updated = update(current);' 'var updated = current; // deliberately discard callback and mutation' }
@@ -53,13 +61,13 @@ try {
             New-Item -ItemType Directory -Path $results | Out-Null
             & dotnet test tests/ArifCE.Tests/ArifCE.Tests.csproj --configuration Release --no-restore --disable-build-servers --maxcpucount:1 --filter $filter --logger 'trx;LogFileName=evaluator.trx' --results-directory $results *> (Join-Path $results 'run.log')
             $assessment = Read-BenchmarkAssessment (Join-Path $results 'evaluator.trx') $LASTEXITCODE $methods
-            $expected = if ($variant -eq 'good') { 'PASSED' } else { 'FAILED' }
+            $expected = if ($variant -in @('good', 'stale-id-scan')) { 'PASSED' } else { 'FAILED' }
             if ($assessment.status -ne $expected) { throw "Storage calibration $variant expected $expected, got $($assessment.status). Logs: $results" }
             Write-Output "Storage calibration $variant : $($assessment.status) (expected $expected)"
         }
     } finally { Pop-Location }
     $succeeded = $true
-    Write-Output "Storage calibration passed: good code and four incorrect variants at $commit. Not a model benchmark."
+    Write-Output "Storage calibration passed: good code, forced stale-scan success and five incorrect variants at $commit. Not a model benchmark."
 }
 finally {
     $resolved = [IO.Path]::GetFullPath($root)

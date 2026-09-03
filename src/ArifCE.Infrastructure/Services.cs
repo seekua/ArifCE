@@ -234,7 +234,17 @@ public sealed class CanonicalStore
         {
             var id = $"{prefix}-{number:0000}";
             var reservation = Path.Combine(folder, id.ToLowerInvariant() + ".json.reserve");
-            try { using var _ = new FileStream(reservation, FileMode.CreateNew, FileAccess.Write, FileShare.None); return id; }
+            try
+            {
+                using (var reservationHandle = new FileStream(reservation, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    // The maximum above may be stale: a writer can commit and remove its
+                    // reservation before we acquire it. Owning the reservation alone does
+                    // not prove that the corresponding canonical ID is still unused.
+                    if (!File.Exists(Path.Combine(folder, id.ToLowerInvariant() + ".json"))) return id;
+                }
+                File.Delete(reservation);
+            }
             catch (IOException) { }
         }
     }
