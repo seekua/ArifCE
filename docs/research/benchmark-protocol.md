@@ -30,6 +30,8 @@ Phase 72 replaces stale-propagation scoring with a [pinned five-test lifecycle f
 
 Phase 73 adds a [pinned four-test graph fixture](../evidence/benchmark-graph-calibration-2026-09-03.md) covering relationship confidence, source invalidation, semantic cache-rebuild equivalence, seeded canonical preservation and trusted closure. Run `./scripts/test-engineering-benchmark-graph-calibration.ps1 -SourceCommit <commit>` for good/six-mutant controls. This tests syntax-derived behavior, not compiler-bound semantic correctness or model performance.
 
+Phase 74 adds a [pinned four-test contract fixture](../evidence/benchmark-contract-calibration-2026-09-03.md) covering persisted contract/claim linkage, risk/confidence, side-effect-free rejection, qualified/additive scope and existing acceptance transitions. Run `./scripts/test-engineering-benchmark-contract-calibration.ps1 -SourceCommit <commit>` for good/six-mutant controls. Explicitly approved echo probes are Supported command evidence, not actual build/test or invariant proof; compatibility requirements and limits are disclosed in the public task contract.
+
 `scripts/validate-engineering-benchmark.ps1` is a legacy shape/coverage validator for imported rows, not host-usage provenance verification. Its imported totals must not be presented as captured token measurements. Use the completion and collection pipeline above for log-bound measurements. Negative results remain in the published report.
 
 ## Captured token usage

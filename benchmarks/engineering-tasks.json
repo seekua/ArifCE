@@ -98,11 +98,15 @@
       "instruction": "Create a pre-change contract for a code symbol using impact candidates, tests, history, invariants, and the existing claim lifecycle.",
       "verification": "No duplicate evidence or acceptance lifecycle is introduced.",
       "acceptanceContract": [
-        "Provide CodeGraphStore.BuildAsync(root) and ProjectService.CreateChangeContractAsync(root, symbolName, RiskLevel, invariants). Contract exposes Id, ClaimId, PotentialImpact/RelatedTests items with Path, HistoricalRecords, Invariants and RequiredVerification.",
-        "Use CONTRACT- and CLAIM- ID prefixes. Include the caller source and related test paths, matching decisions/ historical record paths and supplied invariants. High-risk RequiredVerification entries must contain BUILD and 'independent review'. GetClaimAsync(contract.ClaimId) must retrieve the linked canonical claim."
+        "Preserve ProjectService contract creation/read, claim read, VerifyAsync with contractId/scopePaths/explicit unsafe approval, acceptance create/read and RefreshTrustAsync; EvidenceScopeTracker.EvaluateAsync evaluates persisted evidence. Use CONTRACT-/CLAIM- IDs and exactly one normal Unverified claim per new Open contract, matching risk, no premature evidence or acceptance, and unchanged explicit invariants.",
+        "Persist equivalent returned contract/evidence values, lexical decision history, STRUCTURAL declaration-file impact, HEURISTIC callers/test candidates and EXACT project-reference candidates. RequiredVerification includes BUILD/TEST_RUN for Medium and above, 'independent review' for High/Critical, and 'human acceptance' for Critical only; Low does not require those checks.",
+        "Blank, partial and absent targets must fail without canonical writes. Missing/foreign contract links or escaping additional scope must fail before an explicitly approved echo probe writes contract-probe.txt; all canonical bytes including journal remain unchanged after these rejections.",
+        "Verify a qualified method using an explicitly approved 'echo contract-probe > contract-probe.txt' shell probe. Record Supported (not actual build verification), owning ContractId, exact qualified CODE_GRAPH_CLOSURE and additive CONTENT paths. Metadata, heuristic callers, other same-name declarations and graph-cache deletion preserve freshness; additional scoped content and target edits stale it. Existing acceptance transitions to NeedsReview via the normal claim lifecycle while original contract bytes remain unchanged.",
+        "Project-linked verification captures reverse transitive exact project dependents, ignores unrelated project edits, stales on dependent content or newly added dependent projects, and appends new evidence rather than replacing history."
       ],
       "evaluationLimitations": [
-        "This checks selected contract contents and an existing claim. It does not prove absence of every duplicate lifecycle, full impact completeness, or post-change acceptance correctness."
+        "Four real-Git fixtures use explicitly approved platform shell echo/redirection probes, not real BUILD/TEST_RUN or invariant proofs. This compatibility requirement is disclosed equally to both arms. Risk requirement text is asserted; authentic human/reviewer identity, Critical acceptance enforcement and arbitrary shell policy are separate objectives.",
+        "This does not prove atomic recovery after mid-creation failures, simultaneous writers, full semantic impact completeness, malicious canonical/cache tampering, automatic contract completion, or every historical memory type. API_CHANGE remains a contract-lifecycle proxy rather than a measured real public-API modification."
       ]
     },
     {

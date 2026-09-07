@@ -27,6 +27,7 @@ All notable changes will be documented here. The project follows semantic versio
 
 ## Unreleased
 
+- Strengthen change-contract scoring with four pinned risk/linkage, rejection-side-effect, scoped-evidence and existing-acceptance lifecycle tests plus good/six-mutant controls; preserve the working product implementation.
 - Replace code-graph existence-only scoring with four pinned relationship-confidence, source-lifecycle, disposable-rebuild and trusted-closure tests, plus good/six-mutant calibration. No product-code rewrite or new dependency was needed.
 - Bind acceptance refresh to its original, claim-owned evidence; preserve review warnings across handoffs and reject new acceptance of foreign evidence or disputed claims. Add five positive/negative propagation regression tests.
 - Replace two weak benchmark evaluators with real-Git secret-boundary and positive/negative acceptance checks; calibrate them against a known-good implementation and seven deliberately incorrect temporary variants.

@@ -6,6 +6,8 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
+Phase 74 is in progress under TASK-0024. Four pinned contract tests pass with unchanged product code (105 local tests total). Source: 5db75ef1e9443615188d0390979aaba9c98874b3. Calibration, independent integration and remote closure are pending; see docs/evidence/benchmark-contract-calibration-2026-09-03.md.
+
 Phase 73 is closed at b47f17aa66f2925cf1474ad4bdda9fae975fa009 by CI 33743344157: 101 tests on each of three OS targets, five binaries, six pinned independent integrations and good/six-mutant graph calibration. TASK-0023 strengthens scoring with unchanged product code. Fixture source is pinned at 6af42086596a470d32d0d4844b5f3cf0378d5f8d. See docs/evidence/benchmark-graph-calibration-2026-09-03.md. Previous phase reports preserve earlier defects and negative evidence. FINDING-0005 remains OPEN; productClaimEligible stays false.
 
 ## Blockers

@@ -46,10 +46,10 @@
     },
     {
       "taskId": "change-impact-contract",
-      "sourceCommit": "49f38055f4c012e1533d5b6db8a8445c2c4659d0",
-      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
-      "fixture": "behavior",
-      "methods": ["Change_contract_reuses_claim_lifecycle_and_collects_impact_history_and_tests"]
+      "sourceCommit": "5db75ef1e9443615188d0390979aaba9c98874b3",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkContractTests.cs",
+      "fixture": "contract",
+      "methods": ["Contract_persists_linkage_confidence_history_and_risk_requirements", "Contract_rejects_invalid_target_or_link_before_execution_and_writes", "Contract_evidence_uses_qualified_scope_and_existing_acceptance_lifecycle", "Contract_project_scope_tracks_exact_transitive_dependents"]
     },
     {
       "taskId": "structured-flight-recorder",

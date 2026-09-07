@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0024",
+  "title": "Calibrate change contract linkage and trusted evidence scope",
+  "description": null,
+  "status": "OPEN",
+  "risk": "HIGH",
+  "createdAtUtc": "2026-09-03T10:31:47.2346164+00:00"
+}

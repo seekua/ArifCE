@@ -29,3 +29,5 @@ Risk controls required verification:
 - `CRITICAL`: the high-risk requirements plus explicit human acceptance and rationale.
 
 The contract records the repository snapshot at creation. It is canonical; the code graph it references remains disposable derived data.
+
+Verification appends evidence to the existing linked claim and acceptance follows that claim's normal lifecycle. The pre-change contract is not automatically completed or rewritten when evidence becomes stale. The [contract evaluator report](../evidence/benchmark-contract-calibration-2026-09-03.md) separates tested lifecycle behavior from unproven semantic impact, invariant correctness and human identity.
