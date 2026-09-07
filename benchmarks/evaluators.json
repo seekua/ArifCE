@@ -53,10 +53,10 @@
     },
     {
       "taskId": "structured-flight-recorder",
-      "sourceCommit": "cbf39ba0862d4ecc2316820d4a8c21107cb49c2d",
-      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
-      "fixture": "behavior",
-      "methods": ["Flight_recorder_keeps_structured_redacted_steps_and_promotes_failed_attempts"]
+      "sourceCommit": "064321b424f9c28706c8cfe5838fc815c1406026",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs",
+      "fixture": "flight-recorder",
+      "methods": ["Recorder_redacts_every_persisted_text_field_and_promotes_failed_attempts", "Recorder_enforces_terminal_transitions_and_rejects_invalid_links_without_writes", "Recorder_reserves_a_terminal_step_and_enforces_a_finite_step_budget"]
     },
     {
       "taskId": "mcp-validation",

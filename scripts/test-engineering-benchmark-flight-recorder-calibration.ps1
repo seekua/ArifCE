@@ -38,7 +38,9 @@ try {
                 'no-attempt-promotion' { $service = Replace-Anchor $service 'if (kind == AgentStepKind.Attempt && IsFailedOutcome(outcome, exitCode) && !string.IsNullOrWhiteSpace(run.TaskId))' 'if (false && kind == AgentStepKind.Attempt && IsFailedOutcome(outcome, exitCode) && !string.IsNullOrWhiteSpace(run.TaskId))' }
                 'allow-terminal-mutation' {
                     $service = Replace-Anchor $service 'if (run.Status != AgentRunStatus.Running) throw new InvalidOperationException($"Run {id} is already {run.Status}.");' '_ = run.Status;'
-                    $service = Replace-Anchor $service 'if (current.Status != AgentRunStatus.Running) throw new InvalidOperationException($"Run {id} is already {current.Status}.");' '_ = current.Status;'
+                    $currentStatusAnchor = 'if (current.Status != AgentRunStatus.Running) throw new InvalidOperationException($"Run {id} is already {current.Status}.");'
+                    if ([regex]::Matches($service, [regex]::Escape($currentStatusAnchor)).Count -ne 2) { throw 'Unexpected terminal-state mutation anchor count.' }
+                    $service = $service.Replace($currentStatusAnchor, '_ = current.Status;')
                 }
                 'remove-step-budget' {
                     $service = Replace-Anchor $service 'EnsureAgentRunCapacity(run, kind);' '_ = kind;'
