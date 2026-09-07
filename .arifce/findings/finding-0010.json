@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "FINDING-0010",
+  "title": "Flight recorder has no structured step bound",
+  "description": "Agent runs accept an unbounded number of 1000-character steps and can grow canonical records and derived indexes without limit. The recorder promises structured summaries rather than raw transcript accumulation and needs an enforced finite step budget.",
+  "severity": "HIGH",
+  "status": "OPEN",
+  "taskId": "TASK-0025",
+  "path": "src/ArifCE.Infrastructure/ProjectService.cs",
+  "createdAtUtc": "2026-09-07T13:28:29.9231308+00:00"
+}

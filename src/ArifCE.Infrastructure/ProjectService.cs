@@ -8,6 +8,9 @@ namespace ArifCE.Infrastructure;
 public sealed class ProjectService(CanonicalStore canonical, JournalStore journal, IndexStore index, GitInspector git)
 {
     private static readonly string[] MemoryFiles = ["architecture.md", "conventions.md", "domain.md", "integrations.md", "known-issues.md", "glossary.md"];
+    private const int MaxAgentIdentityLength = 100;
+    private const int MaxAgentTextLength = 1000;
+    private const int MaxAgentRunSteps = 64;
 
     public async Task<IReadOnlyList<string>> InitializeAsync(string root, bool adopt, CancellationToken cancellationToken = default)
     {
@@ -307,9 +310,12 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     {
         if (string.IsNullOrWhiteSpace(provider) || string.IsNullOrWhiteSpace(agent) || string.IsNullOrWhiteSpace(goal)) throw new ArgumentException("Provider, agent, and goal are required.");
         if (!string.IsNullOrWhiteSpace(taskId) && await GetTaskAsync(root, taskId, cancellationToken) is null) throw new InvalidOperationException($"Task {taskId} was not found.");
-        var safeGoal = new SecretRedactor().Redact(goal).Text;
+        var redactor = new SecretRedactor();
+        var safeProvider = Truncate(redactor.Redact(provider.Trim()).Text, MaxAgentIdentityLength);
+        var safeAgent = Truncate(redactor.Redact(agent.Trim()).Text, MaxAgentIdentityLength);
+        var safeGoal = Truncate(redactor.Redact(goal).Text, MaxAgentTextLength);
         var id = canonical.NextId(root, "runs", "RUN");
-        var run = new AgentRunRecord(1, id, provider.Trim().ToLowerInvariant(), agent.Trim(), Truncate(safeGoal, 1000), taskId, AgentRunStatus.Running, [], await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow);
+        var run = new AgentRunRecord(1, id, safeProvider.ToLowerInvariant(), safeAgent, safeGoal, taskId, AgentRunStatus.Running, [], await git.CaptureAsync(root, cancellationToken), DateTimeOffset.UtcNow);
         await canonical.WriteAsync(root, "runs", id, run, cancellationToken);
         await RecordAsync(root, "run.started", id, new { run.Provider, run.Agent, run.Goal, run.TaskId }, cancellationToken);
         return run;
@@ -320,19 +326,24 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     public async Task<AgentRunRecord> RecordAgentRunStepAsync(string root, string id, AgentStepKind kind, string summary, string? outcome = null, int? exitCode = null, IReadOnlyList<string>? relatedIds = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(summary)) throw new ArgumentException("A structured step summary is required.", nameof(summary));
-        var safeSummary = Truncate(new SecretRedactor().Redact(summary).Text, 1000);
+        var redactor = new SecretRedactor();
+        var safeSummary = Truncate(redactor.Redact(summary).Text, MaxAgentTextLength);
+        var safeOutcome = string.IsNullOrWhiteSpace(outcome) ? outcome : Truncate(redactor.Redact(outcome).Text, MaxAgentIdentityLength);
         var run = await GetAgentRunAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Run {id} was not found.");
         if (run.Status != AgentRunStatus.Running) throw new InvalidOperationException($"Run {id} is already {run.Status}.");
+        EnsureAgentRunCapacity(run, kind);
         var links = (relatedIds ?? []).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (links.Count > 64 || links.Any(link => !IsRepositoryEntityId(link))) throw new ArgumentException("Related IDs must contain at most 64 valid repository entity IDs.", nameof(relatedIds));
         if (kind == AgentStepKind.Attempt && IsFailedOutcome(outcome, exitCode) && !string.IsNullOrWhiteSpace(run.TaskId))
         {
-            var attempt = await RecordAttemptAsync(root, run.TaskId, safeSummary, outcome ?? "FAILED", $"Agent run {id} recorded a failed attempt.", links, cancellationToken);
+            var attempt = await RecordAttemptAsync(root, run.TaskId, safeSummary, safeOutcome ?? "FAILED", $"Agent run {id} recorded a failed attempt.", links, cancellationToken);
             links.Add(attempt.Id);
         }
-        var step = new AgentRunStep(Guid.NewGuid().ToString("N"), kind, safeSummary, outcome, exitCode, links.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), DateTimeOffset.UtcNow);
+        var step = new AgentRunStep(Guid.NewGuid().ToString("N"), kind, safeSummary, safeOutcome, exitCode, links.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), DateTimeOffset.UtcNow);
         var updated = await canonical.UpdateAsync<AgentRunRecord>(root, "runs", id, current =>
         {
             if (current.Status != AgentRunStatus.Running) throw new InvalidOperationException($"Run {id} is already {current.Status}.");
+            EnsureAgentRunCapacity(current, kind);
             return current with { Steps = current.Steps.Append(step).ToArray() };
         }, cancellationToken);
         await RecordAsync(root, "run.step-recorded", id, new { step.Id, step.Kind, step.Outcome, step.ExitCode, step.RelatedIds }, cancellationToken);
@@ -342,9 +353,27 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
     public async Task<AgentRunRecord> FinishAgentRunAsync(string root, string id, string summary, bool succeeded, CancellationToken cancellationToken = default)
     {
         await RecordAgentRunStepAsync(root, id, AgentStepKind.Result, summary, succeeded ? "PASSED" : "FAILED", succeeded ? 0 : 1, cancellationToken: cancellationToken);
-        var updated = await canonical.UpdateAsync<AgentRunRecord>(root, "runs", id, current => current with { Status = succeeded ? AgentRunStatus.Completed : AgentRunStatus.Failed, CompletedAtUtc = DateTimeOffset.UtcNow }, cancellationToken);
+        var updated = await canonical.UpdateAsync<AgentRunRecord>(root, "runs", id, current =>
+        {
+            if (current.Status != AgentRunStatus.Running) throw new InvalidOperationException($"Run {id} is already {current.Status}.");
+            return current with { Status = succeeded ? AgentRunStatus.Completed : AgentRunStatus.Failed, CompletedAtUtc = DateTimeOffset.UtcNow };
+        }, cancellationToken);
         await RecordAsync(root, succeeded ? "run.completed" : "run.failed", id, new { updated.Status, updated.CompletedAtUtc }, cancellationToken);
         return updated;
+    }
+
+    private static void EnsureAgentRunCapacity(AgentRunRecord run, AgentStepKind kind)
+    {
+        var limit = kind == AgentStepKind.Result ? MaxAgentRunSteps : MaxAgentRunSteps - 1;
+        if (run.Steps.Count >= limit) throw new InvalidOperationException($"Run {run.Id} reached its structured step limit of {MaxAgentRunSteps}; finish it before recording more detail.");
+    }
+
+    private static bool IsRepositoryEntityId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 70) return false;
+        var separator = value.IndexOf('-');
+        if (separator < 1 || separator == value.Length - 1 || !value[..separator].All(char.IsLetter)) return false;
+        return char.IsLetterOrDigit(value[separator + 1]) && value[(separator + 1)..].All(character => char.IsLetterOrDigit(character) || character == '-');
     }
 
     private static bool IsFailedOutcome(string? outcome, int? exitCode) => exitCode is not null and not 0 || outcome?.Equals("FAILED", StringComparison.OrdinalIgnoreCase) == true || outcome?.Equals("REJECTED", StringComparison.OrdinalIgnoreCase) == true;

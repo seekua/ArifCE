@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0025",
+  "title": "Calibrate structured flight recorder security and lifecycle bounds",
+  "description": null,
+  "status": "OPEN",
+  "risk": "CRITICAL",
+  "createdAtUtc": "2026-09-07T13:28:21.2166158+00:00"
+}

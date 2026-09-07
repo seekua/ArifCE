@@ -115,11 +115,12 @@
       "instruction": "Record bounded agent investigations, attempts, evidence, decisions, and results without storing raw transcripts.",
       "verification": "A failed task-linked attempt becomes searchable canonical memory and appears in handoff.",
       "acceptanceContract": [
-        "Provide ProjectService.StartAgentRunAsync(root, agent, role, goal, taskId), RecordAgentRunStepAsync(root, runId, AgentStepKind, summary, outcome?, attemptNumber?), and FinishAgentRunAsync(root, runId, summary, success).",
-        "Support AgentStepKind.Investigation/Attempt/Result, returned Steps with Summary/RelatedIds/Kind and AgentRunStatus.Completed. A FAILED task-linked attempt creates an ATTEMPT- related ID retrievable by GetAttemptAsync; redact plaintext password values in step summaries and handoff. Successful finish adds a Result step; handoff includes the failed attempt ID."
+        "Provide ProjectService.StartAgentRunAsync(root, provider, agent, goal, taskId), RecordAgentRunStepAsync(root, runId, AgentStepKind, summary, outcome?, exitCode?, relatedIds?), and FinishAgentRunAsync(root, runId, summary, succeeded).",
+        "Persist Investigation, Attempt, Evidence, Decision and Result summaries, Git start state and terminal status. Redact secrets and bound provider, agent, goal, summary and outcome fields before canonical or journal persistence; reject malformed related IDs before writes.",
+        "A failed task-linked attempt creates a canonical ATTEMPT related ID retrievable by GetAttemptAsync and included in handoff. Terminal runs reject later mutation and a run reserves one Result slot within a hard 64-step budget."
       ],
       "evaluationLimitations": [
-        "The fixture does not exercise record size/count limits, every sensitive field, or automatic capture from an external host."
+        "The evaluator covers service-level structured capture, five step kinds, common assignment/Bearer redaction, canonical and journal leakage, failed-attempt promotion, terminal transitions, related-ID shape and a 64-step count bound. It does not prove every possible secret syntax, process-crash recovery, simultaneous finish/failed-attempt atomicity, automatic extraction from an external agent host, semantic summary quality, or aggregate journal rotation."
       ]
     },
     {

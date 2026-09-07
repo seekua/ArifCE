@@ -100,6 +100,10 @@ jobs:
         if: runner.os == 'Linux'
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-contract-calibration.ps1
+      - name: Flight recorder evaluator good and bad controls
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: ./scripts/test-engineering-benchmark-flight-recorder-calibration.ps1
 
   self-contained-cli:
     name: Self-contained CLI (${{ matrix.rid }})
