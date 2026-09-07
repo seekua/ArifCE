@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0031",
+  "summary": "Phase 75 local gate: 108 tests pass; flight recorder good control passes and six incorrect variants fail; pinned independent completion and secret-scan controls pass. Remote CI closure remains pending explicit push approval.",
+  "snapshot": {
+    "commit": "2df783f8c570bc155d347790d2396c36006132d0",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "benchmarks/engineering-tasks.json",
+      "scripts/secret-scan.ps1"
+    ],
+    "digest": "b017a509828e325982cf2099a8fdf670c3be9c5119162e280ed01fa6fe7742e2"
+  },
+  "createdAtUtc": "2026-09-07T14:01:23.4225811+00:00"
+}

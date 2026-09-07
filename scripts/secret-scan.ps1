@@ -13,6 +13,12 @@ $allowedFixtures = @(
     @{ Path = 'tests/ArifCE.Tests/BehaviorTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9aHVudGVyMg==')) }
     @{ Path = 'tests/ArifCE.Tests/LlmProviderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9aHVudGVyMg==')) }
     @{ Path = 'tests/ArifCE.Tests/BenchmarkSafetyTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9aHVudGVyMg==')) }
+    @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('YXBpX2tleT1wcm92aWRlci1zZWNyZXQ=')) }
+    @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9YWdlbnQtc2VjcmV0')) }
+    @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'bearer-token'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('QmVhcmVyIGdvYWwtc2VjcmV0')) }
+    @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9c3VtbWFyeS1zZWNyZXQ=')) }
+    @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('c2VjcmV0PW91dGNvbWUtc2VjcmV0')) }
+    @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9bGluay1zZWNyZXQ=')) }
 )
 
 $findings = [System.Collections.Generic.List[object]]::new()

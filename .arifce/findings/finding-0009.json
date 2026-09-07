@@ -4,7 +4,7 @@
   "title": "Flight recorder persists secrets outside summary fields",
   "description": "Agent-run provider, agent and outcome fields bypass SecretRedactor and are written to canonical JSON and journal events. A structured recorder must redact every persisted free-text field before storage.",
   "severity": "CRITICAL",
-  "status": "OPEN",
+  "status": "COMPLETED",
   "taskId": "TASK-0025",
   "path": "src/ArifCE.Infrastructure/ProjectService.cs",
   "createdAtUtc": "2026-09-07T13:28:26.5557823+00:00"

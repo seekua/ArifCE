@@ -120,7 +120,7 @@
         "A failed task-linked attempt creates a canonical ATTEMPT related ID retrievable by GetAttemptAsync and included in handoff. Terminal runs reject later mutation and a run reserves one Result slot within a hard 64-step budget."
       ],
       "evaluationLimitations": [
-        "The evaluator covers service-level structured capture, five step kinds, common assignment/Bearer redaction, canonical and journal leakage, failed-attempt promotion, terminal transitions, related-ID shape and a 64-step count bound. It does not prove every possible secret syntax, process-crash recovery, simultaneous finish/failed-attempt atomicity, automatic extraction from an external agent host, semantic summary quality, or aggregate journal rotation."
+        "The evaluator covers service-level structured capture, five step kinds, common assignment and bearer-credential filtering, canonical and journal leakage, failed-attempt promotion, terminal transitions, related-ID shape and a 64-step count bound. It does not prove every possible secret syntax, process-crash recovery, simultaneous finish/failed-attempt atomicity, automatic extraction from an external agent host, semantic summary quality, or aggregate journal rotation."
       ]
     },
     {
