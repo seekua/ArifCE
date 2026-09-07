@@ -33,7 +33,11 @@ Each expected test must execute exactly once. Compile/restore/runner errors are 
 
 ## Verification status
 
-All 105 local product tests pass, with zero failures/skips. Calibration, independent completion integration and remote closure are pending. The product implementation is unchanged; no production bug is claimed solely because older evaluator assertions were weak.
+All 105 local product tests pass, with zero failures/skips. Windows calibration at `5db75ef1e9443615188d0390979aaba9c98874b3` passed good code and rejected all six wrong variants through executed assertions. Independent completion integration passed with the actual pinned fixture, including token/timing/log tamper rejection. Manifest, registry, assessment and secret-scan checks pass. The product implementation is unchanged; no production bug is claimed solely because older evaluator assertions were weak.
+
+## Remote closure
+
+Commit `56cd517228f58ad32567861badb284416476fd72` passed [CI run 34105697809](https://github.com/seekua/ArifCE/actions/runs/34105697809). All eight jobs succeeded: Windows/macOS/Ubuntu build-test-package and five self-contained binaries. Each OS reports 105 passed, zero failed/skipped. Ubuntu passed seven pinned completion integrations, every previous calibration and the contract good/six-mutant controls through executed assertions. TASK-0024 closes Phase 74; FINDING-0005 remains open.
 
 ## Limits and remaining work
 
@@ -41,4 +45,4 @@ Real Git and explicitly approved platform-shell echo/redirection probes are used
 
 Atomic recovery after mid-creation failure, simultaneous writers, arbitrary command execution policy, every historical memory type, complete semantic impact, and malicious canonical/cache edits are not established. Contract status remains a pre-change Open record; acceptance lives on the linked claim and does not automatically complete the contract. API_CHANGE remains a lifecycle proxy rather than a real measured API modification.
 
-Six evaluator objectives were previously calibrated; this phase addresses the seventh. Flight recorder, MCP validation and unfinished-verification policy remain before fresh permission-matched repeated model runs with captured usage and host timing. FINDING-0005 remains open and productClaimEligible remains false. No time/token-saving percentage is claimed.
+Seven of ten evaluator objectives now have strengthened assertions and finite good/bad calibration. Flight recorder, MCP validation and unfinished-verification policy remain before fresh permission-matched repeated model runs with captured usage and host timing. FINDING-0005 remains open and productClaimEligible remains false. No time/token-saving percentage is claimed.

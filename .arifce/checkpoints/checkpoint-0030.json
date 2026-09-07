@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0030",
+  "summary": "Phase 74 closed at 56cd517228f58ad32567861badb284416476fd72 by CI 34105697809: 105 tests per OS, five binaries, seven pinned integrations and contract good/six-mutant calibration. Product code unchanged. Seven of ten evaluators calibrated; FINDING-0005 and productClaimEligible=false remain. Next: flight recorder.",
+  "snapshot": {
+    "commit": "56cd517228f58ad32567861badb284416476fd72",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      "ROADMAP.md",
+      "docs/evidence/benchmark-contract-calibration-2026-09-03.md",
+      "docs/evidence/engineering-benchmark-readiness.md"
+    ],
+    "digest": "81c260c93ef0e424533cb2a7830fa01dcc0cfd5fb2b7f0ef3e5d860ff89ce5b1"
+  },
+  "createdAtUtc": "2026-09-07T11:36:25.5426014+00:00"
+}
