@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "FINDING-0012",
+  "title": "Verification evaluator does not prove persisted unsafe-command trust boundary",
+  "description": "Current verification test checks only an in-memory claim and command classification. It does not prove named commands bypass a shell, unsafe successful commands remain non-verified after reload, or rejected calls leave canonical state unchanged.",
+  "severity": "HIGH",
+  "status": "OPEN",
+  "taskId": "TASK-0027",
+  "path": "src/ArifCE.Infrastructure/ProjectService.cs",
+  "createdAtUtc": "2026-09-07T19:50:53.4258984+00:00"
+}

@@ -11,18 +11,18 @@ public static partial class CommandEvidenceParser
         {
             var match = EnglishTestSummary().Match(output);
             if (!match.Success) match = TurkishTestSummary().Match(output);
-            return ("TEST_RUN", match.Success
-                ? new EvidenceMetrics(Value(match, "total"), Value(match, "passed"), Value(match, "failed"), Value(match, "skipped"))
-                : null);
+            return match.Success
+                ? ("TEST_RUN", new EvidenceMetrics(Value(match, "total"), Value(match, "passed"), Value(match, "failed"), Value(match, "skipped")))
+                : ("COMMAND", null);
         }
 
         if (command.Contains("dotnet build", StringComparison.OrdinalIgnoreCase))
         {
             var match = EnglishBuildSummary().Match(output);
             if (!match.Success) match = TurkishBuildSummary().Match(output);
-            return ("BUILD", match.Success
-                ? new EvidenceMetrics(null, null, null, null, Value(match, "warnings"), Value(match, "errors"))
-                : null);
+            return match.Success
+                ? ("BUILD", new EvidenceMetrics(null, null, null, null, Value(match, "warnings"), Value(match, "errors")))
+                : ("COMMAND", null);
         }
 
         return ("COMMAND", null);

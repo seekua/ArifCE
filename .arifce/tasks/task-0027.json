@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0027",
+  "title": "Calibrate unfinished verification policy and persisted trust states",
+  "description": null,
+  "status": "OPEN",
+  "risk": "CRITICAL",
+  "createdAtUtc": "2026-09-07T19:50:49.670589+00:00"
+}
