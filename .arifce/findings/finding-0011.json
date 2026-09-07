@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "FINDING-0011",
+  "title": "MCP evaluator does not prove rejection is side-effect free",
+  "description": "Current MCP tests assert response codes and phrases but do not establish that malformed, duplicate, oversized, path-like or rejected write calls leave canonical JSON and journal state unchanged.",
+  "severity": "HIGH",
+  "status": "OPEN",
+  "taskId": "TASK-0026",
+  "path": "src/ArifCE.Mcp/Program.cs",
+  "createdAtUtc": "2026-09-07T14:23:23.247994+00:00"
+}

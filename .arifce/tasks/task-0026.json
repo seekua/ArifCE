@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0026",
+  "title": "Calibrate MCP canonical-boundary validation and side effects",
+  "description": null,
+  "status": "OPEN",
+  "risk": "CRITICAL",
+  "createdAtUtc": "2026-09-07T14:23:19.6845099+00:00"
+}
