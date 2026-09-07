@@ -129,11 +129,11 @@
       "instruction": "Make MCP schemas enforceable at runtime and reject oversized input, invalid enums, unknown fields, and path-like IDs.",
       "verification": "Malformed calls return typed JSON-RPC errors before canonical access.",
       "acceptanceContract": [
-        "Keep the stdio ArifCE.Mcp.dll server and ARIFCE_PROJECT_ROOT environment selection. tools/call for arifce_task_create with an invalid risk, arifce_refactor_status with a path-like ID, and arifce_status with an unknown argument must return JSON-RPC code -32602.",
-        "For compatibility with the current test, messages must include 'Invalid risk value', 'valid repository entity ID', and 'Unknown argument' respectively. An input line of 262145 characters must return code -32600 with 'Request exceeds'."
+        "Keep the stdio ArifCE.Mcp.dll server and ARIFCE_PROJECT_ROOT environment selection. Malformed write requests for invalid enum, path-like task ID, non-string required field, unknown argument and a missing linked task must return JSON-RPC errors without changing canonical files or journal bytes.",
+        "An input line of 262145 characters must return code -32600 before parsing. A duplicate decision must be rejected by the canonical domain layer without creating a second decision or journal entry; valid task and attempt writes must persist their normal linked canonical records."
       ],
       "evaluationLimitations": [
-        "Fixed error phrases and one size boundary are checked. The fixture does not inspect canonical files for side effects or prove rejection precedes every filesystem access."
+        "The evaluator covers representative service-side MCP calls, byte-level canonical/journal side effects, one line-size boundary and duplicate-decision rejection. It does not prove every tool schema, hostile environment variable ownership, concurrent MCP servers, process-crash atomicity, every JSON nesting/resource pattern, or authorization for a multi-user remote host."
       ]
     },
     {

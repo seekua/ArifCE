@@ -60,10 +60,10 @@
     },
     {
       "taskId": "mcp-validation",
-      "sourceCommit": "f81342ca61eea211d66ca0394fa6d324ff90063c",
-      "sourceFile": "tests/ArifCE.Tests/McpProtocolTests.cs",
-      "fixture": "mcp",
-      "methods": ["Tool_calls_reject_invalid_enums_unknown_arguments_and_path_like_ids", "Oversized_mcp_request_is_rejected_before_json_processing"]
+      "sourceCommit": "a7b4d828205ad8ebaf06efc66a11ed18e0ec9158",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkMcpBoundaryTests.cs",
+      "fixture": "mcp-boundary",
+      "methods": ["Mcp_rejects_malformed_writes_before_canonical_side_effects", "Mcp_rejects_oversize_and_duplicate_writes_without_creating_extra_records", "Mcp_valid_writes_follow_canonical_domain_rules"]
     },
     {
       "taskId": "unfinished-verification-policy",

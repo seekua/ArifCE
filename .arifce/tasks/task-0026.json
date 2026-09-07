@@ -3,7 +3,7 @@
   "id": "TASK-0026",
   "title": "Calibrate MCP canonical-boundary validation and side effects",
   "description": null,
-  "status": "OPEN",
+  "status": "COMPLETED",
   "risk": "CRITICAL",
   "createdAtUtc": "2026-09-07T14:23:19.6845099+00:00"
 }

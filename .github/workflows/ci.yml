@@ -70,6 +70,7 @@ jobs:
           ./scripts/test-engineering-benchmark-completion.ps1 -TaskId deterministic-code-graph
           ./scripts/test-engineering-benchmark-completion.ps1 -TaskId change-impact-contract
           ./scripts/test-engineering-benchmark-completion.ps1 -TaskId structured-flight-recorder
+          ./scripts/test-engineering-benchmark-completion.ps1 -TaskId mcp-validation
           ./scripts/test-engineering-benchmark-suite.ps1
       - name: Safety evaluator good and bad controls
         if: runner.os == 'Linux'
@@ -105,6 +106,10 @@ jobs:
         if: runner.os == 'Linux'
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-flight-recorder-calibration.ps1
+      - name: MCP evaluator good and bad controls
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: ./scripts/test-engineering-benchmark-mcp-calibration.ps1
 
   self-contained-cli:
     name: Self-contained CLI (${{ matrix.rid }})

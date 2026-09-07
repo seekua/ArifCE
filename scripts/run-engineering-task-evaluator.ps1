@@ -15,6 +15,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'benchmark-graph-source.ps1')
 . (Join-Path $PSScriptRoot 'benchmark-contract-source.ps1')
 . (Join-Path $PSScriptRoot 'benchmark-flight-recorder-source.ps1')
+. (Join-Path $PSScriptRoot 'benchmark-mcp-boundary-source.ps1')
 $repo = if ([string]::IsNullOrWhiteSpace($SourceRepository)) { Split-Path -Parent $PSScriptRoot } else { [IO.Path]::GetFullPath($SourceRepository) }
 $trial = [IO.Path]::GetFullPath($TrialRoot)
 $resultPath = Join-Path $trial 'result.json'
@@ -52,6 +53,7 @@ $classBody = switch ($entry.fixture) {
     'graph' { ConvertTo-BenchmarkGraphSource $sourceText }
     'contract' { ConvertTo-BenchmarkContractSource $sourceText }
     'flight-recorder' { ConvertTo-BenchmarkFlightRecorderSource $sourceText }
+    'mcp-boundary' { ConvertTo-BenchmarkMcpBoundarySource $sourceText }
     'behavior' { @"
 using System.Diagnostics;
 using ArifCE.Core;
@@ -113,7 +115,7 @@ $tests
 }
 New-Item -ItemType Directory -Path $evaluatorRoot | Out-Null
 $projectReferences = @('../checkout/src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj')
-if ($entry.fixture -eq 'mcp') { $projectReferences += '../checkout/src/ArifCE.Mcp/ArifCE.Mcp.csproj' }
+if ($entry.fixture -in @('mcp','mcp-boundary')) { $projectReferences += '../checkout/src/ArifCE.Mcp/ArifCE.Mcp.csproj' }
 $referenceXml = $projectReferences | ForEach-Object { "    <ProjectReference Include=`"$_`" />" }
 $project = @"
 <Project Sdk="Microsoft.NET.Sdk">
