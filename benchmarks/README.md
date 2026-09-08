@@ -1,6 +1,6 @@
 # Engineering benchmark suite
 
-`engineering-tasks.json` defines ten matched engineering tasks pinned to ArifCE commit `be05904`, before the trust-remediation implementation. The suite covers bug fixing, feature work, refactoring, regression prevention, API change, canonical-data migration, unfinished-task continuation, handoff recovery, old-decision review, and a known failed approach.
+`engineering-tasks.json` defines ten matched engineering tasks pinned to ArifCE commit `be05904`, before the trust-remediation implementation. The suite covers bug fixing, feature work, refactoring, regression prevention, API change, canonical-data migration, unfinished-task continuation, handoff recovery, old-decision review, and a known failed approach. A product-effectiveness study runs every task twice in fresh sessions: this produces 20 matched **trial pairs**, not 20 falsely described unique tasks.
 
 Run each task twice from a fresh isolated checkout of the fixture commit:
 
@@ -12,8 +12,8 @@ Do not expose later commits, previous-arm output, or another agent's workspace t
 Prepare a history-free trial instead of using a worktree from the current repository:
 
 ```text
-./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm baseline -Model model-and-version -TokenBudget 50000
-./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm arifce -Model model-and-version -TokenBudget 50000
+./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm baseline -Trial 1 -Model model-and-version -TokenBudget 50000 -PermissionProfile preauthorized-write-build-v1
+./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm arifce -Trial 1 -Model model-and-version -TokenBudget 50000 -PermissionProfile preauthorized-write-build-v1
 ```
 
 The preparer exports only the fixture tree, replaces the product repository's ArifCE-requiring `AGENTS.md` with identical neutral participant instructions in both arms, creates a new one-commit repository with no remotes, and refuses to overwrite an existing trial. The session preserves both the source tree and the neutralized fixture tree. Each arm receives that same neutralized snapshot and a separate prompt. The ArifCE arm is permitted to use only the canonical memory already present in that snapshot; the baseline arm is explicitly prohibited from reading `.arifce` or using ArifCE retrieval. This makes the prompt the sole treatment switch and prevents mandatory repository instructions, later solution commits, and other-arm output from contaminating the comparison.
@@ -35,7 +35,7 @@ If an agent produces no candidate, preserve the negative run with `-AllowNoCandi
 
 `run-engineering-task-evaluator.ps1` performs that post-run injection. It first verifies the completed provenance bundle, extracts only the pinned `[Fact]` methods from the trusted Git object, builds a separate test project referencing the candidate projects, records the injected source/project/output/registry hashes, and derives `taskPassed` solely from its exit code. The generated evaluator suppresses only xUnit's cancellation-token analyzer (`xUnit1051`) because pinned historical test bodies predate that analyzer rule; candidate compiler and product warnings remain unchanged. It refuses a second evaluation. The trusted source repository must contain the pinned commits; it is never exposed as a remote to the candidate checkout.
 
-`new-engineering-benchmark-suite.ps1` prepares all twenty matched trial directories without invoking an agent. After every candidate has been completed and independently evaluated, `collect-engineering-benchmark-suite.ps1` emits a report only if the set is complete, matched, and hash-consistent. Partial runs are not aggregated.
+`new-engineering-benchmark-suite.ps1` prepares all forty isolated trial directories without invoking an agent: ten task categories × two fresh trials × two arms. Every pair must use the same model, token budget, isolated fixture, and non-secret permission profile. Product-study collection rejects a pair with a different permission profile, missing host-process timing, or unavailable token telemetry. After every candidate has been completed and independently evaluated, `collect-engineering-benchmark-suite.ps1` emits a report only if all 20 matched pairs are complete, matched, telemetry-complete, and hash-consistent. Partial runs are not aggregated.
 
 ```json
 {

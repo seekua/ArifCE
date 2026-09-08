@@ -16,20 +16,28 @@ function Repo-Path([string]$Path) { if ([IO.Path]::IsPathRooted($Path)) { return
 function Hash([string]$Path) { if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "Evidence file missing: $Path" }; return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant() }
 $suiteRoot = Repo-Path $Root
 $definition = Get-Content -LiteralPath (Repo-Path $Manifest) -Raw | ConvertFrom-Json
+$repetitions = if ($definition.schemaVersion -eq 3) { [int]$definition.repetitions } else { 1 }
+if ($repetitions -lt 1) { throw 'Benchmark repetitions must be positive.' }
+$requireTelemetry = $definition.schemaVersion -eq 3 -and [bool]$definition.requireMeasuredTelemetry
+$requiredPermissionProfile = if ($definition.schemaVersion -eq 3) { [string]$definition.requiredPermissionProfile } else { $null }
 $registryPath = Repo-Path $EvaluatorRegistry
 $registryHash = Hash $registryPath
 $registry = Get-Content -LiteralPath $registryPath -Raw | ConvertFrom-Json
 $rows = [System.Collections.Generic.List[object]]::new()
 foreach ($task in $definition.tasks) {
-    foreach ($arm in @('baseline', 'arifce')) {
+    for ($trialNumber = 1; $trialNumber -le $repetitions; $trialNumber++) {
+      foreach ($arm in @('baseline', 'arifce')) {
         $trial = Join-Path (Join-Path $suiteRoot $task.id) $arm
+        if ($repetitions -gt 1) { $trial = Join-Path $trial ('trial-' + $trialNumber.ToString('D2')) }
         & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null
         $resultPath = Join-Path $trial 'result.json'
         $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
         $session = Get-Content -LiteralPath (Join-Path $trial 'session.json') -Raw | ConvertFrom-Json
         $contract = Get-BenchmarkAcceptanceContract $definition $task
         if ($session.acceptanceContractSha256 -cne (Get-BenchmarkContractHash $contract)) { throw "Public evaluator contract mismatch: $($task.id)/$arm" }
-        if ($result.taskId -ne $task.id -or $result.arm -ne $arm -or $result.fixtureCommit -ne $definition.fixtureCommit) { throw "Trial identity mismatch: $($task.id)/$arm" }
+        if ($result.taskId -ne $task.id -or $result.arm -ne $arm -or $result.fixtureCommit -ne $definition.fixtureCommit -or [int]$result.trial -ne $trialNumber) { throw "Trial identity mismatch: $($task.id)/$arm/$trialNumber" }
+        if ($null -ne $requiredPermissionProfile -and $result.permissionProfile -ne $requiredPermissionProfile) { throw "Permission profile mismatch: $($task.id)/$arm/$trialNumber" }
+        if ($requireTelemetry -and ($result.tokenSource -eq 'unavailable' -or $null -eq $result.tokensConsumed -or $null -eq $result.timeMeasurement)) { throw "Measured host timing and token telemetry are required: $($task.id)/$arm/$trialNumber" }
         if ($null -eq $result.independentEvaluation) { throw "Independent evaluation missing: $($task.id)/$arm" }
         if ($result.independentEvaluation.registrySha256 -ne $registryHash) { throw "Evaluator registry mismatch: $($task.id)/$arm" }
         $sourcePath = Join-Path $trial 'independent-evaluator/IndependentTests.cs'
@@ -48,13 +56,16 @@ foreach ($task in $definition.tasks) {
         }
         if (($result.independentEvaluation.taskPassed | ConvertTo-Json -Compress) -cne ($assessment.taskPassed | ConvertTo-Json -Compress)) { throw "Evaluator outcome mismatch: $($task.id)/$arm" }
         $rows.Add($result)
+      }
     }
 }
-if ($rows.Count -ne $definition.tasks.Count * 2) { throw 'The suite is incomplete.' }
+if ($rows.Count -ne $definition.tasks.Count * 2 * $repetitions) { throw 'The suite is incomplete.' }
 if (@($rows.runId | Sort-Object -Unique).Count -ne $rows.Count) { throw 'Every trial must have a unique run ID.' }
 foreach ($task in $definition.tasks) {
-    $pair = @($rows | Where-Object taskId -eq $task.id)
-    if ($pair.Count -ne 2 -or $pair[0].model -ne $pair[1].model -or $pair[0].tokenBudget -ne $pair[1].tokenBudget) { throw "Matched model or token budget violation: $($task.id)" }
+    for ($trialNumber = 1; $trialNumber -le $repetitions; $trialNumber++) {
+        $pair = @($rows | Where-Object { $_.taskId -eq $task.id -and [int]$_.trial -eq $trialNumber })
+        if ($pair.Count -ne 2 -or $pair[0].model -ne $pair[1].model -or $pair[0].tokenBudget -ne $pair[1].tokenBudget -or $pair[0].permissionProfile -ne $pair[1].permissionProfile) { throw "Matched model, token budget or permission profile violation: $($task.id)/$trialNumber" }
+    }
 }
 $baseline = @($rows | Where-Object arm -eq 'baseline')
 $arifce = @($rows | Where-Object arm -eq 'arifce')
@@ -68,6 +79,9 @@ $report = [ordered]@{
     generatedAtUtc = [DateTime]::UtcNow.ToString('O')
     fixtureCommit = $definition.fixtureCommit
     taskCount = $definition.tasks.Count
+    matchedPairCount = $definition.tasks.Count * $repetitions
+    repetitions = $repetitions
+    permissionProfile = $requiredPermissionProfile
     evaluatorRegistrySha256 = $registryHash
     baseline = $baseline
     arifce = $arifce
@@ -87,4 +101,4 @@ $report = [ordered]@{
 $outputPath = Repo-Path $Output
 New-Item -ItemType Directory -Path (Split-Path -Parent $outputPath) -Force | Out-Null
 $report | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath $outputPath -Encoding utf8
-Write-Output "Collected 20 independently evaluated trials into $Output."
+Write-Output "Collected $($rows.Count) independently evaluated trials across $($definition.tasks.Count * $repetitions) matched pairs into $Output."

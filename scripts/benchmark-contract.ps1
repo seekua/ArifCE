@@ -1,6 +1,6 @@
 function Get-BenchmarkAcceptanceContract($Definition, $Task) {
     if ($Definition.schemaVersion -eq 1) { return '' }
-    if ($Definition.schemaVersion -ne 2) { throw 'Unsupported benchmark manifest schema.' }
+    if ($Definition.schemaVersion -notin @(2,3)) { throw 'Unsupported benchmark manifest schema.' }
     foreach ($name in @('acceptanceContract','evaluationLimitations')) {
         $values = $Task.$name
         if ($values -isnot [array] -or $values.Count -eq 0) { throw "Task $($Task.id) requires a nonempty $name array." }

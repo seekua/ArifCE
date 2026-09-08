@@ -114,13 +114,15 @@ finally { Pop-Location }
 $completed = [DateTimeOffset]::UtcNow
 
 $result = [ordered]@{
-    schemaVersion = 3
+    schemaVersion = 4
     runId = $session.runId
     taskId = $session.taskId
     arm = $session.arm
+    trial = $session.trial
     fixtureCommit = $session.fixtureCommit
     model = $session.model
     tokenBudget = $session.tokenBudget
+    permissionProfile = $session.permissionProfile
     durationMs = [Math]::Max(0, [long]($completed - $started).TotalMilliseconds)
     timeMeasurement = $timeMeasurement
     tokensConsumed = $recordedTokens

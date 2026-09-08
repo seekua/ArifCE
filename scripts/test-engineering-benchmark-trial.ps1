@@ -10,6 +10,7 @@ try {
     $fixtureCommit = (& git -C $repo rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or $fixtureCommit -notmatch '^[0-9a-f]{40}$') { throw 'Unable to resolve the CI fixture commit.' }
     $manifest = Get-Content -LiteralPath (Join-Path $repo 'benchmarks/engineering-tasks.json') -Raw | ConvertFrom-Json
+    $manifest.schemaVersion = 2
     $manifest.fixtureCommit = $fixtureCommit
     $manifestPath = Join-Path $root 'smoke-manifest.json'
     $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding utf8

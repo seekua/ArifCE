@@ -7,6 +7,7 @@ $root = Join-Path ([IO.Path]::GetTempPath()) ('arifce-suite-smoke-' + [Guid]::Ne
 try {
     New-Item -ItemType Directory -Path $root | Out-Null
     $manifest = Get-Content -LiteralPath (Join-Path $repo 'benchmarks/engineering-tasks.json') -Raw | ConvertFrom-Json
+    $manifest.schemaVersion = 2
     $manifest.fixtureCommit = (& git -C $repo rev-parse HEAD).Trim()
     $manifest.tasks = @($manifest.tasks | Select-Object -First 1)
     $manifest.minimumTasks = 1

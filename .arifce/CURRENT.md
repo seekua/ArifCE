@@ -14,4 +14,4 @@ The next comparative benchmark requires fresh, permission-matched model sessions
 
 ## Next steps
 
-Run fresh, permission-matched repeated model trials with captured usage and host timing, then publish favorable, null, and negative results together. All evaluator objectives are remotely calibrated, but active work and product effectiveness remain unproven. Preserve failures, historical results and private reviews.
+Phase 78 is preparing a repeatable model-study harness: ten categories × two fresh sessions produces 20 matched trial pairs, with a matched permission profile and required provider/agent-host token plus host-time telemetry. After CI proves that harness, run the externally metered trials and publish favorable, null, and negative results together. All evaluator objectives are remotely calibrated, but active work and product effectiveness remain unproven. Preserve failures, historical results and private reviews.

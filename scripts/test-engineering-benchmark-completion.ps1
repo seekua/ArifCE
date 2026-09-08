@@ -7,6 +7,7 @@ $root = Join-Path ([IO.Path]::GetTempPath()) ('arifce-benchmark-completion-' + [
 try {
     New-Item -ItemType Directory -Path $root -Force | Out-Null
     $manifest = Get-Content -LiteralPath (Join-Path $repo 'benchmarks/engineering-tasks.json') -Raw | ConvertFrom-Json
+    $manifest.schemaVersion = 2
     $manifest.fixtureCommit = (& git -C $repo rev-parse HEAD).Trim()
     $manifestPath = Join-Path $root 'manifest.json'
     $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding utf8

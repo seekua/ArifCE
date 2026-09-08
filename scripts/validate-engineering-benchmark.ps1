@@ -17,13 +17,20 @@ function Require-Property($Object, [string]$Name, [string]$Context) { if ($null 
 $manifestPath = Resolve-RepoPath $Manifest
 $definition = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 foreach ($name in @('schemaVersion','repository','fixtureCommit','minimumTasks','requiredCategories','tasks')) { Require-Property $definition $name 'Manifest' }
-if ($definition.schemaVersion -notin @(1,2)) { throw 'Unsupported benchmark manifest schema.' }
+if ($definition.schemaVersion -notin @(1,2,3)) { throw 'Unsupported benchmark manifest schema.' }
 if ($definition.tasks.Count -lt $definition.minimumTasks -or $definition.tasks.Count -lt 10) { throw 'The engineering benchmark requires at least 10 tasks.' }
 $ids = @($definition.tasks | ForEach-Object id)
 if (($ids | Sort-Object -Unique).Count -ne $ids.Count) { throw 'Benchmark task IDs must be unique.' }
 $categories = @($definition.tasks | ForEach-Object category | Sort-Object -Unique)
 foreach ($category in $definition.requiredCategories) { if ($category -notin $categories) { throw "Required category '$category' is missing." } }
 foreach ($task in $definition.tasks) { foreach ($name in @('id','category','instruction','verification')) { Require-Property $task $name "Task $($task.id)" } }
+if ($definition.schemaVersion -eq 3) {
+    foreach ($name in @('minimumMatchedPairs','repetitions','requireMeasuredTelemetry','requiredPermissionProfile')) { Require-Property $definition $name 'Repeatable benchmark manifest' }
+    if ($definition.repetitions -lt 2 -or $definition.minimumMatchedPairs -lt 20) { throw 'A repeatable product study requires at least two repetitions and 20 matched pairs.' }
+    if (($definition.tasks.Count * $definition.repetitions) -lt $definition.minimumMatchedPairs) { throw 'Configured tasks and repetitions do not reach the required matched-pair count.' }
+    if ($definition.requiredPermissionProfile -notmatch '^[a-z0-9][a-z0-9._-]{2,127}$') { throw 'The required permission profile is invalid.' }
+    if (-not [bool]$definition.requireMeasuredTelemetry) { throw 'A repeatable product study requires measured telemetry.' }
+}
 foreach ($task in $definition.tasks) { Get-BenchmarkAcceptanceContract $definition $task | Out-Null }
 $evaluatorPath = Resolve-RepoPath $EvaluatorRegistry
 $evaluatorDefinition = Get-Content -LiteralPath $evaluatorPath -Raw | ConvertFrom-Json

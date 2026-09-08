@@ -1,8 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "repository": "https://github.com/seekua/ArifCE.git",
   "fixtureCommit": "be05904",
   "minimumTasks": 10,
+  "minimumMatchedPairs": 20,
+  "repetitions": 2,
+  "requireMeasuredTelemetry": true,
+  "requiredPermissionProfile": "preauthorized-write-build-v1",
   "requiredCategories": ["BUG_FIX", "FEATURE", "REFACTOR", "REGRESSION", "API_CHANGE", "DATABASE_MIGRATION", "CONTINUATION", "HANDOFF", "OLD_DECISION", "KNOWN_FAILED_APPROACH"],
   "tasks": [
     {

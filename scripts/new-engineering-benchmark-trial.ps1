@@ -16,6 +16,12 @@ param(
     [ValidateRange(1, [int]::MaxValue)]
     [int]$TokenBudget,
 
+    [ValidateRange(1, 1000)]
+    [int]$Trial = 1,
+
+    [ValidatePattern('^[a-z0-9][a-z0-9._-]{2,127}$')]
+    [string]$PermissionProfile = 'local-unverified',
+
     [string]$Manifest = 'benchmarks/engineering-tasks.json',
     [string]$OutputRoot = 'artifacts/engineering-benchmark'
 )
@@ -45,7 +51,11 @@ if ($fixtureCommit -notmatch '^[0-9a-fA-F]{7,40}$') { throw 'The fixture commit 
 Invoke-Git @('-C', $repo, 'cat-file', '-e', "${fixtureCommit}^{commit}") | Out-Null
 
 $output = Resolve-RepoPath $OutputRoot
+$repetitions = if ($definition.schemaVersion -eq 3) { [int]$definition.repetitions } else { 1 }
+if ($repetitions -lt 1) { throw 'Benchmark repetitions must be positive.' }
+if ($Trial -gt $repetitions) { throw "Trial $Trial exceeds configured repetitions $repetitions." }
 $trialRoot = Join-Path (Join-Path $output $TaskId) $Arm
+if ($repetitions -gt 1) { $trialRoot = Join-Path $trialRoot ('trial-' + $Trial.ToString('D2')) }
 if (Test-Path -LiteralPath $trialRoot) {
     throw "Trial already exists and will not be overwritten: $trialRoot"
 }
@@ -130,13 +140,14 @@ Complete the task in the `checkout` directory. Do not edit `session.json` or thi
 Set-Content -LiteralPath (Join-Path $trialRoot 'prompt.md') -Value $prompt -Encoding utf8
 
 $session = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
     runId = [Guid]::NewGuid().ToString('D')
     state = 'PREPARED'
     preparedAtUtc = [DateTime]::UtcNow.ToString('O')
     taskId = $task[0].id
     category = $task[0].category
     arm = $Arm
+    trial = $Trial
     fixtureCommit = $fixtureCommit
     sourceFixtureTree = $sourceTree
     fixtureTree = $checkoutTree
@@ -145,6 +156,7 @@ $session = [ordered]@{
     remoteCount = $remotes.Count
     model = $Model
     tokenBudget = $TokenBudget
+    permissionProfile = $PermissionProfile
     acceptanceContractSha256 = Get-BenchmarkContractHash $acceptanceContract
     checkout = 'checkout'
     prompt = 'prompt.md'
