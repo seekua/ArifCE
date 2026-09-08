@@ -19,6 +19,7 @@ $allowedFixtures = @(
     @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9c3VtbWFyeS1zZWNyZXQ=')) }
     @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('c2VjcmV0PW91dGNvbWUtc2VjcmV0')) }
     @{ Path = 'tests/ArifCE.Tests/BenchmarkFlightRecorderTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9bGluay1zZWNyZXQ=')) }
+    @{ Path = 'tests/ArifCE.Tests/BenchmarkVerificationTests.cs'; Pattern = 'credential-assignment'; Value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('cGFzc3dvcmQ9aHVudGVyMg==')) }
 )
 
 $findings = [System.Collections.Generic.List[object]]::new()
