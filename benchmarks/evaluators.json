@@ -67,10 +67,10 @@
     },
     {
       "taskId": "unfinished-verification-policy",
-      "sourceCommit": "46c61c891408c518a971d6c2698551c2d33a7ea5",
-      "sourceFile": "tests/ArifCE.Tests/BehaviorTests.cs",
-      "fixture": "behavior",
-      "methods": ["Verification_commands_are_named_or_require_explicit_unsafe_approval"]
+      "sourceCommit": "5a1d7254e2390937ccddf43012aa1252e8e807d6",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkVerificationTests.cs",
+      "fixture": "verification",
+      "methods": ["Named_help_command_never_becomes_verified_test_evidence", "Unsafe_or_secret_commands_cannot_create_verified_or_partial_canonical_state"]
     }
   ]
 }

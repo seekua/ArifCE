@@ -16,6 +16,7 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'benchmark-contract-source.ps1')
 . (Join-Path $PSScriptRoot 'benchmark-flight-recorder-source.ps1')
 . (Join-Path $PSScriptRoot 'benchmark-mcp-boundary-source.ps1')
+. (Join-Path $PSScriptRoot 'benchmark-verification-source.ps1')
 $repo = if ([string]::IsNullOrWhiteSpace($SourceRepository)) { Split-Path -Parent $PSScriptRoot } else { [IO.Path]::GetFullPath($SourceRepository) }
 $trial = [IO.Path]::GetFullPath($TrialRoot)
 $resultPath = Join-Path $trial 'result.json'
@@ -54,6 +55,7 @@ $classBody = switch ($entry.fixture) {
     'contract' { ConvertTo-BenchmarkContractSource $sourceText }
     'flight-recorder' { ConvertTo-BenchmarkFlightRecorderSource $sourceText }
     'mcp-boundary' { ConvertTo-BenchmarkMcpBoundarySource $sourceText }
+    'verification' { ConvertTo-BenchmarkVerificationSource $sourceText }
     'behavior' { @"
 using System.Diagnostics;
 using ArifCE.Core;

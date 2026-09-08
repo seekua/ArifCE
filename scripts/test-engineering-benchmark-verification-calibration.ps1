@@ -32,7 +32,7 @@ try {
             $parser = $parserOriginal; $service = $serviceOriginal
             switch ($variant) {
                 'help-is-test' { if ([regex]::Matches($parser, [regex]::Escape(': ("COMMAND", null);')).Count -ne 2) { throw 'Unexpected parser mutation anchor count.' }; $parser = $parser.Replace(': ("COMMAND", null);', ': ("TEST_RUN", null);') }
-                'unsafe-is-verified' { $service = Replace-Anchor $service 'policy == VerificationCommandKind.UnsafeShell || parsed.Kind == "COMMAND" ? ClaimStatus.Supported' 'parsed.Kind == "COMMAND" ? ClaimStatus.Supported' }
+                'unsafe-is-verified' { $service = Replace-Anchor $service 'policy == VerificationCommandKind.UnsafeShell || parsed.Kind == "COMMAND" ? ClaimStatus.Supported' 'false ? ClaimStatus.Supported' }
                 'secret-command-executes' { $service = Replace-Anchor $service 'if (commandRedaction.Count > 0) throw new InvalidOperationException("Verification command contains a detectable secret and was blocked before execution.");' '_ = commandRedaction.Count;' }
                 'unsafe-needs-no-approval' { $service = Replace-Anchor $service 'if (policy == VerificationCommandKind.UnsafeShell && !allowUnsafeCommand) throw new InvalidOperationException("Unrecognized verification commands require explicit --allow-unsafe-command approval.");' '_ = allowUnsafeCommand;' }
             }

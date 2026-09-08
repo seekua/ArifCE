@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "CHECKPOINT-0033",
+  "summary": "Phase 77 local gate: 113 tests pass; verification good control passes and four false-trust variants fail; pinned independent completion and registry controls pass. All ten evaluator objectives are locally calibrated; remote CI awaits explicit push approval.",
+  "snapshot": {
+    "commit": "5a1d7254e2390937ccddf43012aa1252e8e807d6",
+    "branch": "master",
+    "isDirty": true,
+    "changedFiles": [
+      ".github/workflows/ci.yml",
+      "benchmarks/evaluators.json",
+      "scripts/run-engineering-task-evaluator.ps1",
+      "scripts/test-engineering-benchmark-completion.ps1",
+      "scripts/test-engineering-benchmark-verification-calibration.ps1",
+      "scripts/validate-engineering-benchmark.ps1"
+    ],
+    "digest": "5acfb053c3adf861cb493152fa7d4e6b890e306ecff7a7e741b7b4657e15153d"
+  },
+  "createdAtUtc": "2026-09-08T10:22:59.4378902+00:00"
+}
