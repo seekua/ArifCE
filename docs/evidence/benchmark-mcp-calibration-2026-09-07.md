@@ -19,7 +19,7 @@ Source is pinned at `a7b4d828205ad8ebaf06efc66a11ed18e0ec9158`. Run `./scripts/t
 | Accept a non-string required field | FAILED |
 | Remove the request-size limit | FAILED |
 
-All local controls passed: 111 product tests, registry rejection checks, independent completion provenance smoke and good/five-mutant calibration. Remote CI evidence remains pending publication authorization.
+All local controls passed: 111 product tests, registry rejection checks, independent completion provenance smoke and good/five-mutant calibration. Published commit `dadddc3cdd2b477f5e804ff9043b231bce3d01fb` then passed the three-OS matrix, Linux independent-completion provenance and MCP controls, and five self-contained package smoke checks in [GitHub Actions run 34215866974](https://github.com/seekua/ArifCE/actions/runs/34215866974). TASK-0026 is completed.
 
 ## Limits
 

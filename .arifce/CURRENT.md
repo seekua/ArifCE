@@ -6,12 +6,12 @@ Strengthen V0.9 engineering trust with deterministic, low-noise dependency inval
 
 ## Status
 
-Phases 75–77 are locally complete and await explicit publication authorization. All ten evaluator objectives now have pinned independent tests and finite bad-control calibration. FINDING-0009 through FINDING-0012 are resolved. All 113 tests, independent completion, registry and secret-scan controls pass locally; no remote CI result is claimed yet. See docs/evidence/benchmark-verification-calibration-2026-09-08.md. FINDING-0005 remains OPEN; productClaimEligible stays false.
+Phases 75–77 are complete. All ten evaluator objectives have pinned independent tests and finite bad-control calibration. FINDING-0009 through FINDING-0012 are resolved, and TASK-0025 through TASK-0027 are completed. GitHub Actions run 34215866974 passed the three-OS quality matrix, all Linux calibration controls, and five self-contained package smoke checks for commit dadddc3. See docs/evidence/benchmark-verification-calibration-2026-09-08.md. FINDING-0005 remains OPEN; productClaimEligible stays false because evaluator calibration does not establish model effectiveness.
 
 ## Blockers
 
-Remote Phase 75 closure is gated on explicit authorization to push the local commits and a successful GitHub Actions run. The next comparative benchmark remains gated on FINDING-0005 evaluator remediation. Heuristic caller/test relationships remain excluded from automatic stale propagation. Compiler-bound precision and previously deferred integrations remain outside this phase.
+The next comparative benchmark requires fresh, permission-matched model sessions with provider token telemetry and host active-time capture. It cannot use the earlier permission-confounded run as evidence. Heuristic caller/test relationships remain excluded from automatic stale propagation. Compiler-bound precision and previously deferred integrations remain outside this phase.
 
 ## Next steps
 
-After explicit push authorization, run and record GitHub CI for Phases 75–77. Then run fresh, permission-matched repeated model trials with captured usage/host timing. All evaluator objectives are locally calibrated, but active work remains unavailable and product effectiveness remains unproven. Preserve failures, historical results and private reviews.
+Run fresh, permission-matched repeated model trials with captured usage and host timing, then publish favorable, null, and negative results together. All evaluator objectives are remotely calibrated, but active work and product effectiveness remain unproven. Preserve failures, historical results and private reviews.

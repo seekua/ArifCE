@@ -42,7 +42,7 @@ Each expected method must execute exactly once. Restore, compile and runner erro
 
 ## Remote closure
 
-Pending. The implementation and pinned evaluator are committed locally, but no remote CI result is claimed until the user explicitly authorizes publishing this change set and the resulting GitHub Actions run succeeds.
+Published commit `dadddc3cdd2b477f5e804ff9043b231bce3d01fb` passed the three-OS quality matrix, Linux independent-completion provenance and flight-recorder good/bad controls, and five self-contained package smoke checks in [GitHub Actions run 34215866974](https://github.com/seekua/ArifCE/actions/runs/34215866974). TASK-0025 is completed. The remote result establishes the tested evaluator boundary; it is not a product-effectiveness result.
 
 ## Limits and remaining work
 
@@ -50,4 +50,4 @@ The 64-step bound limits each run record, not total journal growth; journal rota
 
 The tests do not establish process-crash recovery between failed-attempt promotion and run update, simultaneous finish/failed-attempt atomicity, automatic extraction from an external agent host, semantic summary quality or useful ranking of every failed attempt. Structured summaries remain explicit inputs; raw transcripts are neither accepted nor claimed to be automatically converted.
 
-Eight of ten evaluator objectives are now locally strengthened and calibrated. MCP validation and unfinished-verification policy remain before a fresh permission-matched repeated model study. FINDING-0005 remains open and `productClaimEligible` remains false. No time, token-saving or product-effectiveness percentage is established here.
+All ten evaluator objectives are now strengthened, calibrated and remotely executed. FINDING-0005 remains open as the guard against premature product-effectiveness claims; `productClaimEligible` remains false until fresh, repeated, permission-matched model trials are available. No time, token-saving or product-effectiveness percentage is established here.
