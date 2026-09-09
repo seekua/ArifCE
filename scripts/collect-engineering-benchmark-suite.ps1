@@ -38,6 +38,7 @@ foreach ($task in $definition.tasks) {
         if ($result.taskId -ne $task.id -or $result.arm -ne $arm -or $result.fixtureCommit -ne $definition.fixtureCommit -or [int]$result.trial -ne $trialNumber) { throw "Trial identity mismatch: $($task.id)/$arm/$trialNumber" }
         if ($null -ne $requiredPermissionProfile -and $result.permissionProfile -ne $requiredPermissionProfile) { throw "Permission profile mismatch: $($task.id)/$arm/$trialNumber" }
         if ($requireTelemetry -and ($result.tokenSource -eq 'unavailable' -or $null -eq $result.tokensConsumed -or $null -eq $result.timeMeasurement)) { throw "Measured host timing and token telemetry are required: $($task.id)/$arm/$trialNumber" }
+        if ($requireTelemetry -and $null -eq $result.tokenBudgetCompliant) { throw "Measured token-budget compliance is required: $($task.id)/$arm/$trialNumber" }
         if ($null -eq $result.independentEvaluation) { throw "Independent evaluation missing: $($task.id)/$arm" }
         if ($result.independentEvaluation.registrySha256 -ne $registryHash) { throw "Evaluator registry mismatch: $($task.id)/$arm" }
         $sourcePath = Join-Path $trial 'independent-evaluator/IndependentTests.cs'
@@ -88,6 +89,10 @@ $report = [ordered]@{
     summary = [ordered]@{
         baselineIndependentPasses = @($baseline | Where-Object { $_.independentEvaluation.taskPassed }).Count
         arifceIndependentPasses = @($arifce | Where-Object { $_.independentEvaluation.taskPassed }).Count
+        baselineWithinTokenBudget = @($baseline | Where-Object { $_.tokenBudgetCompliant -eq $true }).Count
+        arifceWithinTokenBudget = @($arifce | Where-Object { $_.tokenBudgetCompliant -eq $true }).Count
+        baselineProtocolPasses = @($baseline | Where-Object { $_.independentEvaluation.taskPassed -and $_.tokenBudgetCompliant -eq $true }).Count
+        arifceProtocolPasses = @($arifce | Where-Object { $_.independentEvaluation.taskPassed -and $_.tokenBudgetCompliant -eq $true }).Count
         baselineTotalTokens = $baselineUsage.totalTokens
         arifceTotalTokens = $arifceUsage.totalTokens
         baselineMeasuredTrials = $baselineUsage.availableTrials
@@ -96,7 +101,7 @@ $report = [ordered]@{
         baselineHostTime = $baselineTime
         arifceHostTime = $arifceTime
     }
-    interpretation = 'Diagnostic pinned-assertion results only. Public contracts disclose partial coverage. Not eligible for product-effectiveness claims.'
+    interpretation = 'Diagnostic pinned-assertion results only. A protocol pass additionally requires measured usage within the predeclared token ceiling. Public contracts disclose partial coverage. Not eligible for product-effectiveness claims.'
 }
 $outputPath = Repo-Path $Output
 New-Item -ItemType Directory -Path (Split-Path -Parent $outputPath) -Force | Out-Null

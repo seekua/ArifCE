@@ -56,6 +56,10 @@ if ($VerifyOnly) {
     if ($head -ne $result.provenance.finalCommit -or $tree -ne $result.provenance.finalTree) { throw 'Checkout no longer matches the recorded final commit and tree.' }
     if ([bool]$result.evaluation.checksPassed -ne ([int]$result.evaluation.exitCode -eq 0)) { throw 'Evaluator outcome is internally inconsistent.' }
     Assert-BenchmarkTokenUsage $result $agentLogPath
+    if ([int]$result.schemaVersion -ge 5) {
+        $expectedBudgetCompliance = if ($result.tokenSource -ceq 'agent-host') { [long]$result.tokensConsumed -le [long]$result.tokenBudget } else { $null }
+        if (($result.tokenBudgetCompliant | ConvertTo-Json -Compress) -cne ($expectedBudgetCompliance | ConvertTo-Json -Compress)) { throw 'Token-budget compliance is inconsistent with captured usage.' }
+    }
     Assert-BenchmarkHostTiming $result $trial
     Write-Output "Verified benchmark provenance for $($result.taskId)/$($result.arm)."
     return
@@ -113,8 +117,9 @@ try {
 finally { Pop-Location }
 $completed = [DateTimeOffset]::UtcNow
 
+$tokenBudgetCompliant = if ($TokenSource -eq 'agent-host') { [long]$recordedTokens -le [long]$session.tokenBudget } else { $null }
 $result = [ordered]@{
-    schemaVersion = 4
+    schemaVersion = 5
     runId = $session.runId
     taskId = $session.taskId
     arm = $session.arm
@@ -128,6 +133,7 @@ $result = [ordered]@{
     tokensConsumed = $recordedTokens
     tokenSource = $TokenSource
     tokenMeasurement = $tokenMeasurement
+    tokenBudgetCompliant = $tokenBudgetCompliant
     candidateChanged = $candidateChanged
     provenance = [ordered]@{
         sessionSha256 = Hash-File $sessionPath

@@ -45,6 +45,8 @@ Create the immutable run order after preparation. The seed is stored only as a S
 
 The plan binds every prepared session and prompt by SHA-256 and stores only suite-relative paths. It refuses replacement and does not invoke a model. Execute entries strictly by `sequence`; do not choose a favorable order after observing outcomes.
 
+`tokenBudget` is a predeclared total-token ceiling, not a claim that every host can stop exactly at that boundary. Completion derives `tokenBudgetCompliant` from captured host usage and rejects later tampering. Collection preserves over-budget runs and reports their independent correctness separately, but counts a protocol pass only when the pinned evaluator passes and measured usage stays within the ceiling.
+
 ```json
 {
   "taskId": "trust-dirty-content",
