@@ -37,6 +37,14 @@ If an agent produces no candidate, preserve the negative run with `-AllowNoCandi
 
 `new-engineering-benchmark-suite.ps1` prepares all forty isolated trial directories without invoking an agent: ten task categories × two fresh trials × two arms. Every pair must use the same model, token budget, isolated fixture, and non-secret permission profile. Product-study collection rejects a pair with a different permission profile, missing host-process timing, or unavailable token telemetry. After every candidate has been completed and independently evaluated, `collect-engineering-benchmark-suite.ps1` emits a report only if all 20 matched pairs are complete, matched, telemetry-complete, and hash-consistent. Partial runs are not aggregated.
 
+Create the immutable run order after preparation. The seed is stored only as a SHA-256 digest. Pair order is reproducible, matched arms remain adjacent, and which arm runs first is exactly balanced across the 20 pairs:
+
+```powershell
+./scripts/new-engineering-benchmark-execution-plan.ps1 -SuiteRoot artifacts/engineering-benchmark -Seed '<private random study seed>'
+```
+
+The plan binds every prepared session and prompt by SHA-256 and stores only suite-relative paths. It refuses replacement and does not invoke a model. Execute entries strictly by `sequence`; do not choose a favorable order after observing outcomes.
+
 ```json
 {
   "taskId": "trust-dirty-content",

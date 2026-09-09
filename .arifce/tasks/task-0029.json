@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0029",
+  "title": "Add balanced reproducible benchmark execution plans",
+  "description": null,
+  "status": "OPEN",
+  "risk": "HIGH",
+  "createdAtUtc": "2026-09-09T00:03:19.4179203+00:00"
+}

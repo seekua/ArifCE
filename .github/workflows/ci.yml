@@ -55,7 +55,9 @@ jobs:
       - name: Engineering benchmark repeatability
         if: runner.os == 'Linux'
         shell: pwsh
-        run: ./scripts/test-engineering-benchmark-repeatability.ps1
+        run: |
+          ./scripts/test-engineering-benchmark-repeatability.ps1
+          ./scripts/test-engineering-benchmark-execution-plan.ps1
       - name: Engineering benchmark token telemetry
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-telemetry.ps1
