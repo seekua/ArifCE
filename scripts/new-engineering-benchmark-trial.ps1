@@ -135,7 +135,7 @@ $acceptanceContract
 
 $armGuidance
 
-Complete the task in the `checkout` directory. Do not edit `session.json` or this prompt. Report failures and negative outcomes honestly.
+Complete the task in the `checkout` directory. Commit every candidate change before finishing so the checkout is clean and the evaluator can preserve the exact result. If you cannot produce a valid candidate, leave the checkout clean and report the failure honestly. Do not edit `session.json` or this prompt.
 "@
 Set-Content -LiteralPath (Join-Path $trialRoot 'prompt.md') -Value $prompt -Encoding utf8
 
