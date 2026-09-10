@@ -4,8 +4,8 @@ param()
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).ProviderPath
 # macOS exposes its temporary directory through /var while the physical path is
-# /private/var. Canonicalize both ends before creating relative project
-# references so MSBuild does not resolve them under /private/Users.
+# /private/var. Keep cleanup rooted in the resolved temporary provider path and
+# use an absolute reference below so MSBuild never combines the two aliases.
 $tempParent = (Resolve-Path -LiteralPath ([IO.Path]::GetTempPath())).ProviderPath
 $root = Join-Path $tempParent ('arifce-api-gate-test-' + [Guid]::NewGuid().ToString('N'))
 try {
@@ -14,10 +14,9 @@ try {
     foreach ($task in $manifest.tasks) {
         $taskRoot = Join-Path $root $task.id
         New-Item -ItemType Directory -Path $taskRoot | Out-Null
-        $projectReference = [IO.Path]::GetRelativePath($taskRoot, (Join-Path $repo 'src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj')).Replace('\', '/')
-        $resolvedProjectReference = [IO.Path]::GetFullPath((Join-Path $taskRoot $projectReference))
-        if (-not (Test-Path -LiteralPath $resolvedProjectReference -PathType Leaf)) { throw "Generated project reference does not resolve to the reference implementation: $projectReference" }
-        $project = "<Project Sdk=`"Microsoft.NET.Sdk`"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup><ItemGroup><ProjectReference Include=`"$projectReference`" /></ItemGroup></Project>"
+        $projectReference = (Resolve-Path -LiteralPath (Join-Path $repo 'src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj')).ProviderPath
+        $projectReferenceXml = [Security.SecurityElement]::Escape($projectReference)
+        $project = "<Project Sdk=`"Microsoft.NET.Sdk`"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup><ItemGroup><ProjectReference Include=`"$projectReferenceXml`" /></ItemGroup></Project>"
         Copy-Item -LiteralPath (Join-Path $repo $task.apiContractFile) -Destination (Join-Path $taskRoot 'BenchmarkApiContract.cs')
         Set-Content -LiteralPath (Join-Path $taskRoot 'ApiCompatibilityGate.csproj') -Value $project -Encoding utf8
         & dotnet build (Join-Path $taskRoot 'ApiCompatibilityGate.csproj') --configuration Release --disable-build-servers --maxcpucount:1 --nologo --verbosity:quiet

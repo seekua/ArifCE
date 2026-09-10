@@ -38,9 +38,8 @@ if ($VerifyOnly) {
 if (Test-Path -LiteralPath $gateRoot) { throw 'API compatibility gate will not overwrite an existing capture.' }
 New-Item -ItemType Directory -Path $gateRoot | Out-Null
 Copy-Item -LiteralPath $contractPath -Destination (Join-Path $gateRoot 'BenchmarkApiContract.cs')
-$projectReference = [IO.Path]::GetRelativePath($gateRoot, (Join-Path $checkout 'src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj')).Replace('\', '/')
-$resolvedProjectReference = [IO.Path]::GetFullPath((Join-Path $gateRoot $projectReference))
-if (-not (Test-Path -LiteralPath $resolvedProjectReference -PathType Leaf)) { throw "Generated project reference does not resolve inside the trial checkout: $projectReference" }
+$projectReference = (Resolve-Path -LiteralPath (Join-Path $checkout 'src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj')).ProviderPath
+$projectReferenceXml = [Security.SecurityElement]::Escape($projectReference)
 $project = @"
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -49,7 +48,7 @@ $project = @"
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup><ProjectReference Include="$projectReference" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="$projectReferenceXml" /></ItemGroup>
 </Project>
 "@
 $projectPath = Join-Path $gateRoot 'ApiCompatibilityGate.csproj'
