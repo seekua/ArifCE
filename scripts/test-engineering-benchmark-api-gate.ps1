@@ -23,6 +23,31 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "Public API contract did not compile against the reference implementation: $($task.id)" }
     }
 
+    # Regression control: the old, underspecified graph surface used to pass the
+    # public gate and then fail while compiling the hidden evaluator. The public
+    # contract must reject that shape before any behavioral tests are injected.
+    $legacyRoot = Join-Path $root 'legacy-graph-api'
+    New-Item -ItemType Directory -Path $legacyRoot | Out-Null
+    Copy-Item -LiteralPath (Join-Path $repo 'benchmarks/api-contracts/deterministic-code-graph.cs') -Destination (Join-Path $legacyRoot 'BenchmarkApiContract.cs')
+    @'
+namespace ArifCE.Infrastructure;
+public sealed record CodeGraphNode(string Id, string Kind, string Path, int? Line);
+public sealed record CodeGraphEdge(string Source, string Target, string Kind);
+public sealed record CodeGraphDocument(int SchemaVersion, DateTimeOffset GeneratedAtUtc, IReadOnlyList<CodeGraphNode> Nodes, IReadOnlyList<CodeGraphEdge> Edges, string? SourceDigest = null, int GeneratorVersion = 0);
+public sealed record CodeGraphQueryResult(IReadOnlyList<CodeGraphNode> Matches, IReadOnlyList<CodeGraphNode> RelatedNodes, IReadOnlyList<CodeGraphEdge> Edges);
+public sealed record TrustedCodeGraphClosure(string Target, IReadOnlyList<string> Paths, string Digest);
+public sealed class CodeGraphStore
+{
+    public Task<CodeGraphDocument> BuildAsync(string root, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public Task<CodeGraphDocument> ReadAsync(string root, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    public Task<CodeGraphQueryResult> QueryAsync(string root, string symbol, CancellationToken cancellationToken = default, bool exactMatch = false) => throw new NotImplementedException();
+    public Task<TrustedCodeGraphClosure> TrustedClosureAsync(string root, string symbol, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+}
+'@ | Set-Content -LiteralPath (Join-Path $legacyRoot 'LegacyGraphApi.cs') -Encoding utf8
+    '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>' | Set-Content -LiteralPath (Join-Path $legacyRoot 'LegacyGraphApi.csproj') -Encoding utf8
+    & dotnet build (Join-Path $legacyRoot 'LegacyGraphApi.csproj') --configuration Release --disable-build-servers --maxcpucount:1 --nologo --verbosity:quiet *> (Join-Path $legacyRoot 'build.log')
+    if ($LASTEXITCODE -eq 0) { throw 'Underspecified legacy graph API unexpectedly passed the public contract.' }
+
     $manifest.fixtureCommit = (& git -C $repo rev-parse HEAD).Trim()
     $manifest.tasks = @($manifest.tasks | Where-Object id -eq 'deterministic-code-graph')
     $manifest.minimumTasks = 1
@@ -41,7 +66,7 @@ try {
     $rejected = $false
     try { & (Join-Path $PSScriptRoot 'run-engineering-api-gate.ps1') -TrialRoot $trial -VerifyOnly | Out-Null } catch { $rejected = $true }
     if (-not $rejected) { throw 'Tampered public API contract was accepted.' }
-    Write-Output "All $($manifest.tasks.Count + 9) public API contracts compiled; hash-bound gate and tamper rejection passed."
+    Write-Output "All $($manifest.tasks.Count + 9) public API contracts compiled; underspecified graph API rejected; hash-bound gate and tamper rejection passed."
 }
 finally {
     $resolved = [IO.Path]::GetFullPath($root)
