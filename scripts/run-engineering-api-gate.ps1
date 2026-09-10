@@ -6,7 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'benchmark-contract.ps1')
-$trial = [IO.Path]::GetFullPath($TrialRoot)
+$trial = (Resolve-Path -LiteralPath $TrialRoot).ProviderPath
 $sessionPath = Join-Path $trial 'session.json'
 $checkout = Join-Path $trial 'checkout'
 $contractPath = Join-Path $checkout 'BENCHMARK_API_CONTRACT.cs.txt'
@@ -39,6 +39,8 @@ if (Test-Path -LiteralPath $gateRoot) { throw 'API compatibility gate will not o
 New-Item -ItemType Directory -Path $gateRoot | Out-Null
 Copy-Item -LiteralPath $contractPath -Destination (Join-Path $gateRoot 'BenchmarkApiContract.cs')
 $projectReference = [IO.Path]::GetRelativePath($gateRoot, (Join-Path $checkout 'src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj')).Replace('\', '/')
+$resolvedProjectReference = [IO.Path]::GetFullPath((Join-Path $gateRoot $projectReference))
+if (-not (Test-Path -LiteralPath $resolvedProjectReference -PathType Leaf)) { throw "Generated project reference does not resolve inside the trial checkout: $projectReference" }
 $project = @"
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
