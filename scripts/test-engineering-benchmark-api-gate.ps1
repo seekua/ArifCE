@@ -3,10 +3,10 @@ param()
 
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).ProviderPath
-# macOS exposes its temporary directory through /var while the physical path is
-# /private/var. Keep cleanup rooted in the resolved temporary provider path and
-# use an absolute reference below so MSBuild never combines the two aliases.
-$tempParent = (Resolve-Path -LiteralPath ([IO.Path]::GetTempPath())).ProviderPath
+# Keep the disposable fixture beside, never inside, the repository. On macOS
+# this avoids crossing from /var (an alias of /private/var) into /Users while
+# MSBuild walks transitive project references.
+$tempParent = Split-Path -Parent $repo
 $root = Join-Path $tempParent ('arifce-api-gate-test-' + [Guid]::NewGuid().ToString('N'))
 try {
     New-Item -ItemType Directory -Path $root | Out-Null
