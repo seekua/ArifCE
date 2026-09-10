@@ -16,6 +16,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'benchmark-telemetry.ps1')
 . (Join-Path $PSScriptRoot 'benchmark-timing.ps1')
+. (Join-Path $PSScriptRoot 'benchmark-context-efficiency.ps1')
 $trial = [IO.Path]::GetFullPath($TrialRoot)
 $sessionPath = Join-Path $trial 'session.json'
 $promptPath = Join-Path $trial 'prompt.md'
@@ -57,7 +58,10 @@ if ($VerifyOnly) {
     if ([bool]$result.evaluation.checksPassed -ne ([int]$result.evaluation.exitCode -eq 0)) { throw 'Evaluator outcome is internally inconsistent.' }
     Assert-BenchmarkTokenUsage $result $agentLogPath
     if ([int]$result.schemaVersion -ge 5) {
-        $expectedBudgetCompliance = if ($result.tokenSource -ceq 'agent-host') { [long]$result.tokensConsumed -le [long]$result.tokenBudget } else { $null }
+        $expectedBudgetCompliance = if ($result.tokenSource -ceq 'agent-host') {
+            if ([int]$result.schemaVersion -ge 6) { [long]$result.tokenMeasurement.primaryTokens -le [long]$result.tokenBudget }
+            else { [long]$result.tokensConsumed -le [long]$result.tokenBudget }
+        } else { $null }
         if (($result.tokenBudgetCompliant | ConvertTo-Json -Compress) -cne ($expectedBudgetCompliance | ConvertTo-Json -Compress)) { throw 'Token-budget compliance is inconsistent with captured usage.' }
     }
     Assert-BenchmarkHostTiming $result $trial
@@ -117,9 +121,15 @@ try {
 finally { Pop-Location }
 $completed = [DateTimeOffset]::UtcNow
 
-$tokenBudgetCompliant = if ($TokenSource -eq 'agent-host') { [long]$recordedTokens -le [long]$session.tokenBudget } else { $null }
+$contextEfficiency = Read-BenchmarkContextEfficiency $RawLog $tokenMeasurement
+$tokenBudgetCompliant = if ($TokenSource -eq 'agent-host') { [long]$tokenMeasurement.primaryTokens -le [long]$session.tokenBudget } else { $null }
+$arifceWorkflowPassed = if ($session.arm -eq 'arifce') {
+    $logText = [IO.File]::ReadAllText($RawLog)
+    $required = @('context','search','task','claim','verify','handoff')
+    @($required | Where-Object { $logText -notmatch "(?i)ArifCE\.Cli(?:\.dll|\.csproj).*\b$_\b" }).Count -eq 0
+} else { $null }
 $result = [ordered]@{
-    schemaVersion = 5
+    schemaVersion = 6
     runId = $session.runId
     taskId = $session.taskId
     arm = $session.arm
@@ -134,6 +144,8 @@ $result = [ordered]@{
     tokenSource = $TokenSource
     tokenMeasurement = $tokenMeasurement
     tokenBudgetCompliant = $tokenBudgetCompliant
+    contextEfficiency = $contextEfficiency
+    arifceWorkflowPassed = $arifceWorkflowPassed
     candidateChanged = $candidateChanged
     provenance = [ordered]@{
         sessionSha256 = Hash-File $sessionPath

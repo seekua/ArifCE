@@ -38,12 +38,15 @@ function Read-BenchmarkTokenUsage([string]$LogPath) {
                 if ($total -gt [long]::MaxValue) { throw 'Total token count overflows Int64.' }
                 $measurement = [pscustomobject][ordered]@{
                     format = 'codex-exec-jsonl'
-                    version = 1
+                    version = 2
                     threadId = $threadId
                     inputTokens = $inputTokens
                     cachedInputTokens = $cachedTokens
+                    nonCachedInputTokens = $inputTokens - $cachedTokens
                     outputTokens = $outputTokens
                     totalTokens = [long]$total
+                    primaryTokens = [long](($inputTokens - $cachedTokens) + $outputTokens)
+                    churnRatio = if (($inputTokens - $cachedTokens + $outputTokens) -gt 0) { [Math]::Round($total / [double]($inputTokens - $cachedTokens + $outputTokens), 6) } else { $null }
                 }
                 $completed = $true
             }
@@ -64,7 +67,9 @@ function Assert-BenchmarkTokenUsage($Result, [string]$LogPath) {
     }
     if ($Result.tokenSource -cne 'agent-host' -or $null -eq $Result.tokenMeasurement) { throw 'Token counts require supported captured host usage; manual totals are not provenance.' }
     $expected = Read-BenchmarkTokenUsage $LogPath
-    foreach ($property in $expected.PSObject.Properties) {
+    $properties = if ([int]$Result.tokenMeasurement.version -eq 1) { @('format','threadId','inputTokens','cachedInputTokens','outputTokens','totalTokens') } else { @($expected.PSObject.Properties.Name) }
+    foreach ($propertyName in $properties) {
+        $property = $expected.PSObject.Properties[$propertyName]
         if (($Result.tokenMeasurement.($property.Name) | ConvertTo-Json -Compress) -cne ($property.Value | ConvertTo-Json -Compress)) { throw "Token measurement mismatch: $($property.Name)." }
     }
     if ((Read-BenchmarkTokenCount $Result.tokensConsumed 'tokensConsumed') -ne $expected.totalTokens) { throw 'Total tokens do not match captured host usage.' }
@@ -73,11 +78,19 @@ function Assert-BenchmarkTokenUsage($Result, [string]$LogPath) {
 function Get-BenchmarkTokenSummary([object[]]$Rows) {
     $available = @($Rows | Where-Object { $_.tokenSource -ceq 'agent-host' -and $null -ne $_.tokenMeasurement })
     $total = $null
+    $primary = $null
     if ($Rows.Count -gt 0 -and $available.Count -eq $Rows.Count) {
         [decimal]$sum = 0
         foreach ($row in $available) { $sum += Read-BenchmarkTokenCount $row.tokensConsumed 'tokensConsumed' }
         if ($sum -gt [long]::MaxValue) { throw 'Aggregate token count overflows Int64.' }
         $total = [long]$sum
+        [decimal]$primarySum = 0
+        foreach ($row in $available) {
+            $value = if ($null -ne $row.tokenMeasurement.PSObject.Properties['primaryTokens']) { $row.tokenMeasurement.primaryTokens } else { [long]$row.tokenMeasurement.inputTokens - [long]$row.tokenMeasurement.cachedInputTokens + [long]$row.tokenMeasurement.outputTokens }
+            $primarySum += Read-BenchmarkTokenCount $value 'primaryTokens'
+        }
+        if ($primarySum -gt [long]::MaxValue) { throw 'Aggregate primary token count overflows Int64.' }
+        $primary = [long]$primarySum
     }
-    return [pscustomobject]@{ totalTokens = $total; availableTrials = $available.Count; unavailableTrials = $Rows.Count - $available.Count }
+    return [pscustomobject]@{ totalTokens = $total; primaryTokens = $primary; availableTrials = $available.Count; unavailableTrials = $Rows.Count - $available.Count }
 }

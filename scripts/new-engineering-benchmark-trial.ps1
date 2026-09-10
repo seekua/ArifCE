@@ -23,7 +23,7 @@ param(
     [string]$PermissionProfile = 'local-unverified',
 
     [string]$Manifest = 'benchmarks/engineering-tasks.json',
-    [string]$OutputRoot = 'artifacts/engineering-benchmark'
+    [string]$OutputRoot = (Join-Path ([IO.Path]::GetTempPath()) 'arifce-engineering-benchmark')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -44,6 +44,7 @@ $definition = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 $task = @($definition.tasks | Where-Object id -eq $TaskId)
 if ($task.Count -ne 1) { throw "Benchmark task '$TaskId' was not found exactly once in $Manifest." }
 $acceptanceContract = Get-BenchmarkAcceptanceContract $definition $task[0]
+$apiContract = Get-BenchmarkApiContract $definition $task[0] $repo
 if ([string]::IsNullOrWhiteSpace($Model)) { throw 'Model must not be blank.' }
 
 $fixtureCommit = [string]$definition.fixtureCommit
@@ -51,6 +52,13 @@ if ($fixtureCommit -notmatch '^[0-9a-fA-F]{7,40}$') { throw 'The fixture commit 
 Invoke-Git @('-C', $repo, 'cat-file', '-e', "${fixtureCommit}^{commit}") | Out-Null
 
 $output = Resolve-RepoPath $OutputRoot
+if ($IsWindows) {
+    $repoPrefix = [IO.Path]::GetFullPath($repo).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    $outputPrefix = [IO.Path]::GetFullPath($output).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    if ($outputPrefix.StartsWith($repoPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'On Windows, benchmark checkouts must be created outside the source repository. Use a plain temporary OutputRoot to avoid host edit/reparse-point contamination.'
+    }
+}
 $repetitions = if ($definition.schemaVersion -eq 3) { [int]$definition.repetitions } else { 1 }
 if ($repetitions -lt 1) { throw 'Benchmark repetitions must be positive.' }
 if ($Trial -gt $repetitions) { throw "Trial $Trial exceeds configured repetitions $repetitions." }
@@ -82,8 +90,14 @@ $neutralAgentInstructions = @'
 # Engineering benchmark participant instructions
 
 Follow the adjacent benchmark prompt exactly. Work only inside this isolated checkout. Do not inspect parent or sibling directories, external history, remotes, the network, or another participant's output. Report failed attempts and verification failures honestly.
+
+Start with a repository map, then select relevant symbols and bounded line ranges. Do not repeatedly read an unchanged full file or repeat an unchanged repository search. Summarize successful build/test results; on failure inspect only the relevant error and nearby context before expanding. After two materially similar failed tool actions, stop and re-plan.
+
+Use the host's structured patch/edit tool for source changes. If it reports a Windows reparse-point error, stop the edit attempt and report the infrastructure failure. Do not embed source files, base64 source, or multiline C# payloads in PowerShell, cmd, Python, or another shell command.
 '@
 Set-Content -LiteralPath (Join-Path $checkout 'AGENTS.md') -Value $neutralAgentInstructions -Encoding utf8
+if ($null -ne $apiContract) { Copy-Item -LiteralPath (Join-Path $repo $task[0].apiContractFile) -Destination (Join-Path $checkout 'BENCHMARK_API_CONTRACT.cs.txt') }
+Copy-Item -LiteralPath (Join-Path $repo 'scripts/benchmark-run-check.ps1') -Destination (Join-Path $checkout 'BENCHMARK_RUN_CHECK.ps1')
 
 Invoke-Git @('-C', $checkout, 'init', '--quiet') | Out-Null
 Invoke-Git @('-C', $checkout, 'config', 'user.name', 'ArifCE Benchmark') | Out-Null
@@ -110,7 +124,18 @@ $remotes = @((Invoke-Git @('-C', $checkout, 'remote')) | Where-Object { -not [st
 if ($historyCount -ne 1 -or $remotes.Count -ne 0) { throw 'The isolated checkout exposed Git history or a remote.' }
 
 $armGuidance = if ($Arm -eq 'arifce') {
-    'Before changing code, follow .arifce/PROTOCOL.md and use only ArifCE context available inside this isolated repository. Do not inspect or fetch any external branch, commit, patch, or prior-arm output.'
+    @'
+Before changing code, follow .arifce/PROTOCOL.md and use only ArifCE context available inside this isolated repository. Do not inspect or fetch any external branch, commit, patch, or prior-arm output.
+
+Use the product workflow, not just its Markdown files:
+1. Build the CLI once through `./BENCHMARK_RUN_CHECK.ps1 -Action build -Project src/ArifCE.Cli/ArifCE.Cli.csproj -AdditionalArguments @('--configuration','Release')`.
+2. Use the built ArifCE CLI to obtain task context and search relevant canonical memory before editing.
+3. Create or reuse a task and claim when the work requires them.
+4. Record verification as ArifCE evidence after relevant repository checks pass.
+5. Produce an ArifCE handoff before the final commit.
+
+The task instruction and public API contract are identical to the baseline. ArifCE memory must not be treated as hidden acceptance information.
+'@
 } else {
     'Work from repository source and tests without reading any path under .arifce and without running ArifCE context, search, handoff, status, or memory commands. Do not inspect or fetch any external branch, commit, patch, or other-arm output.'
 }
@@ -131,11 +156,17 @@ $($task[0].verification)
 
 $acceptanceContract
 
+## Public compile/API contract
+
+`BENCHMARK_API_CONTRACT.cs.txt` is a compile-only, machine-readable statement of the required public type/member/overload surface. It contains no hidden behavioral assertions. Your candidate must compile against it.
+
 ## Arm boundary
 
 $armGuidance
 
 Complete the task in the `checkout` directory. Commit every candidate change before finishing so the checkout is clean and the evaluator can preserve the exact result. If you cannot produce a valid candidate, leave the checkout clean and report the failure honestly. Do not edit `session.json` or this prompt.
+
+Run restore/build/test checks through `BENCHMARK_RUN_CHECK.ps1`; it retains full failure logs outside the checkout while returning compact success output and bounded error context.
 "@
 Set-Content -LiteralPath (Join-Path $trialRoot 'prompt.md') -Value $prompt -Encoding utf8
 
@@ -158,6 +189,7 @@ $session = [ordered]@{
     tokenBudget = $TokenBudget
     permissionProfile = $PermissionProfile
     acceptanceContractSha256 = Get-BenchmarkContractHash $acceptanceContract
+    apiContractSha256 = if ($null -eq $apiContract) { $null } else { Get-BenchmarkContractHash $apiContract }
     checkout = 'checkout'
     prompt = 'prompt.md'
 }

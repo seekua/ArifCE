@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory = $true)][ValidateRange(1, [int]::MaxValue)][int]$TokenBudget,
     [ValidatePattern('^[a-z0-9][a-z0-9._-]{2,127}$')][string]$PermissionProfile = 'local-unverified',
     [string]$Manifest = 'benchmarks/engineering-tasks.json',
-    [string]$OutputRoot = 'artifacts/engineering-benchmark'
+    [string]$OutputRoot = (Join-Path ([IO.Path]::GetTempPath()) 'arifce-engineering-benchmark')
 )
 
 $ErrorActionPreference = 'Stop'

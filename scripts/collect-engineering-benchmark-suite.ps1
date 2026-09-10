@@ -39,6 +39,9 @@ foreach ($task in $definition.tasks) {
         if ($null -ne $requiredPermissionProfile -and $result.permissionProfile -ne $requiredPermissionProfile) { throw "Permission profile mismatch: $($task.id)/$arm/$trialNumber" }
         if ($requireTelemetry -and ($result.tokenSource -eq 'unavailable' -or $null -eq $result.tokensConsumed -or $null -eq $result.timeMeasurement)) { throw "Measured host timing and token telemetry are required: $($task.id)/$arm/$trialNumber" }
         if ($requireTelemetry -and $null -eq $result.tokenBudgetCompliant) { throw "Measured token-budget compliance is required: $($task.id)/$arm/$trialNumber" }
+        if ($null -eq $result.apiCompatibility) { throw "Public API compatibility gate missing: $($task.id)/$arm" }
+        $apiGate = & (Join-Path $PSScriptRoot 'run-engineering-api-gate.ps1') -TrialRoot $trial -VerifyOnly
+        if (($apiGate.passed | ConvertTo-Json -Compress) -cne ($result.apiCompatibility.passed | ConvertTo-Json -Compress)) { throw "Public API compatibility outcome mismatch: $($task.id)/$arm" }
         if ($null -eq $result.independentEvaluation) { throw "Independent evaluation missing: $($task.id)/$arm" }
         if ($result.independentEvaluation.registrySha256 -ne $registryHash) { throw "Evaluator registry mismatch: $($task.id)/$arm" }
         $sourcePath = Join-Path $trial 'independent-evaluator/IndependentTests.cs'
@@ -56,6 +59,9 @@ foreach ($task in $definition.tasks) {
             if (($assessment.$field | ConvertTo-Json -Compress) -cne ($result.independentEvaluation.assessment.$field | ConvertTo-Json -Compress)) { throw "Evaluator assessment mismatch: $($task.id)/$arm" }
         }
         if (($result.independentEvaluation.taskPassed | ConvertTo-Json -Compress) -cne ($assessment.taskPassed | ConvertTo-Json -Compress)) { throw "Evaluator outcome mismatch: $($task.id)/$arm" }
+        $workflowPassed = $arm -eq 'baseline' -or [bool]$result.arifceWorkflowPassed
+        $comparisonEligible = [bool]$result.candidateChanged -and [bool]$result.evaluation.checksPassed -and [bool]$result.apiCompatibility.passed -and [bool]$result.independentEvaluation.taskPassed -and [bool]$result.contextEfficiency.policyPassed -and $workflowPassed
+        $result | Add-Member -NotePropertyName comparisonEligible -NotePropertyValue $comparisonEligible
         $rows.Add($result)
       }
     }
@@ -89,19 +95,25 @@ $report = [ordered]@{
     summary = [ordered]@{
         baselineIndependentPasses = @($baseline | Where-Object { $_.independentEvaluation.taskPassed }).Count
         arifceIndependentPasses = @($arifce | Where-Object { $_.independentEvaluation.taskPassed }).Count
+        baselineSuccessfulTasks = @($baseline | Where-Object comparisonEligible).Count
+        arifceSuccessfulTasks = @($arifce | Where-Object comparisonEligible).Count
         baselineWithinTokenBudget = @($baseline | Where-Object { $_.tokenBudgetCompliant -eq $true }).Count
         arifceWithinTokenBudget = @($arifce | Where-Object { $_.tokenBudgetCompliant -eq $true }).Count
-        baselineProtocolPasses = @($baseline | Where-Object { $_.independentEvaluation.taskPassed -and $_.tokenBudgetCompliant -eq $true }).Count
-        arifceProtocolPasses = @($arifce | Where-Object { $_.independentEvaluation.taskPassed -and $_.tokenBudgetCompliant -eq $true }).Count
+        baselineSuccessfulPrimaryTokens = [long](($baseline | Where-Object comparisonEligible | ForEach-Object { $_.tokenMeasurement.primaryTokens } | Measure-Object -Sum).Sum ?? 0)
+        arifceSuccessfulPrimaryTokens = [long](($arifce | Where-Object comparisonEligible | ForEach-Object { $_.tokenMeasurement.primaryTokens } | Measure-Object -Sum).Sum ?? 0)
+        baselineFailedPrimaryTokens = [long](($baseline | Where-Object { -not $_.comparisonEligible } | ForEach-Object { $_.tokenMeasurement.primaryTokens } | Measure-Object -Sum).Sum ?? 0)
+        arifceFailedPrimaryTokens = [long](($arifce | Where-Object { -not $_.comparisonEligible } | ForEach-Object { $_.tokenMeasurement.primaryTokens } | Measure-Object -Sum).Sum ?? 0)
         baselineTotalTokens = $baselineUsage.totalTokens
         arifceTotalTokens = $arifceUsage.totalTokens
+        baselinePrimaryTokens = $baselineUsage.primaryTokens
+        arifcePrimaryTokens = $arifceUsage.primaryTokens
         baselineMeasuredTrials = $baselineUsage.availableTrials
         arifceMeasuredTrials = $arifceUsage.availableTrials
         tokenComparisonAvailable = ($null -ne $baselineUsage.totalTokens -and $null -ne $arifceUsage.totalTokens)
         baselineHostTime = $baselineTime
         arifceHostTime = $arifceTime
     }
-    interpretation = 'Diagnostic pinned-assertion results only. A protocol pass additionally requires measured usage within the predeclared token ceiling. Public contracts disclose partial coverage. Not eligible for product-effectiveness claims.'
+    interpretation = 'Diagnostic pinned-assertion results only. Successful-task token comparison includes only candidates that pass repository tests, the public API compile gate, independent evaluation, harness policy, and the required ArifCE workflow. The declared token target is reported but is not currently a success gate. Not eligible for product-effectiveness claims until a complete matched study passes.'
 }
 $outputPath = Repo-Path $Output
 New-Item -ItemType Directory -Path (Split-Path -Parent $outputPath) -Force | Out-Null

@@ -36,7 +36,7 @@ try {
     if ($null -ne $result.PSObject.Properties['success']) { throw 'Completion must not emit a hand-authored task-success field.' }
     if (-not $result.evaluation.checksPassed -or $result.evaluation.exitCode -ne 0) { throw 'Deterministic evaluator did not pass.' }
     if ($result.tokensConsumed -ne 120 -or $result.tokenSource -ne 'agent-host') { throw 'Host token telemetry was not recorded.' }
-    if ($result.tokenBudgetCompliant -ne $false) { throw 'Measured usage above the declared token ceiling was not recorded as non-compliant.' }
+    if ($result.tokenBudgetCompliant -ne $true -or $result.tokenMeasurement.primaryTokens -ne 60) { throw 'The declared token ceiling must use non-cached input plus output.' }
     if ($null -eq $result.timeMeasurement -or $result.timeMeasurement.hostExitCode -ne 0 -or $null -ne $result.timeMeasurement.activeWorkMs) { throw 'Host timing was omitted or misclassified.' }
     $result.timeMeasurement.hostElapsedMs++
     $result | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $trial 'result.json') -Encoding utf8
@@ -50,12 +50,12 @@ try {
     try { & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null } catch { $counterRejected = $true }
     if (-not $counterRejected) { throw 'Tampered token total was accepted.' }
     $result.tokensConsumed = 120
-    $result.tokenBudgetCompliant = $true
+    $result.tokenBudgetCompliant = $false
     $result | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $trial 'result.json') -Encoding utf8
     $budgetRejected = $false
     try { & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null } catch { $budgetRejected = $true }
     if (-not $budgetRejected) { throw 'Tampered token-budget compliance was accepted.' }
-    $result.tokenBudgetCompliant = $false
+    $result.tokenBudgetCompliant = $true
     $result | ConvertTo-Json -Depth 15 | Set-Content -LiteralPath (Join-Path $trial 'result.json') -Encoding utf8
     $registry = Get-Content -LiteralPath (Join-Path $repo 'benchmarks/evaluators.json') -Raw | ConvertFrom-Json
     $registry.evaluators = @($registry.evaluators | Where-Object taskId -eq $TaskId)

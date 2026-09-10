@@ -11,6 +11,7 @@
   "tasks": [
     {
       "id": "trust-dirty-content",
+      "apiContractFile": "benchmarks/api-contracts/trust-dirty-content.cs",
       "category": "BUG_FIX",
       "instruction": "Make evidence freshness change when the bytes of an already-dirty file change without changing its path.",
       "verification": "A regression test demonstrates different GitSnapshot digests for two contents at the same dirty path.",
@@ -25,6 +26,7 @@
     },
     {
       "id": "acceptance-risk-policy",
+      "apiContractFile": "benchmarks/api-contracts/acceptance-risk-policy.cs",
       "category": "REGRESSION",
       "instruction": "Prevent high-risk claims from being accepted without current build, test, and independent-review evidence.",
       "verification": "Acceptance fails closed until every risk-policy requirement exists.",
@@ -38,6 +40,7 @@
     },
     {
       "id": "llm-secret-boundary",
+      "apiContractFile": "benchmarks/api-contracts/llm-secret-boundary.cs",
       "category": "KNOWN_FAILED_APPROACH",
       "instruction": "Prevent detectable secrets from leaving through LLM prompts or entering canonical evidence through model output.",
       "verification": "A secret prompt never calls the provider and a secret response is redacted before persistence.",
@@ -51,6 +54,7 @@
     },
     {
       "id": "canonical-concurrency",
+      "apiContractFile": "benchmarks/api-contracts/canonical-concurrency.cs",
       "category": "DATABASE_MIGRATION",
       "instruction": "Preserve every evidence link when multiple processes update one canonical claim concurrently without making SQLite authoritative.",
       "verification": "Concurrent updates retain all links and the index remains disposable.",
@@ -66,6 +70,7 @@
     },
     {
       "id": "stale-propagation",
+      "apiContractFile": "benchmarks/api-contracts/stale-propagation.cs",
       "category": "OLD_DECISION",
       "instruction": "Propagate stale evidence to its claim, accepted record, and handoff warning without self-invalidating on .arifce metadata writes.",
       "verification": "The claim becomes STALE, acceptance needs review, and handoff names the warning.",
@@ -82,6 +87,7 @@
     },
     {
       "id": "deterministic-code-graph",
+      "apiContractFile": "benchmarks/api-contracts/deterministic-code-graph.cs",
       "category": "FEATURE",
       "instruction": "Add a dependency-light deterministic C# graph for declarations, references, project dependencies, and related-test candidates.",
       "verification": "Derived graph rebuilds from source and labels heuristic relationships separately from exact ones.",
@@ -98,6 +104,7 @@
     },
     {
       "id": "change-impact-contract",
+      "apiContractFile": "benchmarks/api-contracts/change-impact-contract.cs",
       "category": "API_CHANGE",
       "instruction": "Create a pre-change contract for a code symbol using impact candidates, tests, history, invariants, and the existing claim lifecycle.",
       "verification": "No duplicate evidence or acceptance lifecycle is introduced.",
@@ -115,6 +122,7 @@
     },
     {
       "id": "structured-flight-recorder",
+      "apiContractFile": "benchmarks/api-contracts/structured-flight-recorder.cs",
       "category": "HANDOFF",
       "instruction": "Record bounded agent investigations, attempts, evidence, decisions, and results without storing raw transcripts.",
       "verification": "A failed task-linked attempt becomes searchable canonical memory and appears in handoff.",
@@ -129,6 +137,7 @@
     },
     {
       "id": "mcp-validation",
+      "apiContractFile": "benchmarks/api-contracts/mcp-validation.cs",
       "category": "REFACTOR",
       "instruction": "Make MCP schemas enforceable at runtime and reject oversized input, invalid enums, unknown fields, and path-like IDs.",
       "verification": "Malformed calls return typed JSON-RPC errors before canonical access.",
@@ -142,6 +151,7 @@
     },
     {
       "id": "unfinished-verification-policy",
+      "apiContractFile": "benchmarks/api-contracts/unfinished-verification-policy.cs",
       "category": "CONTINUATION",
       "instruction": "Continue the unfinished verification hardening by separating named dotnet checks from explicitly approved shell commands.",
       "verification": "Named checks avoid a shell; unsafe success never produces VERIFIED.",

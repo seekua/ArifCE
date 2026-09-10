@@ -52,6 +52,9 @@ jobs:
       - name: Engineering benchmark isolation
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-trial.ps1
+      - name: Engineering benchmark public API gate
+        shell: pwsh
+        run: ./scripts/test-engineering-benchmark-api-gate.ps1
       - name: Engineering benchmark repeatability
         if: runner.os == 'Linux'
         shell: pwsh
@@ -60,7 +63,10 @@ jobs:
           ./scripts/test-engineering-benchmark-execution-plan.ps1
       - name: Engineering benchmark token telemetry
         shell: pwsh
-        run: ./scripts/test-engineering-benchmark-telemetry.ps1
+        run: |
+          ./scripts/test-engineering-benchmark-telemetry.ps1
+          ./scripts/test-engineering-benchmark-context-efficiency.ps1
+          ./scripts/test-engineering-benchmark-pair-report.ps1
       - name: Engineering benchmark host timing
         shell: pwsh
         run: ./scripts/test-engineering-benchmark-timing.ps1

@@ -9,22 +9,23 @@ Run each task twice from a fresh isolated checkout of the fixture commit:
 
 Do not expose later commits, previous-arm output, or another agent's workspace to either arm. Record one JSON object per task with these fields:
 
-Prepare a history-free trial instead of using a worktree from the current repository:
+Prepare a history-free trial instead of using a worktree from the current repository. On Windows, use an output root outside the source repository (the default is the system temporary directory):
 
 ```text
-./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm baseline -Trial 1 -Model model-and-version -TokenBudget 50000 -PermissionProfile preauthorized-write-build-v1
-./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm arifce -Trial 1 -Model model-and-version -TokenBudget 50000 -PermissionProfile preauthorized-write-build-v1
+./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm baseline -Trial 1 -Model model-and-version -TokenBudget 50000 -PermissionProfile preauthorized-write-build-v1 -OutputRoot "$env:TEMP/arifce-study"
+./scripts/new-engineering-benchmark-trial.ps1 -TaskId trust-dirty-content -Arm arifce -Trial 1 -Model model-and-version -TokenBudget 50000 -PermissionProfile preauthorized-write-build-v1 -OutputRoot "$env:TEMP/arifce-study"
 ```
 
-The preparer exports only the fixture tree, replaces the product repository's ArifCE-requiring `AGENTS.md` with identical neutral participant instructions in both arms, creates a new one-commit repository with no remotes, and refuses to overwrite an existing trial. The session preserves both the source tree and the neutralized fixture tree. Each arm receives that same neutralized snapshot and a separate prompt. The ArifCE arm is permitted to use only the canonical memory already present in that snapshot; the baseline arm is explicitly prohibited from reading `.arifce` or using ArifCE retrieval. This makes the prompt the sole treatment switch and prevents mandatory repository instructions, later solution commits, and other-arm output from contaminating the comparison.
+The preparer exports only the fixture tree, replaces the product repository's ArifCE-requiring `AGENTS.md` with identical neutral participant instructions in both arms, adds the same public compile contract and compact check runner, creates a new one-commit repository with no remotes, and refuses to overwrite an existing trial. The session preserves both the source tree and the neutralized fixture tree. Each arm receives that same neutralized snapshot and a separate prompt. The ArifCE arm must use product context, search, task/claim, evidence, and handoff workflow; the baseline arm is explicitly prohibited from reading `.arifce` or using ArifCE retrieval. No arm receives hidden acceptance information.
 
 The pinned fixture commit must exist in the local Git object database. A shallow clone must fetch that exact commit before preparing a trial; the preparer never fetches implicitly or accepts a different snapshot.
 
 After the agent commits its candidate and the agent host writes a raw activity log, complete and verify the trial:
 
 ```text
-./scripts/complete-engineering-benchmark-trial.ps1 -TrialRoot artifacts/engineering-benchmark/trust-dirty-content/baseline -RawLog ./agent.log -TokensConsumed 12000 -TokenSource provider
-./scripts/complete-engineering-benchmark-trial.ps1 -TrialRoot artifacts/engineering-benchmark/trust-dirty-content/baseline -VerifyOnly
+./scripts/complete-engineering-benchmark-trial.ps1 -TrialRoot "$env:TEMP/arifce-study/trust-dirty-content/baseline/trial-01" -RawLog ./agent.log -UsageFormat codex-exec-jsonl
+./scripts/complete-engineering-benchmark-trial.ps1 -TrialRoot "$env:TEMP/arifce-study/trust-dirty-content/baseline/trial-01" -VerifyOnly
+./scripts/run-engineering-task-evaluator.ps1 -TrialRoot "$env:TEMP/arifce-study/trust-dirty-content/baseline/trial-01"
 ```
 
 Completion runs a fixed, single-worker `dotnet test --no-restore` evaluator with reusable build servers disabled, then binds the preparation manifest, prompt, raw log, candidate patch, final commit/tree, and evaluator output with SHA-256 hashes. It refuses dirty, implicitly unchanged, or previously completed trials. The evaluator measures the checkout the agent actually left behind: it cannot download packages or repair missing restore state after the run. The bounded build topology prevents concurrent benchmark arms from multiplying persistent MSBuild workers. The result deliberately contains no user-authored task-success field: passing repository tests is evidence, but task correctness still requires the independent evaluator introduced by the next phase.
@@ -33,7 +34,7 @@ If an agent produces no candidate, preserve the negative run with `-AllowNoCandi
 
 `evaluators.json` pins each task to the full commit, trusted test source, fixture type, and regression-test method that first proved the requested behavior. Candidate-authored tests or a method with the same name are never scoring evidence. The Phase 51 runner must extract and hash the trusted evaluator only after the candidate run has ended.
 
-`run-engineering-task-evaluator.ps1` performs that post-run injection. It first verifies the completed provenance bundle, extracts only the pinned `[Fact]` methods from the trusted Git object, builds a separate test project referencing the candidate projects, records the injected source/project/output/registry hashes, and derives `taskPassed` solely from its exit code. The generated evaluator suppresses only xUnit's cancellation-token analyzer (`xUnit1051`) because pinned historical test bodies predate that analyzer rule; candidate compiler and product warnings remain unchanged. It refuses a second evaluation. The trusted source repository must contain the pinned commits; it is never exposed as a remote to the candidate checkout.
+`run-engineering-task-evaluator.ps1` performs that post-run injection. It first compiles the candidate against the public hash-bound API probe. Only a passing gate reaches the hidden behavioral evaluator. It then extracts only the pinned `[Fact]` methods from the trusted Git object, builds a separate test project referencing the candidate projects, records the gate/source/project/output/registry hashes, and derives `taskPassed` from executed TRX evidence. It refuses a second evaluation.
 
 `new-engineering-benchmark-suite.ps1` prepares all forty isolated trial directories without invoking an agent: ten task categories × two fresh trials × two arms. Every pair must use the same model, token budget, isolated fixture, and non-secret permission profile. Product-study collection rejects a pair with a different permission profile, missing host-process timing, or unavailable token telemetry. After every candidate has been completed and independently evaluated, `collect-engineering-benchmark-suite.ps1` emits a report only if all 20 matched pairs are complete, matched, telemetry-complete, and hash-consistent. Partial runs are not aggregated.
 
@@ -45,7 +46,9 @@ Create the immutable run order after preparation. The seed is stored only as a S
 
 The plan binds every prepared session and prompt by SHA-256 and stores only suite-relative paths. It refuses replacement and does not invoke a model. Execute entries strictly by `sequence`; do not choose a favorable order after observing outcomes.
 
-`tokenBudget` is a predeclared total-token ceiling, not a claim that every host can stop exactly at that boundary. Completion derives `tokenBudgetCompliant` from captured host usage and rejects later tampering. Collection preserves over-budget runs and reports their independent correctness separately, but counts a protocol pass only when the pinned evaluator passes and measured usage stays within the ceiling.
+`tokenBudget` is currently a predeclared non-cached-input-plus-output target, not a hard task-success criterion. Completion derives `tokenBudgetCompliant` from captured host usage and rejects later tampering. Collection preserves over-target and failed runs separately; successful-task token comparisons include only candidates that pass repository tests, the public API gate, the independent evaluator, regression checks, and harness policy.
+
+Create a single-pair report with `compare-engineering-benchmark-pair.ps1`. It reports primary/cache-included tokens, churn, tool rounds, read/search/edit/build estimates, ArifCE overhead, Useful Context Ratio, Context Amplification Factor, duration, failed-run tokens, and optional account-level Plus snapshots. Estimated fields remain labeled as estimates.
 
 ```json
 {

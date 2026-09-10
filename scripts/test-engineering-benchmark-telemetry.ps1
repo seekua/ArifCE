@@ -17,11 +17,13 @@ try {
     $terminal = '{"type":"turn.completed","usage":{"input_tokens":100,"cached_input_tokens":60,"output_tokens":20}}'
     [IO.File]::WriteAllText($log, $header + $terminal)
     $usage = Read-BenchmarkTokenUsage $log
-    if ($usage.totalTokens -ne 120 -or $usage.cachedInputTokens -ne 60) { throw 'Cached input was double-counted or total usage is wrong.' }
+    if ($usage.totalTokens -ne 120 -or $usage.cachedInputTokens -ne 60 -or $usage.nonCachedInputTokens -ne 40 -or $usage.primaryTokens -ne 60 -or $usage.churnRatio -ne 2) { throw 'Primary, cached, churn, or total usage is wrong.' }
     $measured = [pscustomobject]@{ tokenSource = 'agent-host'; tokensConsumed = 120L; tokenMeasurement = $usage }
     Assert-BenchmarkTokenUsage $measured $log
+    $legacyUsage = [pscustomobject][ordered]@{ format='codex-exec-jsonl';version=1;threadId='fixture-thread';inputTokens=100L;cachedInputTokens=60L;outputTokens=20L;totalTokens=120L }
+    Assert-BenchmarkTokenUsage ([pscustomobject]@{ tokenSource='agent-host';tokensConsumed=120L;tokenMeasurement=$legacyUsage }) $log
     $summary = Get-BenchmarkTokenSummary @($measured, $measured)
-    if ($summary.totalTokens -ne 240 -or $summary.availableTrials -ne 2) { throw 'Complete measured totals are incorrect.' }
+    if ($summary.totalTokens -ne 240 -or $summary.primaryTokens -ne 120 -or $summary.availableTrials -ne 2) { throw 'Complete measured totals are incorrect.' }
     foreach ($missingValue in @($null, 0)) {
         $missing = [pscustomobject]@{ tokenSource = 'unavailable'; tokensConsumed = $missingValue }
         Assert-BenchmarkTokenUsage $missing $log

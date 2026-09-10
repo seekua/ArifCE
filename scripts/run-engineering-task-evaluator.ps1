@@ -25,7 +25,18 @@ $evaluatorRoot = Join-Path $trial 'independent-evaluator'
 if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) { throw 'Complete and verify the candidate trial before independent evaluation.' }
 & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $trial -VerifyOnly | Out-Null
 $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+$session = Get-Content -LiteralPath (Join-Path $trial 'session.json') -Raw | ConvertFrom-Json
 if ($null -ne $result.PSObject.Properties['independentEvaluation']) { throw 'Independent evaluation will not be overwritten.' }
+if (-not [string]::IsNullOrWhiteSpace([string]$session.apiContractSha256)) {
+    $apiGate = & (Join-Path $PSScriptRoot 'run-engineering-api-gate.ps1') -TrialRoot $trial
+    $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+    $result | Add-Member -NotePropertyName apiCompatibility -NotePropertyValue $apiGate
+    $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $resultPath -Encoding utf8
+    if (-not [bool]$apiGate.passed) {
+        Write-Output "Public API compatibility gate $($result.taskId): FAILED. Full evaluator was not run."
+        return
+    }
+}
 $registryPath = if ([IO.Path]::IsPathRooted($EvaluatorRegistry)) { $EvaluatorRegistry } else { Join-Path $repo $EvaluatorRegistry }
 $registry = Get-Content -LiteralPath $registryPath -Raw | ConvertFrom-Json
 $entry = @($registry.evaluators | Where-Object taskId -eq $result.taskId)

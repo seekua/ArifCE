@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "TASK-0030",
+  "title": "Make the external benchmark harness fair and context-efficient",
+  "description": null,
+  "status": "OPEN",
+  "risk": "HIGH",
+  "createdAtUtc": "2026-09-10T03:01:37.9995442+00:00"
+}

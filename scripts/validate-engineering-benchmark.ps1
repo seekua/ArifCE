@@ -31,7 +31,10 @@ if ($definition.schemaVersion -eq 3) {
     if ($definition.requiredPermissionProfile -notmatch '^[a-z0-9][a-z0-9._-]{2,127}$') { throw 'The required permission profile is invalid.' }
     if (-not [bool]$definition.requireMeasuredTelemetry) { throw 'A repeatable product study requires measured telemetry.' }
 }
-foreach ($task in $definition.tasks) { Get-BenchmarkAcceptanceContract $definition $task | Out-Null }
+foreach ($task in $definition.tasks) {
+    Get-BenchmarkAcceptanceContract $definition $task | Out-Null
+    if ($definition.schemaVersion -ge 3) { Get-BenchmarkApiContract $definition $task $repo | Out-Null }
+}
 $evaluatorPath = Resolve-RepoPath $EvaluatorRegistry
 $evaluatorDefinition = Get-Content -LiteralPath $evaluatorPath -Raw | ConvertFrom-Json
 foreach ($name in @('schemaVersion','policy','evaluators')) { Require-Property $evaluatorDefinition $name 'Evaluator registry' }
