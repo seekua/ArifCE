@@ -16,10 +16,10 @@ try {
         New-Item -ItemType Directory -Path $taskRoot | Out-Null
         $projectReference = (Resolve-Path -LiteralPath (Join-Path $repo 'src/ArifCE.Infrastructure/ArifCE.Infrastructure.csproj')).ProviderPath
         $projectReferenceXml = [Security.SecurityElement]::Escape($projectReference)
-        $project = "<Project Sdk=`"Microsoft.NET.Sdk`"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup><ItemGroup><ProjectReference Include=`"$projectReferenceXml`" /></ItemGroup></Project>"
+        $project = "<Project Sdk=`"Microsoft.NET.Sdk`"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors><NuGetAudit>false</NuGetAudit></PropertyGroup><ItemGroup><ProjectReference Include=`"$projectReferenceXml`" /></ItemGroup></Project>"
         Copy-Item -LiteralPath (Join-Path $repo $task.apiContractFile) -Destination (Join-Path $taskRoot 'BenchmarkApiContract.cs')
         Set-Content -LiteralPath (Join-Path $taskRoot 'ApiCompatibilityGate.csproj') -Value $project -Encoding utf8
-        & dotnet build (Join-Path $taskRoot 'ApiCompatibilityGate.csproj') --configuration Release --disable-build-servers --maxcpucount:1 --nologo --verbosity:quiet
+        & dotnet build (Join-Path $taskRoot 'ApiCompatibilityGate.csproj') --configuration Release --disable-build-servers --maxcpucount:1 --nologo --verbosity:quiet -p:NuGetAudit=false
         if ($LASTEXITCODE -ne 0) { throw "Public API contract did not compile against the reference implementation: $($task.id)" }
     }
 
@@ -44,8 +44,8 @@ public sealed class CodeGraphStore
     public Task<TrustedCodeGraphClosure> TrustedClosureAsync(string root, string symbol, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 }
 '@ | Set-Content -LiteralPath (Join-Path $legacyRoot 'LegacyGraphApi.cs') -Encoding utf8
-    '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>' | Set-Content -LiteralPath (Join-Path $legacyRoot 'LegacyGraphApi.csproj') -Encoding utf8
-    & dotnet build (Join-Path $legacyRoot 'LegacyGraphApi.csproj') --configuration Release --disable-build-servers --maxcpucount:1 --nologo --verbosity:quiet *> (Join-Path $legacyRoot 'build.log')
+    '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><NuGetAudit>false</NuGetAudit></PropertyGroup></Project>' | Set-Content -LiteralPath (Join-Path $legacyRoot 'LegacyGraphApi.csproj') -Encoding utf8
+    & dotnet build (Join-Path $legacyRoot 'LegacyGraphApi.csproj') --configuration Release --disable-build-servers --maxcpucount:1 --nologo --verbosity:quiet -p:NuGetAudit=false *> (Join-Path $legacyRoot 'build.log')
     if ($LASTEXITCODE -eq 0) { throw 'Underspecified legacy graph API unexpectedly passed the public contract.' }
 
     $manifest.fixtureCommit = (& git -C $repo rev-parse HEAD).Trim()

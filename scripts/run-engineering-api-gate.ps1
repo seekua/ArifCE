@@ -47,6 +47,7 @@ $project = @"
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="$projectReferenceXml" /></ItemGroup>
 </Project>
@@ -57,7 +58,7 @@ Set-Content -LiteralPath $projectPath -Value $project -Encoding utf8
 $started = [DateTimeOffset]::UtcNow
 Push-Location $gateRoot
 try {
-    & dotnet build $projectPath --configuration Release --disable-build-servers --maxcpucount:1 --nologo --verbosity:minimal *> $logPath
+    & dotnet build $projectPath --configuration Release --disable-build-servers --maxcpucount:1 --nologo --verbosity:minimal -p:NuGetAudit=false *> $logPath
     $exitCode = $LASTEXITCODE
 }
 finally { Pop-Location }

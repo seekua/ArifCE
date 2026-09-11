@@ -23,6 +23,25 @@ try {
     if ($metrics.largeShellEditCount -ne 1 -or $metrics.policyPassed -or 'LARGE_SOURCE_EDIT_EMBEDDED_IN_SHELL' -notin $metrics.policyViolations) { throw 'Large shell edits were not rejected by policy.' }
     if ($metrics.uniqueUsefulContextTokensEstimate -ne 150 -or $metrics.usefulContextRatioEstimate -ne 0.15 -or $metrics.contextAmplificationFactorEstimate -ne 6.667) { throw 'Useful-context estimates are inconsistent.' }
     if ($metrics.replanSignals -ne 1 -or $metrics.unboundedBuildTestCount -ne 0) { throw 'Replanning or bounded build detection is wrong.' }
+
+    $repeatFailureLog = Join-Path $root 'repeat-failure.jsonl'
+    $repeatFailures = @(
+        @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh -Command ./BENCHMARK_RUN_CHECK.ps1 -Action build'; aggregated_output='failure one'; exit_code=1 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh   -Command ./BENCHMARK_RUN_CHECK.ps1 -Action build'; aggregated_output='failure two'; exit_code=1 } }
+    )
+    [IO.File]::WriteAllLines($repeatFailureLog, @($repeatFailures | ForEach-Object { $_ | ConvertTo-Json -Compress -Depth 5 }))
+    $repeatMetrics = Read-BenchmarkContextEfficiency $repeatFailureLog ([pscustomobject]@{ inputTokens=100 })
+    if ('REPEATED_FAILURE_WITHOUT_REPLAN' -notin $repeatMetrics.policyViolations) { throw 'An exact repeated failed command without replanning was not rejected.' }
+
+    $sharedPrefixLog = Join-Path $root 'shared-prefix-failures.jsonl'
+    $wrapper = 'C:\a-very-long-host-runtime-path-that-used-to-consume-the-truncated-signature\pwsh.exe -Command '
+    $sharedPrefixFailures = @(
+        @{ type='item.completed'; item=@{ type='command_execution'; command=($wrapper + './BENCHMARK_RUN_CHECK.ps1 -Action build'); aggregated_output='network failure'; exit_code=1 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command=($wrapper + './BENCHMARK_RUN_CHECK.ps1 -Action test'); aggregated_output='compiler failure'; exit_code=1 } }
+    )
+    [IO.File]::WriteAllLines($sharedPrefixLog, @($sharedPrefixFailures | ForEach-Object { $_ | ConvertTo-Json -Compress -Depth 5 }))
+    $sharedPrefixMetrics = Read-BenchmarkContextEfficiency $sharedPrefixLog ([pscustomobject]@{ inputTokens=100 })
+    if ('REPEATED_FAILURE_WITHOUT_REPLAN' -in $sharedPrefixMetrics.policyViolations) { throw 'Different failed commands sharing a host-wrapper prefix were misclassified as a retry loop.' }
     Write-Output 'Benchmark context-efficiency measurement and policy smoke test passed.'
 }
 finally {

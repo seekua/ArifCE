@@ -132,7 +132,7 @@ if ($entry.fixture -in @('mcp','mcp-boundary')) { $projectReferences += '../chec
 $referenceXml = $projectReferences | ForEach-Object { "    <ProjectReference Include=`"$_`" />" }
 $project = @"
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><IsTestProject>true</IsTestProject><NoWarn>`$(NoWarn);xUnit1051</NoWarn></PropertyGroup>
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><IsTestProject>true</IsTestProject><NoWarn>`$(NoWarn);xUnit1051</NoWarn><NuGetAudit>false</NuGetAudit></PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageReference Include="xunit.v3" Version="3.2.2" />
@@ -149,7 +149,7 @@ Set-Content -LiteralPath $sourcePath -Value $classBody -Encoding utf8
 Set-Content -LiteralPath $projectPath -Value $project -Encoding utf8
 Push-Location $evaluatorRoot
 $testFilter = ($entry.methods | ForEach-Object { "FullyQualifiedName=ArifCE.IndependentEvaluator.IndependentTests.$_" }) -join '|'
-try { & dotnet test $projectPath --configuration Release --disable-build-servers --maxcpucount:1 --filter $testFilter --logger 'trx;LogFileName=evaluator.trx' --results-directory (Join-Path $evaluatorRoot 'results') *> $outputPath; $exitCode = $LASTEXITCODE } finally { Pop-Location }
+try { & dotnet test $projectPath --configuration Release --disable-build-servers --maxcpucount:1 -p:NuGetAudit=false --filter $testFilter --logger 'trx;LogFileName=evaluator.trx' --results-directory (Join-Path $evaluatorRoot 'results') *> $outputPath; $exitCode = $LASTEXITCODE } finally { Pop-Location }
 $assessment = Read-BenchmarkAssessment $trxPath $exitCode @($entry.methods)
 $evaluation = [ordered]@{
     registrySha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $registryPath).Hash.ToLowerInvariant()

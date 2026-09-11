@@ -56,7 +56,10 @@ function Read-BenchmarkContextEfficiency([string]$LogPath, $TokenMeasurement) {
     $directBuildChecks = @($commands | Where-Object { $_.command -match '(?i)dotnet\s+(restore|build|test)' -and $_.command -notmatch '(?i)BENCHMARK_RUN_CHECK\.ps1' -and $_.command -notmatch '(?i)ArifCE\.Cli\.dll' })
     $failedCommands = @($commands | Where-Object { $null -ne $_.exitCode -and [int]$_.exitCode -ne 0 })
     $replanMessages = @($messages | Where-Object { $_ -match '(?i)re-?plan|new approach|adjust(?:ing)? the approach' })
-    $similarFailureGroups = @($failedCommands | Group-Object { ($_.command -replace '\s+',' ').Substring(0, [Math]::Min(120, ($_.command -replace '\s+',' ').Length)) } | Where-Object Count -ge 2)
+    # Compare the complete normalized command. Prefix truncation grouped every
+    # pwsh-wrapped action together on Windows even when the inner commands and
+    # failure causes differed, producing false retry-loop violations.
+    $similarFailureGroups = @($failedCommands | Group-Object { ($_.command -replace '\s+',' ').Trim() } | Where-Object Count -ge 2)
 
     [long]$uniqueUsefulContext = $readDuplicates.uniqueTokens + $searchDuplicates.uniqueTokens
     [long]$processedInput = if ($null -eq $TokenMeasurement) { 0 } else { [long]$TokenMeasurement.inputTokens }

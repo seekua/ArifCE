@@ -9,7 +9,8 @@ $ErrorActionPreference = 'Stop'
 $log = Join-Path ([IO.Path]::GetTempPath()) ('arifce-check-' + [Guid]::NewGuid().ToString('N') + '.log')
 $started = [Diagnostics.Stopwatch]::StartNew()
 try {
-    $arguments = @($Action, $Project, '--disable-build-servers', '--maxcpucount:1', '--nologo', '--verbosity:minimal') + $AdditionalArguments
+    $callerArguments = @($AdditionalArguments | Where-Object { $_ -notmatch '(?i)^(?:--|-|/)(?:p|property):NuGetAudit=' })
+    $arguments = @($Action, $Project, '--disable-build-servers', '--maxcpucount:1', '--nologo', '--verbosity:minimal', '-p:NuGetAudit=false') + $callerArguments
     & dotnet @arguments *> $log
     $exitCode = $LASTEXITCODE
     $started.Stop()

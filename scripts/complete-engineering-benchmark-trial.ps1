@@ -115,7 +115,7 @@ else {
 $testStarted = [DateTimeOffset]::UtcNow
 Push-Location $checkout
 try {
-    & dotnet test ArifCE.slnx --configuration Release --no-restore --disable-build-servers --maxcpucount:1 *> $evaluatorLogPath
+    & dotnet test ArifCE.slnx --configuration Release --no-restore --disable-build-servers --maxcpucount:1 -p:NuGetAudit=false *> $evaluatorLogPath
     $exitCode = $LASTEXITCODE
 }
 finally { Pop-Location }
@@ -158,7 +158,7 @@ $result = [ordered]@{
     }
     evaluation = [ordered]@{
         kind = 'dotnet-test'
-        command = 'dotnet test ArifCE.slnx --configuration Release --no-restore --disable-build-servers --maxcpucount:1'
+        command = 'dotnet test ArifCE.slnx --configuration Release --no-restore --disable-build-servers --maxcpucount:1 -p:NuGetAudit=false'
         startedAtUtc = $testStarted.ToString('O')
         completedAtUtc = $completed.ToString('O')
         exitCode = $exitCode

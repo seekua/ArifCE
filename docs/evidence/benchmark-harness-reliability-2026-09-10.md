@@ -30,3 +30,23 @@ The 50,000 primary-token value remains diagnostic until evaluator-passing matche
 - Trial isolation, suite rejection, token parsing, and completion provenance smoke tests pass.
 
 Remote CI passed on all three operating systems and all five self-contained package targets in [run 34462957826](https://github.com/seekua/ArifCE/actions/runs/34462957826). A subsequent matched Terra/medium pilot produced two repository-test and API-gate passes but two independent-evaluator compilation errors because the then-bound graph probe omitted evaluator-required record members. That pair is retained locally as an invalid failed run, not product evidence. The public probe and negative control were corrected only after both arms ended; a fresh pair is therefore still required and `productClaimEligible` remains false.
+
+The corrected graph probe then passed the three-OS matrix in [run 34466811725](https://github.com/seekua/ArifCE/actions/runs/34466811725). A second matched Terra/medium pair used that corrected contract and produced legitimate behavioral results rather than evaluator infrastructure errors:
+
+| Metric | Baseline | ArifCE |
+| --- | ---: | ---: |
+| Public API gate | PASS | PASS |
+| Repository tests | FAIL (NuGet audit network error) | PASS |
+| Independent evaluator | FAIL (2 passed, 2 failed) | FAIL (1 passed, 3 failed) |
+| Non-cached input + output | 45,565 | 78,466 |
+| Cache-included total | 543,997 | 1,276,290 |
+| Context Amplification Factor | 49.691 | 44.844 |
+| Useful Context Ratio | 0.020124 | 0.022300 |
+| Model/tool rounds | 16 | 26 |
+| Duration | 317,928 ms | 553,620 ms |
+
+Both implementations failed the explicitly documented same-line overload identity and trusted-closure behavior. The ArifCE implementation also failed lifecycle parsing for an edited one-line method. These are model implementation failures and are not hidden-contract defects. The baseline repository-test failure was a separate `NU1900` network-dependent vulnerability-audit error, so this pair still cannot enter successful-task token comparison.
+
+Post-pair review found a second harness false positive: retry-loop grouping compared only the first 120 normalized command characters. Long Windows PowerShell wrapper prefixes therefore grouped different inner commands and unrelated failures. Retry grouping now compares the complete normalized command, with positive and negative regression fixtures. Benchmark build/test, API-gate, and independent-evaluator entry points also force `NuGetAudit=false`; vulnerability auditing remains a CI/product concern but is not permitted to make an otherwise unchanged isolated benchmark depend on external advisory availability.
+
+These changes are prospective. Neither completed pair has been modified or reclassified. A new matched pair must pass repository tests, public API compilation, independent behavior evaluation, regression checks, and harness policy in both arms before successful-task token costs are compared. Lower-model trials and the larger study remain blocked until then.
