@@ -124,9 +124,22 @@ $completed = [DateTimeOffset]::UtcNow
 $contextEfficiency = Read-BenchmarkContextEfficiency $RawLog $tokenMeasurement
 $tokenBudgetCompliant = if ($TokenSource -eq 'agent-host') { [long]$tokenMeasurement.primaryTokens -le [long]$session.tokenBudget } else { $null }
 $arifceWorkflowPassed = if ($session.arm -eq 'arifce') {
-    $logText = [IO.File]::ReadAllText($RawLog)
-    $required = @('context','search','task','claim','verify','handoff')
-    @($required | Where-Object { $logText -notmatch "(?i)ArifCE\.Cli(?:\.dll|\.csproj).*\b$_\b" }).Count -eq 0
+    $successfulArifceCommands = [System.Collections.Generic.List[string]]::new()
+    $workflowReader = [IO.File]::OpenText([IO.Path]::GetFullPath($RawLog))
+    try {
+        while ($null -ne ($workflowLine = $workflowReader.ReadLine())) {
+            if ([string]::IsNullOrWhiteSpace($workflowLine)) { continue }
+            try { $workflowEvent = $workflowLine | ConvertFrom-Json -ErrorAction Stop } catch { continue }
+            if ($workflowEvent.type -cne 'item.completed' -or $workflowEvent.item.type -cne 'command_execution') { continue }
+            if ($null -eq $workflowEvent.item.exit_code -or [int]$workflowEvent.item.exit_code -ne 0) { continue }
+            $workflowCommand = [string]$workflowEvent.item.command
+            if ($workflowCommand -match '(?i)ArifCE\.Cli(?:\.dll|\.csproj)') { $successfulArifceCommands.Add($workflowCommand) }
+        }
+    }
+    finally { $workflowReader.Dispose() }
+    $successfulCommandText = $successfulArifceCommands -join "`n"
+    $required = @('rebuild','context','search','task','claim','verify','handoff')
+    @($required | Where-Object { $successfulCommandText -notmatch "(?i)ArifCE\.Cli\.dll['`"]?\s+$_\b" }).Count -eq 0
 } else { $null }
 $result = [ordered]@{
     schemaVersion = 6

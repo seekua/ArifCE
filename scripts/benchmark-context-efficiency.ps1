@@ -50,16 +50,29 @@ function Read-BenchmarkContextEfficiency([string]$LogPath, $TokenMeasurement) {
         }
         [pscustomobject]@{ count = $duplicates; tokens = $duplicateTokens; uniqueTokens = $uniqueTokens }
     }
+    function Get-FailureSignature($Item) {
+        $normalizedCommand = ($Item.command -replace '\s+',' ').Trim()
+        $outputLines = @(([string]$Item.output -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object {
+            -not [string]::IsNullOrWhiteSpace($_) -and
+            $_ -notmatch '(?i)^BENCHMARK_RUN_CHECK.+(?:failed|exit|elapsed|duration)'
+        })
+        $meaningful = @($outputLines | Where-Object {
+            $_ -match '(?i)(\berror\b|exception|assert|expected|failure|failed|cannot|unable|not found|does not|invalid|missing)'
+        } | Select-Object -First 2)
+        if ($meaningful.Count -eq 0) { $meaningful = @($outputLines | Select-Object -First 2) }
+        $normalizedFailure = (($meaningful -join ' ') -replace '\s+',' ').Trim().ToLowerInvariant()
+        return $normalizedCommand + "`n" + $normalizedFailure
+    }
     $readDuplicates = Get-DuplicateStats $reads
     $searchDuplicates = Get-DuplicateStats $searches
     $largeShellEdits = @($shellEdits | Where-Object { $_.command.Length -gt 2000 })
     $directBuildChecks = @($commands | Where-Object { $_.command -match '(?i)dotnet\s+(restore|build|test)' -and $_.command -notmatch '(?i)BENCHMARK_RUN_CHECK\.ps1' -and $_.command -notmatch '(?i)ArifCE\.Cli\.dll' })
     $failedCommands = @($commands | Where-Object { $null -ne $_.exitCode -and [int]$_.exitCode -ne 0 })
     $replanMessages = @($messages | Where-Object { $_ -match '(?i)re-?plan|new approach|adjust(?:ing)? the approach' })
-    # Compare the complete normalized command. Prefix truncation grouped every
-    # pwsh-wrapped action together on Windows even when the inner commands and
-    # failure causes differed, producing false retry-loop violations.
-    $similarFailureGroups = @($failedCommands | Group-Object { ($_.command -replace '\s+',' ').Trim() } | Where-Object Count -ge 2)
+    # A retry loop requires both the same normalized command and the same
+    # meaningful failure. Re-running a build after an edit can expose a new
+    # compiler error and is progress rather than a blind retry.
+    $similarFailureGroups = @($failedCommands | Group-Object { Get-FailureSignature $_ } | Where-Object Count -ge 2)
 
     [long]$uniqueUsefulContext = $readDuplicates.uniqueTokens + $searchDuplicates.uniqueTokens
     [long]$processedInput = if ($null -eq $TokenMeasurement) { 0 } else { [long]$TokenMeasurement.inputTokens }

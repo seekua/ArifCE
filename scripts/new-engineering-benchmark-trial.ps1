@@ -129,10 +129,13 @@ Before changing code, follow .arifce/PROTOCOL.md and use only ArifCE context ava
 
 Use the product workflow, not just its Markdown files:
 1. Build the CLI once through `./BENCHMARK_RUN_CHECK.ps1 -Action build -Project src/ArifCE.Cli/ArifCE.Cli.csproj -AdditionalArguments @('--configuration','Release')`.
-2. Use the built ArifCE CLI to obtain task context and search relevant canonical memory before editing.
-3. Create or reuse a task and claim when the work requires them.
-4. Record verification as ArifCE evidence after relevant repository checks pass.
-5. Produce an ArifCE handoff before the final commit.
+2. Use `dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild` once so the disposable local index reflects this isolated checkout.
+3. Use that same platform-neutral DLL invocation to obtain task context and search relevant canonical memory before editing.
+4. Create or reuse a task and claim when the work requires them.
+5. Record verification as ArifCE evidence after relevant repository checks pass.
+6. Produce an ArifCE handoff before the final commit.
+
+Run each ArifCE workflow operation as a separate host tool action so its exit status is independently observable.
 
 The task instruction and public API contract are identical to the baseline. ArifCE memory must not be treated as hidden acceptance information.
 '@

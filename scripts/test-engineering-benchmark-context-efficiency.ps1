@@ -26,12 +26,21 @@ try {
 
     $repeatFailureLog = Join-Path $root 'repeat-failure.jsonl'
     $repeatFailures = @(
-        @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh -Command ./BENCHMARK_RUN_CHECK.ps1 -Action build'; aggregated_output='failure one'; exit_code=1 } },
-        @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh   -Command ./BENCHMARK_RUN_CHECK.ps1 -Action build'; aggregated_output='failure two'; exit_code=1 } }
+        @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh -Command ./BENCHMARK_RUN_CHECK.ps1 -Action build'; aggregated_output='error CS1001: repeated compiler failure'; exit_code=1 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh   -Command ./BENCHMARK_RUN_CHECK.ps1 -Action build'; aggregated_output='error CS1001: repeated compiler failure'; exit_code=1 } }
     )
     [IO.File]::WriteAllLines($repeatFailureLog, @($repeatFailures | ForEach-Object { $_ | ConvertTo-Json -Compress -Depth 5 }))
     $repeatMetrics = Read-BenchmarkContextEfficiency $repeatFailureLog ([pscustomobject]@{ inputTokens=100 })
     if ('REPEATED_FAILURE_WITHOUT_REPLAN' -notin $repeatMetrics.policyViolations) { throw 'An exact repeated failed command without replanning was not rejected.' }
+
+    $progressiveFailureLog = Join-Path $root 'progressive-failure.jsonl'
+    $progressiveFailures = @(
+        @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh -Command ./BENCHMARK_RUN_CHECK.ps1 -Action build'; aggregated_output='error CS1001: first compiler failure'; exit_code=1 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh -Command ./BENCHMARK_RUN_CHECK.ps1 -Action build'; aggregated_output='error CS2002: different compiler failure'; exit_code=1 } }
+    )
+    [IO.File]::WriteAllLines($progressiveFailureLog, @($progressiveFailures | ForEach-Object { $_ | ConvertTo-Json -Compress -Depth 5 }))
+    $progressiveMetrics = Read-BenchmarkContextEfficiency $progressiveFailureLog ([pscustomobject]@{ inputTokens=100 })
+    if ('REPEATED_FAILURE_WITHOUT_REPLAN' -in $progressiveMetrics.policyViolations) { throw 'A repeated command exposing a different failure was misclassified as a retry loop.' }
 
     $sharedPrefixLog = Join-Path $root 'shared-prefix-failures.jsonl'
     $wrapper = 'C:\a-very-long-host-runtime-path-that-used-to-consume-the-truncated-signature\pwsh.exe -Command '

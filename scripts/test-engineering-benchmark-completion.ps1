@@ -76,11 +76,41 @@ try {
 
     & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId $TaskId -Arm arifce -Model fixture-model-v1 -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
     $unchangedTrial = Join-Path $root "$TaskId/arifce"
-    & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $unchangedTrial -RawLog $rawLog -TokenSource unavailable -AllowNoCandidate | Out-Null
+    $failedWorkflowLog = Join-Path $root 'failed-arifce-workflow.jsonl'
+    $failedWorkflowCommand = 'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild; context; search; task; claim; verify; handoff'
+    $failedWorkflowEvents = @(
+        @{ type='thread.started'; thread_id='fixture-arifce-thread' },
+        @{ type='turn.started' },
+        @{ type='item.completed'; item=@{ type='command_execution'; command=$failedWorkflowCommand; aggregated_output='index failure'; exit_code=1 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll context --task TASK-1'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll search query'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll claim list'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll verify'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll handoff'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='turn.completed'; usage=@{ input_tokens=100; cached_input_tokens=60; output_tokens=20 } }
+    )
+    [IO.File]::WriteAllLines($failedWorkflowLog, @($failedWorkflowEvents | ForEach-Object { $_ | ConvertTo-Json -Compress -Depth 6 }))
+    & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $unchangedTrial -RawLog $failedWorkflowLog -UsageFormat codex-exec-jsonl -AllowNoCandidate | Out-Null
     $unchanged = Get-Content -LiteralPath (Join-Path $unchangedTrial 'result.json') -Raw | ConvertFrom-Json
     if ($unchanged.candidateChanged -ne $false) { throw 'No-candidate run was not recorded honestly.' }
-    if ($null -ne $unchanged.tokensConsumed) { throw 'Unavailable usage must be null rather than zero.' }
-    if ($null -ne $unchanged.tokenBudgetCompliant) { throw 'Unavailable usage must not claim token-budget compliance.' }
+    if ($unchanged.arifceWorkflowPassed -ne $false) { throw 'Failed ArifCE commands were accepted as a completed product workflow.' }
+
+    $successfulWorkflowTask = if ($TaskId -eq 'trust-dirty-content') { 'llm-secret-boundary' } else { 'trust-dirty-content' }
+    & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId $successfulWorkflowTask -Arm arifce -Model fixture-model-v1 -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
+    $successfulWorkflowTrial = Join-Path $root "$successfulWorkflowTask/arifce"
+    $successfulWorkflowLog = Join-Path $root 'successful-arifce-workflow.jsonl'
+    $successfulWorkflowEvents = [System.Collections.Generic.List[object]]::new()
+    $successfulWorkflowEvents.Add(@{ type='thread.started'; thread_id='fixture-successful-arifce-thread' })
+    $successfulWorkflowEvents.Add(@{ type='turn.started' })
+    foreach ($operation in @('rebuild','context','search','task','claim','verify','handoff')) {
+        $successfulWorkflowEvents.Add(@{ type='item.completed'; item=@{ type='command_execution'; command="dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll $operation"; aggregated_output='ok'; exit_code=0 } })
+    }
+    $successfulWorkflowEvents.Add(@{ type='turn.completed'; usage=@{ input_tokens=100; cached_input_tokens=60; output_tokens=20 } })
+    [IO.File]::WriteAllLines($successfulWorkflowLog, @($successfulWorkflowEvents | ForEach-Object { $_ | ConvertTo-Json -Compress -Depth 6 }))
+    & (Join-Path $PSScriptRoot 'complete-engineering-benchmark-trial.ps1') -TrialRoot $successfulWorkflowTrial -RawLog $successfulWorkflowLog -UsageFormat codex-exec-jsonl -AllowNoCandidate | Out-Null
+    $successfulWorkflow = Get-Content -LiteralPath (Join-Path $successfulWorkflowTrial 'result.json') -Raw | ConvertFrom-Json
+    if ($successfulWorkflow.arifceWorkflowPassed -ne $true) { throw 'Independently successful ArifCE workflow operations were not accepted.' }
     Write-Output 'Engineering benchmark completion provenance smoke test passed.'
 }
 finally {

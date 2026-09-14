@@ -49,4 +49,30 @@ Both implementations failed the explicitly documented same-line overload identit
 
 Post-pair review found a second harness false positive: retry-loop grouping compared only the first 120 normalized command characters. Long Windows PowerShell wrapper prefixes therefore grouped different inner commands and unrelated failures. Retry grouping now compares the complete normalized command, with positive and negative regression fixtures. Benchmark build/test, API-gate, and independent-evaluator entry points also force `NuGetAudit=false`; vulnerability auditing remains a CI/product concern but is not permitted to make an otherwise unchanged isolated benchmark depend on external advisory availability.
 
-These changes are prospective. Neither completed pair has been modified or reclassified. A new matched pair must pass repository tests, public API compilation, independent behavior evaluation, regression checks, and harness policy in both arms before successful-task token costs are compared. Lower-model trials and the larger study remain blocked until then.
+These changes are prospective. Neither of the first two completed pairs has been modified or reclassified. A new matched pair must pass repository tests, public API compilation, independent behavior evaluation, regression checks, and harness policy in both arms before successful-task token costs are compared. Lower-model trials and the larger study remain blocked until then.
+
+## Third diagnostic pair and treatment validation
+
+A third sequential Terra/medium pair started from identical isolated commit `ffa6e00310f8341d2a7f64a87fa599db374a1838`, with source commit `be059044fecff123edcca8d5b1e4cadca1880049` and harness commit `7a9d8bdf6d1e3e161b18711023796b87934ba696`. Both arms used the same task, public contract, evaluator, host version, reasoning level, permission profile, and baseline-first execution order. Neither result is eligible for successful-task comparison.
+
+| Metric | Baseline | ArifCE |
+| --- | ---: | ---: |
+| Repository tests | PASS | PASS |
+| Public API gate | PASS | PASS |
+| Independent evaluator | FAIL (2/4) | FAIL (2/4) |
+| Non-cached input + output | 54,804 | 128,271 |
+| Cache-included total | 756,244 | 2,813,967 |
+| Churn ratio | 13.799066 | 21.937671 |
+| Context Amplification Factor | 42.527 | 82.318 |
+| Useful Context Ratio | 0.023514 | 0.012148 |
+| Model/tool rounds | 18 | 46 |
+| Duration | 395,962 ms | 918,278 ms |
+| ArifCE workflow | N/A | FAIL |
+
+Both candidates failed `Graph_preserves_declarations_and_relationship_confidence` because the required overload nodes were absent, and `Graph_trusted_closure_excludes_heuristics_and_follows_project_dependents` because the exact project target was missing. This repeatable same-test failure is candidate behavior, not an evaluator compilation defect. The run remains failed-run cost evidence only.
+
+The ArifCE arm attempted status/context/search before a disposable index existed; index access failed and task, claim, verification evidence, and handoff were not completed. The earlier validator searched raw log text and could therefore count failed command text as workflow completion. Treatment prompts now require a platform-neutral `net10.0` CLI invocation, an explicit `rebuild`, and one host action per workflow operation. Completion now counts only successful command events and requires rebuild, context, search, task, claim, verify, and handoff. Positive and negative provenance fixtures cover this distinction.
+
+The run also showed that repeating the same bounded build command after an edit can reveal a different compiler error. Such progress was incorrectly classified as a blind retry. Retry-loop detection now groups by both the complete normalized command and the meaningful failure signature. Regression fixtures distinguish identical failures, progressive compiler failures, and different commands sharing a long Windows wrapper prefix.
+
+Local verification after these prospective fixes passes the context-efficiency, trial-isolation, and completion-provenance controls plus all 113 product tests. Remote CI and a clean-window rerun remain required; no historical result is reclassified and no product-effectiveness claim is made.
