@@ -76,3 +76,29 @@ The ArifCE arm attempted status/context/search before a disposable index existed
 The run also showed that repeating the same bounded build command after an edit can reveal a different compiler error. Such progress was incorrectly classified as a blind retry. Retry-loop detection now groups by both the complete normalized command and the meaningful failure signature. Regression fixtures distinguish identical failures, progressive compiler failures, and different commands sharing a long Windows wrapper prefix.
 
 Local verification after these prospective fixes passes the context-efficiency, trial-isolation, and completion-provenance controls plus all 113 product tests. Remote CI and a clean-window rerun remain required; no historical result is reclassified and no product-effectiveness claim is made.
+
+## Fourth diagnostic pair: clean infrastructure, failed candidates
+
+Commit `73bef7ae91d9656d550070a21de8926e8dcf40b7` passed all three operating-system jobs and all five self-contained package jobs in [CI run 34889340578](https://github.com/seekua/ArifCE/actions/runs/34889340578). A fourth sequential Terra/medium pair then started at one percent five-hour usage from the same isolated commit, public contract, evaluator, host version and permission profile. Both candidate checkouts were clean and committed before evaluation. Both repository suites and public API gates passed, both harness policies passed, and the ArifCE workflow passed. The independent evaluator failed both candidates, so the pair is ineligible and the token values are failed-run costs only.
+
+| Metric | Baseline | ArifCE |
+| --- | ---: | ---: |
+| Repository tests | PASS | PASS |
+| Public API gate | PASS | PASS |
+| Independent evaluator | FAIL (1 passed / 3 failed) | FAIL (1 passed / 3 failed) |
+| Harness policy | PASS | PASS |
+| ArifCE workflow | N/A | PASS |
+| Non-cached input + output | 59,480 | 92,558 |
+| Cache-included total | 767,832 | 1,812,110 |
+| Churn ratio | 12.909079 | 19.578102 |
+| Context Amplification Factor | 35.206 | 73.380 |
+| Useful Context Ratio | 0.028404 | 0.013628 |
+| Model/tool rounds | 17 | 37 |
+| Duration | 329,791 ms | 585,996 ms |
+| Visible ArifCE overhead | 0 | 12,230 |
+
+Both candidates failed the explicitly disclosed requirement to retain distinct same-line overload identities, refresh a one-line added method through exact search, and resolve the qualified method target used by trusted closure. Their own added tests did not cover the full public behavior contract. The evaluator compiled and executed normally; no hidden API requirement, repository failure, permission variance, network dependency or treatment-classification defect explains the outcome. The result is therefore a real, repeatable model failure and does not justify weakening the evaluator or changing the harness.
+
+The five-hour account snapshot moved from 1% to 36% and the weekly snapshot from 25% to 30%; these integer account-level deltas are not attributable solely to the trials. The free reset credit was not used. Raw local trial artifacts remain outside the public repository because they include machine-specific paths and agent activity.
+
+Repeating the graph task again would spend tokens without testing a new harness hypothesis. Before observing a new outcome, the next pipeline-calibration task is fixed as `llm-secret-boundary`: its pinned evaluator exercises a successful clean request, pre-provider secret rejection, persisted response redaction and seven calibrated bad controls, and both arms passed its earlier evaluator revision. This selection calibrates successful-run telemetry only and is excluded from product-effectiveness claims. The larger study remains governed by its precommitted balanced execution plan; lower-model comparisons remain blocked until both calibration arms pass.
