@@ -21,6 +21,7 @@ try {
             tokenMeasurement=[ordered]@{nonCachedInputTokens=$primary-10;outputTokens=10;primaryTokens=$primary;totalTokens=$primary*4;churnRatio=4}
             timeMeasurement=[ordered]@{hostElapsedMs=1000}
         } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $trial 'result.json') -Encoding utf8
+        Set-Content -LiteralPath (Join-Path $trial 'host.stderr.log') -Value '' -Encoding utf8
     }
     $output = Join-Path $root 'report.json'
     & (Join-Path $PSScriptRoot 'compare-engineering-benchmark-pair.ps1') -BaselineTrial (Join-Path $root baseline) -ArifceTrial (Join-Path $root arifce) -Output $output -PlusUsedBefore 10 -PlusUsedAfter 12 | Out-Null
@@ -35,6 +36,15 @@ try {
     & (Join-Path $PSScriptRoot 'compare-engineering-benchmark-pair.ps1') -BaselineTrial (Join-Path $root baseline) -ArifceTrial (Join-Path $root arifce) -Output $failedOutput | Out-Null
     $failed = Get-Content -LiteralPath $failedOutput -Raw | ConvertFrom-Json
     if ($failed.comparisonEligible -or $null -ne $failed.successfulTaskTokenComparison -or $failed.arifce.failedRunTokens -ne 50) { throw 'Failed run entered successful-task token comparison.' }
+
+    $arifce.independentEvaluation.taskPassed = $true
+    $arifce.independentEvaluation.assessment.status = 'PASSED'
+    $arifce | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $root 'arifce/result.json') -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $root 'arifce/host.stderr.log') -Value 'Failed to read file to update C:\fixture\A.cs: path contains a reparse point' -Encoding utf8
+    $infrastructureOutput = Join-Path $root 'infrastructure-failed.json'
+    & (Join-Path $PSScriptRoot 'compare-engineering-benchmark-pair.ps1') -BaselineTrial (Join-Path $root baseline) -ArifceTrial (Join-Path $root arifce) -Output $infrastructureOutput | Out-Null
+    $infrastructureFailed = Get-Content -LiteralPath $infrastructureOutput -Raw | ConvertFrom-Json
+    if ($infrastructureFailed.comparisonEligible -or $infrastructureFailed.arifce.infrastructureClean -or 'WINDOWS_REPARSE_POINT_EDIT_FAILURE' -notin $infrastructureFailed.arifce.hostInfrastructureIssues) { throw 'Host edit infrastructure failure was treated as a clean candidate run.' }
     Write-Output 'Benchmark matched-pair report success/failure separation passed.'
 }
 finally { if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force } }

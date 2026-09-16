@@ -70,7 +70,9 @@ jobs:
           ./scripts/test-engineering-benchmark-pair-report.ps1
       - name: Engineering benchmark host timing
         shell: pwsh
-        run: ./scripts/test-engineering-benchmark-timing.ps1
+        run: |
+          ./scripts/test-engineering-benchmark-timing.ps1
+          ./scripts/test-codex-benchmark-host.ps1
       - name: Engineering benchmark completion provenance
         if: runner.os == 'Linux'
         shell: pwsh

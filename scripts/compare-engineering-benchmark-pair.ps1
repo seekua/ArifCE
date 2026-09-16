@@ -18,7 +18,14 @@ function Read-Trial([string]$Path, [string]$Arm) {
     $apiGatePassed = $null -ne $result.apiCompatibility -and [bool]$result.apiCompatibility.passed
     $independentPassed = $null -ne $result.independentEvaluation -and [bool]$result.independentEvaluation.taskPassed
     $noRegression = $repositoryTestsPassed -and $independentPassed
-    $infrastructureClean = [bool]$result.contextEfficiency.policyPassed -and ($Arm -eq 'baseline' -or [bool]$result.arifceWorkflowPassed)
+    $hostInfrastructureIssues = [System.Collections.Generic.List[string]]::new()
+    $hostStderrPath = Join-Path $root 'host.stderr.log'
+    if (Test-Path -LiteralPath $hostStderrPath -PathType Leaf) {
+        $hostStderr = [IO.File]::ReadAllText($hostStderrPath)
+        if ($hostStderr -match '(?i)path contains a reparse point') { $hostInfrastructureIssues.Add('WINDOWS_REPARSE_POINT_EDIT_FAILURE') }
+        if ($hostStderr -match '(?i)windows sandbox failed|failed to prepare fs sandbox|orchestrator_helper_launch') { $hostInfrastructureIssues.Add('WINDOWS_SANDBOX_FAILURE') }
+    }
+    $infrastructureClean = $hostInfrastructureIssues.Count -eq 0 -and [bool]$result.contextEfficiency.policyPassed -and ($Arm -eq 'baseline' -or [bool]$result.arifceWorkflowPassed)
     $eligible = [bool]$result.candidateChanged -and $requirementsComplete -and $repositoryTestsPassed -and $apiGatePassed -and $independentPassed -and $noRegression -and $infrastructureClean
     [pscustomobject][ordered]@{
         arm = $Arm
@@ -29,6 +36,7 @@ function Read-Trial([string]$Path, [string]$Arm) {
         independentEvaluatorPassed = $independentPassed
         noRegression = $noRegression
         infrastructureClean = $infrastructureClean
+        hostInfrastructureIssues = @($hostInfrastructureIssues)
         comparisonEligible = $eligible
         nonCachedInput = [long]$result.tokenMeasurement.nonCachedInputTokens
         output = [long]$result.tokenMeasurement.outputTokens

@@ -102,3 +102,28 @@ Both candidates failed the explicitly disclosed requirement to retain distinct s
 The five-hour account snapshot moved from 1% to 36% and the weekly snapshot from 25% to 30%; these integer account-level deltas are not attributable solely to the trials. The free reset credit was not used. Raw local trial artifacts remain outside the public repository because they include machine-specific paths and agent activity.
 
 Repeating the graph task again would spend tokens without testing a new harness hypothesis. Before observing a new outcome, the next pipeline-calibration task is fixed as `llm-secret-boundary`: its pinned evaluator exercises a successful clean request, pre-provider secret rejection, persisted response redaction and seven calibrated bad controls, and both arms passed its earlier evaluator revision. This selection calibrates successful-run telemetry only and is excluded from product-effectiveness claims. The larger study remains governed by its precommitted balanced execution plan; lower-model comparisons remain blocked until both calibration arms pass.
+
+## Secret-boundary calibration attempt: Windows edit infrastructure failure
+
+The predeclared Terra/medium `llm-secret-boundary` calibration started from a zero-percent five-hour usage snapshot with identical isolated commit `30623bfa526b3ffdfada56643ed13620900399b2`, contracts, model settings, order and permission profile. Both arms independently reached the same source file and attempted a structured edit. In both arms the Codex Windows fs helper rejected the ordinary file with `path contains a reparse point`, although filesystem inspection showed no reparse point on the file, checkout, trial root or temporary-directory ancestor. Neither arm created a candidate, so the API and independent behavior evaluators correctly remained `NOT_RUN`. This is an infrastructure failure, not product or model evidence.
+
+| Failed-run metric | Baseline | ArifCE |
+| --- | ---: | ---: |
+| Candidate changed | No | No |
+| Evaluator | NOT_RUN | NOT_RUN |
+| Non-cached input | 33,613 | 59,043 |
+| Output | 1,845 | 4,391 |
+| Primary tokens | 35,458 | 63,434 |
+| Cache-included total | 185,218 | 465,354 |
+| Churn ratio | 5.223588 | 7.336034 |
+| Context Amplification Factor | 7.192 | 25.936 |
+| Useful Context Ratio | 0.139044 | 0.038556 |
+| Model/tool rounds | 6 | 17 |
+| Host elapsed | 94,191 ms | 259,895 ms |
+| Visible ArifCE overhead | 0 | 4,120 |
+
+The five-hour account snapshot moved from 0% to 18% and the weekly snapshot from 46% to 49%; the free reset credit remained unused. Raw local artifacts are not published because they contain machine-specific paths and agent activity.
+
+The failure was caused by an implicit host configuration dependency: `--ignore-user-config` intentionally removed the working Windows sandbox selection, while `--approve-for-me` entered the affected default fs-helper path. The harness now provides `invoke-codex-engineering-benchmark.ps1`, which constructs one reviewed argument profile for both arms, keeps user configuration ignored, and explicitly pins `windows.sandbox="unelevated"` on Windows. It does not use full-access or approval-bypass modes. Unit coverage locks the exact Windows and non-Windows argument sequences and rejects unknown permission profiles. Pair reporting now marks reparse-point and Windows sandbox stderr as infrastructure failures even for the baseline arm.
+
+A real isolated smoke run using the new wrapper completed a structured `file_change`, created the exact requested file, committed it with a clean worktree and emitted no reparse or sandbox error. Local verification also passes all 113 product tests, host timing, pair reporting, context-efficiency policy, completion provenance, all ten API contracts, the safety evaluator's known-good and seven bad controls, benchmark assessment and the 429-file secret scan. Remote CI is required before another metered pair.
