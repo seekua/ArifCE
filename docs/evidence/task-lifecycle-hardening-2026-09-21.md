@@ -7,7 +7,7 @@ This change strengthens the existing `TASK → CONTEXT → WORK → CLAIM → VE
 - A task may carry an objective, scope, invariants, and ordered `done_when` criteria while older task JSON remains readable.
 - A task-linked claim and current, successful, kind-matching, claim-owned evidence are required for contracted completion. Claim risk cannot be lower than task risk. Existing acceptance policy applies to higher-risk completion.
 - Completion stores a digest of the engineering contract. Relevant evidence changes or contract edits change `task check` from `VERIFIED` to `NEEDS_REVERIFY`; new evidence may renew completion.
-- `context --task` pins the contract and current completion state, then fills the remaining estimated-token budget using the existing deterministic context composer. Excluded snippets are blank in serialized results.
+- `context --task` pins the contract and current completion state, then deterministically considers task-linked failed attempts, claims and evidence, unresolved findings, and the latest task handoff before using lexical retrieval for the remaining estimated-token budget. Records linked to another task are marked `OUT_OF_SCOPE` when encountered. Every excluded snippet is blank in serialized results.
 - `handoff --task` emits a compact objective, scope, invariants, linked claims/evidence, failed attempts, unresolved findings, repository state and next action. It is not a transcript.
 - CLI and MCP use the same `ProjectService` contract and completion checks.
 
@@ -17,7 +17,7 @@ Local verification on 2026-09-21: `dotnet test tests/ArifCE.Tests/ArifCE.Tests.c
 
 - Textual criterion meaning and invariant wording are not formally verified. A matching evidence kind alone does not prove that the chosen check is sufficient for the stated engineering goal.
 - Estimated tokens use a character-based approximation, not a model tokenizer.
-- The task-aware lexical context path has not yet shown measurable reduction in rediscovery or equal-or-better task success against a matched baseline.
+- The task-aware bounded context path has not yet shown measurable reduction in rediscovery or equal-or-better task success against a matched baseline.
 - No fresh metered baseline/ArifCE pair, handoff recovery study, or external CI run was performed for this change. Phase 79 and the V1 effectiveness gate remain open.
 
 The next validation step is to run the existing matched benchmark harness on identical checkout/task/evaluator conditions, report failures as well as successes, and only compare token efficiency for evaluator-passing pairs. Do not infer a percentage benefit from these deterministic tests.

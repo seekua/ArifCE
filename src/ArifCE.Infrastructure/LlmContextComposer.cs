@@ -43,6 +43,7 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
 
     public async Task<LlmContext> ComposeForTaskAsync(string root, string taskId, int budget = 4000, CancellationToken cancellationToken = default)
     {
+        var timer = Stopwatch.StartNew();
         if (budget <= 0) throw new ArgumentOutOfRangeException(nameof(budget));
         if (string.IsNullOrWhiteSpace(taskId) || taskId.IndexOfAny(['/', '\\', ':']) >= 0) throw new ArgumentException("A valid task ID is required.", nameof(taskId));
         var taskRecord = await new CanonicalStore().ReadAsync<TaskRecord>(root, "tasks", taskId, cancellationToken)
@@ -53,20 +54,73 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
         var path = $"tasks/{taskId.ToLowerInvariant()}.json";
         if (contractTokens > budget)
         {
+            timer.Stop();
             var excluded = new ContextAssemblyItem(path, "TASK_CONTRACT", string.Empty, 0, 110, "CURRENT", contractTokens, false, $"task contract exceeds {budget}-token budget; no partial contract was emitted");
-            return new LlmContext(taskId, string.Empty, 0, [], [excluded], new ContextAssemblyTelemetry(1, 0, 1, contractTokens, 0, 1, 0, 0, 0, 0));
+            return new LlmContext(taskId, string.Empty, 0, [], [excluded], new ContextAssemblyTelemetry(1, 0, 1, contractTokens, 0, 1, 0, 0, 0, timer.ElapsedMilliseconds));
         }
-        var contractItem = new ContextAssemblyItem(path, "TASK_CONTRACT", contract, 0, 110, "CURRENT", contractTokens, true, "explicit task contract; pinned before lexical results");
-        var query = string.Join(' ', new[] { taskId, taskRecord.Title, taskRecord.Objective ?? string.Empty }.Concat(taskRecord.Scope ?? []).Concat(taskRecord.Invariants ?? []));
-        if (contractTokens + 1 >= budget)
-            return new LlmContext(taskId, contract, contractTokens, [path], [contractItem], new ContextAssemblyTelemetry(1, 1, 0, contractTokens, contractTokens, 0, 0, 0, 0, 0));
-        var related = await ComposeAsync(root, query, budget - contractTokens - 1, cancellationToken, path);
-        var content = string.IsNullOrWhiteSpace(related.Content) ? contract : contract + "\n\n" + related.Content;
-        var selected = contractTokens + related.EstimatedTokens + (related.EstimatedTokens > 0 ? 1 : 0);
-        return new LlmContext(taskId, content, selected, new[] { path }.Concat(related.Sources).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), new[] { contractItem }.Concat(related.Items).ToArray(), related.Telemetry with { CandidateRecords = related.Telemetry.CandidateRecords + 1, SelectedRecords = related.Telemetry.SelectedRecords + 1, CandidateTokens = related.Telemetry.CandidateTokens + contractTokens, SelectedTokens = selected });
+        var contractItem = new ContextAssemblyItem(path, "TASK_CONTRACT", contract, 0, 110, "CURRENT", contractTokens, true, "explicit task contract; pinned before task links and lexical results");
+        var query = string.Join(' ', new[] { taskRecord.Title, taskRecord.Objective ?? string.Empty }.Concat(taskRecord.Scope ?? []).Concat(taskRecord.Invariants ?? []));
+        var content = new StringBuilder(contract);
+        var items = new List<ContextAssemblyItem> { contractItem };
+        var sources = new List<string> { path };
+        var selectedTokens = contractTokens;
+        var candidateTokens = contractTokens;
+        var budgetRejected = 0;
+        var staleRejected = 0;
+        var invalidRejected = 0;
+        var linked = await TaskLinkedCandidatesAsync(root, taskRecord, cancellationToken);
+        var omitted = new HashSet<string>(linked.Select(candidate => candidate.Path), StringComparer.OrdinalIgnoreCase) { path };
+        var foreign = await TaskForeignPathsAsync(root, taskRecord.Id, cancellationToken);
+        foreach (var candidate in linked.OrderByDescending(value => value.Priority).ThenBy(value => value.Path, StringComparer.Ordinal))
+        {
+            var reason = candidate.Trust.Include ? $"task-linked {candidate.Kind.ToLowerInvariant()}; current trust; fits token budget" : candidate.Trust.Reason;
+            var block = Render(candidate, reason);
+            var estimate = EstimateTokens("\n\n" + block);
+            candidateTokens += estimate;
+            if (!candidate.Trust.Include)
+            {
+                items.Add(ToItem(candidate, estimate, false, candidate.Trust.Reason));
+                if (candidate.Trust.Freshness == "STALE") staleRejected++; else invalidRejected++;
+                continue;
+            }
+            if (selectedTokens + estimate > budget)
+            {
+                budgetRejected++;
+                items.Add(ToItem(candidate, estimate, false, $"token budget exhausted: selecting this task-linked item would exceed {budget} tokens"));
+                continue;
+            }
+            content.AppendLine().AppendLine().Append(block);
+            selectedTokens += estimate;
+            sources.Add(candidate.Path);
+            items.Add(ToItem(candidate, estimate, true, reason));
+        }
+        LlmContext? lexical = null;
+        var remaining = budget - selectedTokens;
+        if (remaining > 1) lexical = await ComposeAsync(root, query, remaining - 1, cancellationToken, omitted, foreign);
+        if (lexical is not null && lexical.EstimatedTokens > 0)
+        {
+            content.AppendLine().AppendLine().Append(lexical.Content);
+            selectedTokens += lexical.EstimatedTokens + 1;
+            sources.AddRange(lexical.Sources);
+            items.AddRange(lexical.Items);
+        }
+        else if (lexical is not null) items.AddRange(lexical.Items);
+        timer.Stop();
+        var telemetry = new ContextAssemblyTelemetry(
+            1 + linked.Count + (lexical?.Telemetry.CandidateRecords ?? 0),
+            items.Count(value => value.Included),
+            items.Count(value => !value.Included),
+            candidateTokens + (lexical?.Telemetry.CandidateTokens ?? 0),
+            selectedTokens,
+            budgetRejected + (lexical?.Telemetry.BudgetRejected ?? 0),
+            staleRejected + (lexical?.Telemetry.StaleRejected ?? 0),
+            lexical?.Telemetry.SupersededRejected ?? 0,
+            invalidRejected + (lexical?.Telemetry.InvalidRejected ?? 0),
+            timer.ElapsedMilliseconds);
+        return new LlmContext(taskId, content.ToString(), selectedTokens, sources.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), items, telemetry);
     }
 
-    public async Task<LlmContext> ComposeAsync(string root, string task, int budget = 4000, CancellationToken cancellationToken = default, string? omittedPath = null)
+    public async Task<LlmContext> ComposeAsync(string root, string task, int budget = 4000, CancellationToken cancellationToken = default, IReadOnlySet<string>? omittedPaths = null, IReadOnlyDictionary<string, string>? forcedExclusions = null)
     {
         if (budget <= 0) throw new ArgumentOutOfRangeException(nameof(budget));
         var terms = Regex.Matches(task ?? string.Empty, "[A-Za-z0-9_]+", RegexOptions.CultureInvariant)
@@ -85,8 +139,13 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
         var candidates = new List<Candidate>(hits.Count);
         foreach (var hit in hits)
         {
-            if (string.Equals(hit.Path, omittedPath, StringComparison.OrdinalIgnoreCase)) continue;
+            if (omittedPaths?.Contains(hit.Path) == true) continue;
             var kind = KindOf(hit.Path);
+            if (forcedExclusions?.TryGetValue(hit.Path, out var exclusion) == true)
+            {
+                candidates.Add(new Candidate(hit.Path, kind, hit.Snippet, hit.Score, PriorityOf(hit.Path, kind), new TrustAssessment(false, "OUT_OF_SCOPE", exclusion)));
+                continue;
+            }
             if (kind is "CLAIM" or "EVIDENCE" or "ACCEPTANCE" && currentSnapshot is null) currentSnapshot = await git.CaptureAsync(root, cancellationToken);
             var trust = ApplyKnowledgeIssues(hit.Path, await AssessTrustAsync(root, hit.Path, kind, currentSnapshot, cancellationToken), knowledge);
             candidates.Add(new Candidate(hit.Path, kind, hit.Snippet, hit.Score, PriorityOf(hit.Path, kind), trust));
@@ -154,6 +213,93 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
             timer.ElapsedMilliseconds);
         return new LlmContext(task ?? string.Empty, content.ToString(), selectedTokens, selected.Select(item => item.Path).ToArray(), items, telemetry);
     }
+
+    private async Task<IReadOnlyList<Candidate>> TaskLinkedCandidatesAsync(string root, TaskRecord task, CancellationToken cancellationToken)
+    {
+        var candidates = new List<Candidate>();
+        var claims = (await ReadCanonicalAsync<ClaimRecord>(root, "claims", cancellationToken))
+            .Where(value => string.Equals(value.TaskId, task.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var acceptances = await ReadCanonicalAsync<AcceptanceRecord>(root, "acceptances", cancellationToken);
+        var snapshot = claims.Length == 0 ? null : await git.CaptureAsync(root, cancellationToken);
+        foreach (var claim in claims)
+        {
+            var path = $"claims/{claim.Id.ToLowerInvariant()}.json";
+            var trust = await AssessTrustAsync(root, path, "CLAIM", snapshot, cancellationToken);
+            candidates.Add(new Candidate(path, "CLAIM", $"Statement: {claim.Statement}\nStatus: {claim.Status}\nEvidence: {string.Join(", ", claim.Evidence)}", 0, 104, trust));
+            foreach (var evidenceId in claim.Evidence.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(evidenceId) || evidenceId.IndexOfAny(['/', '\\', ':']) >= 0) continue;
+                var evidence = await new CanonicalStore().ReadAsync<EvidenceRecord>(root, "evidence", evidenceId, cancellationToken);
+                if (evidence is null || !string.Equals(evidence.ClaimId, claim.Id, StringComparison.OrdinalIgnoreCase)) continue;
+                var evidencePath = $"evidence/{evidence.Id.ToLowerInvariant()}.json";
+                var evidenceTrust = await AssessTrustAsync(root, evidencePath, "EVIDENCE", snapshot, cancellationToken);
+                candidates.Add(new Candidate(evidencePath, "EVIDENCE", $"Kind: {evidence.Kind}\nExit code: {evidence.ExitCode?.ToString() ?? "unknown"}\nSummary: {Truncate(evidence.Summary, 800)}", 0, 102, evidenceTrust));
+            }
+            foreach (var acceptance in acceptances.Where(value => string.Equals(value.ClaimId, claim.Id, StringComparison.OrdinalIgnoreCase)))
+            {
+                var acceptancePath = $"acceptances/{acceptance.Id.ToLowerInvariant()}.json";
+                var acceptanceTrust = await AssessTrustAsync(root, acceptancePath, "ACCEPTANCE", snapshot, cancellationToken);
+                candidates.Add(new Candidate(acceptancePath, "ACCEPTANCE", $"Status: {acceptance.Status}\nActor: {acceptance.Actor}\nRationale: {Truncate(acceptance.Rationale, 800)}", 0, 103, acceptanceTrust));
+            }
+        }
+        foreach (var attempt in (await ReadCanonicalAsync<AttemptRecord>(root, "attempts", cancellationToken)).Where(value => string.Equals(value.TaskId, task.Id, StringComparison.OrdinalIgnoreCase)))
+            candidates.Add(new Candidate($"attempts/{attempt.Id.ToLowerInvariant()}.json", "ATTEMPT", $"Approach: {attempt.Approach}\nResult: {attempt.Result}\nReason: {attempt.Reason}", 0, 106, TrustAssessment.Current));
+        foreach (var finding in (await ReadCanonicalAsync<FindingRecord>(root, "findings", cancellationToken)).Where(value => string.Equals(value.TaskId, task.Id, StringComparison.OrdinalIgnoreCase) && value.Status != WorkStatus.Completed))
+            candidates.Add(new Candidate($"findings/{finding.Id.ToLowerInvariant()}.json", "FINDING", $"Title: {finding.Title}\nSeverity: {finding.Severity}\nDescription: {finding.Description}\nPath: {finding.Path ?? "not recorded"}", 0, 100, TrustAssessment.Current));
+        var handoff = (await ReadCanonicalAsync<HandoffRecord>(root, "handoffs", cancellationToken))
+            .Where(value => value.Markdown.StartsWith($"# Handoff: {task.Id}", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(value => value.CreatedAtUtc).FirstOrDefault();
+        if (handoff is not null)
+            candidates.Add(new Candidate($"handoffs/{handoff.Id.ToLowerInvariant()}.json", "HANDOFF", Truncate(handoff.Markdown, 1200), 0, 98, TrustAssessment.Current));
+        return candidates;
+    }
+
+    private static async Task<IReadOnlyDictionary<string, string>> TaskForeignPathsAsync(string root, string taskId, CancellationToken cancellationToken)
+    {
+        var excluded = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var value in await ReadCanonicalAsync<AttemptRecord>(root, "attempts", cancellationToken))
+            if (!string.Equals(value.TaskId, taskId, StringComparison.OrdinalIgnoreCase)) excluded[$"attempts/{value.Id.ToLowerInvariant()}.json"] = $"record belongs to task {value.TaskId}, not {taskId}";
+        var foreignClaims = (await ReadCanonicalAsync<ClaimRecord>(root, "claims", cancellationToken))
+            .Where(value => !string.IsNullOrWhiteSpace(value.TaskId) && !string.Equals(value.TaskId, taskId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var foreignClaimIds = foreignClaims.Select(value => value.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var value in foreignClaims)
+            excluded[$"claims/{value.Id.ToLowerInvariant()}.json"] = $"record belongs to task {value.TaskId}, not {taskId}";
+        foreach (var value in await ReadCanonicalAsync<EvidenceRecord>(root, "evidence", cancellationToken))
+            if (foreignClaimIds.Contains(value.ClaimId)) excluded[$"evidence/{value.Id.ToLowerInvariant()}.json"] = $"evidence belongs to claim {value.ClaimId} of another task, not {taskId}";
+        foreach (var value in await ReadCanonicalAsync<AcceptanceRecord>(root, "acceptances", cancellationToken))
+            if (foreignClaimIds.Contains(value.ClaimId)) excluded[$"acceptances/{value.Id.ToLowerInvariant()}.json"] = $"acceptance belongs to claim {value.ClaimId} of another task, not {taskId}";
+        foreach (var value in await ReadCanonicalAsync<FindingRecord>(root, "findings", cancellationToken))
+            if (!string.IsNullOrWhiteSpace(value.TaskId) && !string.Equals(value.TaskId, taskId, StringComparison.OrdinalIgnoreCase)) excluded[$"findings/{value.Id.ToLowerInvariant()}.json"] = $"record belongs to task {value.TaskId}, not {taskId}";
+        foreach (var value in await ReadCanonicalAsync<AgentRunRecord>(root, "runs", cancellationToken))
+            if (!string.IsNullOrWhiteSpace(value.TaskId) && !string.Equals(value.TaskId, taskId, StringComparison.OrdinalIgnoreCase)) excluded[$"runs/{value.Id.ToLowerInvariant()}.json"] = $"record belongs to task {value.TaskId}, not {taskId}";
+        foreach (var value in await ReadCanonicalAsync<HandoffRecord>(root, "handoffs", cancellationToken))
+        {
+            var match = Regex.Match(value.Markdown, "^# Handoff: (?<task>[^\\r\\n]+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (match.Success && !string.Equals(match.Groups["task"].Value.Trim(), taskId, StringComparison.OrdinalIgnoreCase))
+                excluded[$"handoffs/{value.Id.ToLowerInvariant()}.json"] = $"handoff belongs to task {match.Groups["task"].Value.Trim()}, not {taskId}";
+        }
+        return excluded;
+    }
+
+    private static async Task<IReadOnlyList<T>> ReadCanonicalAsync<T>(string root, string directory, CancellationToken cancellationToken)
+    {
+        var folder = Path.Combine(root, ".arifce", directory);
+        if (!Directory.Exists(folder)) return [];
+        var records = new List<T>();
+        foreach (var file in Directory.EnumerateFiles(folder, "*.json").Order(StringComparer.Ordinal))
+        {
+            try
+            {
+                var value = JsonSerializer.Deserialize<T>(await File.ReadAllTextAsync(file, cancellationToken), JsonDefaults.Options);
+                if (value is not null) records.Add(value);
+            }
+            catch (JsonException) { }
+        }
+        return records;
+    }
+
+    private static string Truncate(string value, int maximum) => value.Length <= maximum ? value : value[..maximum] + "…";
 
     private static ContextAssemblyItem ToItem(Candidate candidate, int tokens, bool included, string reason) =>
         new(candidate.Path, candidate.Kind, included ? candidate.Snippet : string.Empty, candidate.Score, candidate.Priority, candidate.Trust.Freshness, tokens, included, reason);
