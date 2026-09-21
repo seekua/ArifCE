@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "policy": "The evaluator source is extracted only after the candidate run. The public contract discloses required behavior and API shape; candidate-authored tests are not scoring evidence.",
+  "evaluators": [
+    {
+      "taskId": "task-bounded-context",
+      "sourceCommit": "6caca33ca8e5d213ceaa36527575e0f3fffe3275",
+      "sourceFile": "tests/ArifCE.Tests/BenchmarkTaskContextTests.cs",
+      "fixture": "behavior",
+      "methods": [
+        "Explicit_task_links_precede_lexical_results_and_foreign_links_are_rejected",
+        "Task_context_budget_never_exposes_rejected_content_or_a_partial_contract"
+      ]
+    }
+  ]
+}

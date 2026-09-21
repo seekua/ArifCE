@@ -20,7 +20,7 @@ Local verification on 2026-09-21: `dotnet test tests/ArifCE.Tests/ArifCE.Tests.c
 - The task-aware bounded context path has not yet shown measurable reduction in rediscovery or equal-or-better task success against a matched baseline.
 - No fresh metered baseline/ArifCE pair, handoff recovery study, or external CI run was performed for this change. Phase 79 and the V1 effectiveness gate remain open.
 
-The next validation step is to run the existing matched benchmark harness on identical checkout/task/evaluator conditions, report failures as well as successes, and only compare token efficiency for evaluator-passing pairs. Do not infer a percentage benefit from these deterministic tests.
+The bounded-context evaluator now has a [fixed local calibration](core-lifecycle-calibration-2026-09-21.md): the known-good production patch passes while the unchanged pre-feature fixture fails. The next validation step is a matched model pair on identical checkout/task/evaluator conditions, reporting failures as well as successes and comparing token efficiency only if both arms pass. Do not infer a percentage benefit from deterministic controls.
 
 ## Benchmark harness integration
 

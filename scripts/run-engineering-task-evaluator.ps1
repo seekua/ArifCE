@@ -52,7 +52,10 @@ function Extract-Test([string]$Text, [string]$Method) {
     if ($fact -lt 0) { throw "Pinned evaluator method has no [Fact] marker: $Method" }
     $nextFact = $Text.IndexOf("`n    [Fact]", $signature.Index, [StringComparison]::Ordinal)
     $nextPrivate = $Text.IndexOf("`n    private ", $signature.Index, [StringComparison]::Ordinal)
-    $ends = @($nextFact, $nextPrivate) | Where-Object { $_ -gt $signature.Index }
+    $nextPublic = $Text.IndexOf("`n    public ", $signature.Index + $signature.Length, [StringComparison]::Ordinal)
+    $nextInternal = $Text.IndexOf("`n    internal ", $signature.Index, [StringComparison]::Ordinal)
+    $nextProtected = $Text.IndexOf("`n    protected ", $signature.Index, [StringComparison]::Ordinal)
+    $ends = @($nextFact, $nextPrivate, $nextPublic, $nextInternal, $nextProtected) | Where-Object { $_ -gt $signature.Index }
     $end = if ($ends.Count -eq 0) { $Text.LastIndexOf("`n}", [StringComparison]::Ordinal) } else { ($ends | Measure-Object -Minimum).Minimum }
     return $Text.Substring($fact, $end - $fact).TrimEnd()
 }
