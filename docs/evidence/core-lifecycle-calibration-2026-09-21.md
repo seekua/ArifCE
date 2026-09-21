@@ -20,6 +20,8 @@ The public compile/API gate passed both controls.
 - Known-good control: applying only the production `LlmContextComposer` change from `04a957744aec4c0f225bd5be78288443421dae62` produced a clean candidate. Product tests passed and the two pinned independent evaluator methods reported `PASSED`.
 - Negative control: leaving the fixture unchanged produced no candidate. Existing product tests and the API gate still passed, while the independent evaluator reported `FAILED` for the missing behavior.
 
+The current repository regression suite passes 119/119. The benchmark completion/provenance smoke test and trial-isolation smoke test also pass after the evaluator extraction correction.
+
 The first known-good evaluator attempt exposed a harness source-extraction defect: when the last selected test was followed by a public `Dispose` member, that member was copied into a scaffold that already supplied `Dispose`, causing evaluator compilation to be classified as `ERROR`. The extractor now stops at the next top-level public, internal, protected, private, or `[Fact]` member. A fresh known-good control then passed. The errored attempt is not treated as product evidence.
 
 ## What the evaluator proves
