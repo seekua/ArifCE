@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 3,
+  "repository": "https://github.com/seekua/ArifCE.git",
+  "fixtureCommit": "d9fee6d137d7355b24c287f6f976b44400d80b38",
+  "minimumTasks": 1,
+  "minimumMatchedPairs": 1,
+  "repetitions": 1,
+  "requireMeasuredTelemetry": true,
+  "requiredPermissionProfile": "preauthorized-write-build-v1",
+  "requiredCategories": ["CONTINUATION"],
+  "tasks": [
+    {
+      "id": "task-bounded-context",
+      "apiContractFile": "benchmarks/api-contracts/task-bounded-context.cs",
+      "category": "CONTINUATION",
+      "instruction": "Make task-aware context retrieve explicitly task-linked engineering memory before lexical results and prevent records linked to another task from entering the selected context.",
+      "verification": "A bounded context includes the task contract and relevant linked attempts, claims, evidence, unresolved findings and latest handoff without depending on shared search terms; foreign-task matches are excluded with no serialized snippet.",
+      "acceptanceContract": [
+        "Preserve LlmContextComposer.ComposeForTaskAsync(root, taskId, budget, cancellationToken), the existing LlmContext/ContextAssemblyItem/ContextAssemblyTelemetry records and the deterministic lexical fallback. Do not introduce a second context store or a vector dependency.",
+        "Pin the canonical task contract first. Before lexical fallback, consider claims explicitly linked by TaskId and their owned evidence, failed attempts linked by TaskId, unresolved findings linked by TaskId, and the latest handoff whose heading names the task. Explicit links must work even when their content shares no lexical term with the contract.",
+        "A lexical hit explicitly linked to another task, including evidence/acceptance owned by that task's claim and task-named handoffs, must not enter context. Report an OUT_OF_SCOPE exclusion reason without serializing the rejected snippet.",
+        "Honor the total estimated-token budget, never emit a partial task contract, keep excluded snippets empty, avoid duplicate linked-plus-lexical sources, and report assembly time for the complete task-aware operation rather than only the lexical tail."
+      ],
+      "evaluationLimitations": [
+        "The evaluator uses bounded canonical fixtures and deterministic estimated tokens. It does not establish model-tokenizer accuracy, semantic relevance quality, performance at repository scale, malicious canonical tampering, or measured task-success/token advantage.",
+        "Task ownership remains explicit metadata. Unlinked legacy records may still be selected lexically when relevant; the fixture does not infer ownership from prose or implement a general truth graph."
+      ]
+    }
+  ]
+}
