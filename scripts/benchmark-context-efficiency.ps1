@@ -30,7 +30,8 @@ function Read-BenchmarkContextEfficiency([string]$LogPath, $TokenMeasurement) {
     $readPattern = '(?i)(Get-Content|\btype\s+|\bsed\s+-n|\bhead\s+|\btail\s+)'
     $searchPattern = '(?i)(^|[\s"''])rg(?:\.exe)?\s'
     $buildPattern = '(?i)(dotnet\s+(restore|build|test)|BENCHMARK_RUN_CHECK\.ps1)'
-    $arifcePattern = '(?i)(ArifCE\.Cli(?:\.dll|\.csproj)|\barifce(?:\.exe)?\s+(status|context|search|task|claim|verify|handoff))'
+    $directBuildPattern = '(?i)(?:^|-(?:Command|c|lc)\s+[''"]?)\s*dotnet\s+(?:restore|build|test)\b'
+    $arifcePattern = '(?i)(ArifCE\.Cli\.csproj|(?:ArifCE\.Cli|arifce)\.dll|\barifce(?:\.exe)?\s+(status|context|search|task|claim|verify|handoff))'
     $shellEditPattern = '(?i)(Set-Content|Add-Content|WriteAllText|WriteAllLines|FromBase64String|\s-replace\s|python\s+-c)'
     $reads = @($commands | Where-Object { $_.type -eq 'command_execution' -and $_.command -match $readPattern })
     $searches = @($commands | Where-Object { $_.type -eq 'command_execution' -and $_.command -match $searchPattern })
@@ -66,7 +67,11 @@ function Read-BenchmarkContextEfficiency([string]$LogPath, $TokenMeasurement) {
     $readDuplicates = Get-DuplicateStats $reads
     $searchDuplicates = Get-DuplicateStats $searches
     $largeShellEdits = @($shellEdits | Where-Object { $_.command.Length -gt 2000 })
-    $directBuildChecks = @($commands | Where-Object { $_.command -match '(?i)dotnet\s+(restore|build|test)' -and $_.command -notmatch '(?i)BENCHMARK_RUN_CHECK\.ps1' -and $_.command -notmatch '(?i)ArifCE\.Cli\.dll' })
+    $directBuildChecks = @($commands | Where-Object {
+        $_.command -match $directBuildPattern -and
+        $_.command -notmatch '(?i)BENCHMARK_RUN_CHECK\.ps1' -and
+        $_.command -notmatch '(?i)(?:ArifCE\.Cli|arifce)\.dll[''"]?\s+verify\b'
+    })
     $failedCommands = @($commands | Where-Object { $null -ne $_.exitCode -and [int]$_.exitCode -ne 0 })
     $replanMessages = @($messages | Where-Object { $_ -match '(?i)re-?plan|new approach|adjust(?:ing)? the approach' })
     # A retry loop requires both the same normalized command and the same

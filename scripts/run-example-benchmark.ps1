@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = 'Stop'
 if ($TaskCount -ne 20) { throw 'The A/B harness requires exactly 20 matched tasks.' }
 $repo = Split-Path -Parent $PSScriptRoot
-$entry = Join-Path $repo 'src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll'
+$entry = Join-Path $repo 'src/ArifCE.Cli/bin/Release/net10.0/arifce.dll'
 if (-not (Test-Path -LiteralPath $entry)) { throw 'Build the CLI in Release configuration before running the benchmark.' }
 $root = Join-Path ([IO.Path]::GetTempPath()) ('arifce-example-ab-' + [Guid]::NewGuid().ToString('N'))
 $baselineRoot = Join-Path $root 'baseline'

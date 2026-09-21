@@ -129,7 +129,7 @@ Before changing code, follow .arifce/PROTOCOL.md and use only ArifCE context ava
 
 Use the product workflow, not just its Markdown files:
 1. Build the CLI once through `./BENCHMARK_RUN_CHECK.ps1 -Action build -Project src/ArifCE.Cli/ArifCE.Cli.csproj -AdditionalArguments @('--configuration','Release')`.
-2. Use `dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild` once so the disposable local index reflects this isolated checkout.
+2. Use `dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll rebuild` once so the disposable local index reflects this isolated checkout.
 3. Create a LOW-risk task with all four engineering-contract fields. Use the benchmark instruction as the objective, `src` and `tests` as initial scope, the public acceptance/API contract as the invariant, and one `TEST_RUN` done_when criterion. Do not use a pre-existing task.
 4. Use `context --task <task-id> --budget 4000`, then use `search` for relevant canonical memory before editing.
 5. After the candidate passes the repository check wrapper, create a LOW-risk claim linked with `--task <task-id>`.

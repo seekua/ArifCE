@@ -77,17 +77,17 @@ try {
     & (Join-Path $PSScriptRoot 'new-engineering-benchmark-trial.ps1') -TaskId $TaskId -Arm arifce -Model fixture-model-v1 -TokenBudget 50000 -Manifest $manifestPath -OutputRoot $root | Out-Null
     $unchangedTrial = Join-Path $root "$TaskId/arifce"
     $failedWorkflowLog = Join-Path $root 'failed-arifce-workflow.jsonl'
-    $failedWorkflowCommand = 'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild; context; search; task; claim; verify; handoff'
+    $failedWorkflowCommand = 'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll rebuild; context; search; task; claim; verify; handoff'
     $failedWorkflowEvents = @(
         @{ type='thread.started'; thread_id='fixture-arifce-thread' },
         @{ type='turn.started' },
         @{ type='item.completed'; item=@{ type='command_execution'; command=$failedWorkflowCommand; aggregated_output='index failure'; exit_code=1 } },
-        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild'; aggregated_output='ok'; exit_code=0 } },
-        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll context --task TASK-1'; aggregated_output='ok'; exit_code=0 } },
-        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll search query'; aggregated_output='ok'; exit_code=0 } },
-        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll claim list'; aggregated_output='ok'; exit_code=0 } },
-        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll verify'; aggregated_output='ok'; exit_code=0 } },
-        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll handoff'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll rebuild'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll context --task TASK-1'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll search query'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll claim list'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll verify'; aggregated_output='ok'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll handoff'; aggregated_output='ok'; exit_code=0 } },
         @{ type='turn.completed'; usage=@{ input_tokens=100; cached_input_tokens=60; output_tokens=20 } }
     )
     [IO.File]::WriteAllLines($failedWorkflowLog, @($failedWorkflowEvents | ForEach-Object { $_ | ConvertTo-Json -Compress -Depth 6 }))
@@ -104,15 +104,15 @@ try {
     $successfulWorkflowEvents.Add(@{ type='thread.started'; thread_id='fixture-successful-arifce-thread' })
     $successfulWorkflowEvents.Add(@{ type='turn.started' })
     foreach ($command in @(
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild',
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll task create benchmark --risk LOW --objective objective --scope src --scope tests --invariant invariant --done-when TEST_RUN:tests',
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll context --task TASK-0001 --budget 4000',
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll search relevant',
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll claim create complete --task TASK-0001 --risk LOW',
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll verify CLAIM-0001 --command "dotnet test ArifCE.slnx --configuration Release --no-restore"',
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll task complete TASK-0001 --claim CLAIM-0001 --satisfy 1:EVIDENCE-0001',
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll task check TASK-0001',
-        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll handoff --task TASK-0001'
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll rebuild',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll task create benchmark --risk LOW --objective objective --scope src --scope tests --invariant invariant --done-when TEST_RUN:tests',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll context --task TASK-0001 --budget 4000',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll search relevant',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll claim create complete --task TASK-0001 --risk LOW',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll verify CLAIM-0001 --command "dotnet test ArifCE.slnx --configuration Release --no-restore"',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll task complete TASK-0001 --claim CLAIM-0001 --satisfy 1:EVIDENCE-0001',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll task check TASK-0001',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll handoff --task TASK-0001'
     )) {
         $successfulWorkflowEvents.Add(@{ type='item.completed'; item=@{ type='command_execution'; command=$command; aggregated_output='ok'; exit_code=0 } })
     }

@@ -133,21 +133,22 @@ $arifceWorkflowPassed = if ($session.arm -eq 'arifce') {
             if ($workflowEvent.type -cne 'item.completed' -or $workflowEvent.item.type -cne 'command_execution') { continue }
             if ($null -eq $workflowEvent.item.exit_code -or [int]$workflowEvent.item.exit_code -ne 0) { continue }
             $workflowCommand = [string]$workflowEvent.item.command
-            if ($workflowCommand -match '(?i)ArifCE\.Cli(?:\.dll|\.csproj)') { $successfulArifceCommands.Add($workflowCommand) }
+            if ($workflowCommand -match '(?i)(?:ArifCE\.Cli\.csproj|(?:ArifCE\.Cli|arifce)\.dll)') { $successfulArifceCommands.Add($workflowCommand) }
         }
     }
     finally { $workflowReader.Dispose() }
     $successfulCommandText = $successfulArifceCommands -join "`n"
+    $cliInvocation = '(?:ArifCE\.Cli|arifce)\.dll[''"]?\s+'
     $requiredPatterns = @(
-        'ArifCE\.Cli\.dll[''"]?\s+rebuild\b',
-        'ArifCE\.Cli\.dll[''"]?\s+context\s+--task\s+TASK-',
-        'ArifCE\.Cli\.dll[''"]?\s+search\b',
-        'ArifCE\.Cli\.dll[''"]?\s+task\s+create\b.+--objective\b.+--scope\b.+--invariant\b.+--done-when\b',
-        'ArifCE\.Cli\.dll[''"]?\s+claim\s+create\b.+--task\s+TASK-',
-        'ArifCE\.Cli\.dll[''"]?\s+verify\s+CLAIM-.+--command\b',
-        'ArifCE\.Cli\.dll[''"]?\s+task\s+complete\s+TASK-.+--claim\s+CLAIM-.+--satisfy\b',
-        'ArifCE\.Cli\.dll[''"]?\s+task\s+check\s+TASK-',
-        'ArifCE\.Cli\.dll[''"]?\s+handoff\s+--task\s+TASK-'
+        ($cliInvocation + 'rebuild\b'),
+        ($cliInvocation + 'context\s+--task\s+TASK-'),
+        ($cliInvocation + 'search\b'),
+        ($cliInvocation + 'task\s+create\b.+--objective\b.+--scope\b.+--invariant\b.+--done-when\b'),
+        ($cliInvocation + 'claim\s+create\b.+--task\s+TASK-'),
+        ($cliInvocation + 'verify\s+CLAIM-.+--command\b'),
+        ($cliInvocation + 'task\s+complete\s+TASK-.+--claim\s+CLAIM-.+--satisfy\b'),
+        ($cliInvocation + 'task\s+check\s+TASK-'),
+        ($cliInvocation + 'handoff\s+--task\s+TASK-')
     )
     @($requiredPatterns | Where-Object { $successfulCommandText -notmatch "(?i)$_" }).Count -eq 0
 } else { $null }
