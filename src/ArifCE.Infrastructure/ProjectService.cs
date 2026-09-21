@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using ArifCE.Core;
@@ -41,19 +42,42 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         return $"ArifCE status\nRoot: {root}\nBranch: {snapshot.Branch ?? "unknown"}\nCommit: {snapshot.Commit ?? "none"}\nWorktree: {(snapshot.IsDirty ? "dirty" : "clean")}\nTasks: {tasks}\nClaims: {claims}\nCheckpoints: {checkpoints}\nIndex: {(File.Exists(Path.Combine(root, ".arifce", "index", "arifce.db")) ? "present" : "missing")}";
     }
 
-    public async Task<TaskRecord> CreateTaskAsync(string root, string title, RiskLevel risk, CancellationToken cancellationToken = default)
+    public async Task<TaskRecord> CreateTaskAsync(string root, string title, RiskLevel risk, CancellationToken cancellationToken = default, string? objective = null, IReadOnlyList<string>? scope = null, IReadOnlyList<string>? invariants = null, IReadOnlyList<TaskCriterion>? doneWhen = null)
     {
+        if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Task title is required.");
+        var hasContract = objective is not null || scope is not null || invariants is not null || doneWhen is not null;
+        if (hasContract && (string.IsNullOrWhiteSpace(objective) || scope is not { Count: > 0 } || invariants is not { Count: > 0 } || doneWhen is not { Count: > 0 }))
+            throw new ArgumentException("A task contract requires objective, scope, invariants, and done_when.");
+        if (doneWhen is not null && doneWhen.Any(criterion => string.IsNullOrWhiteSpace(criterion.Text) || criterion.EvidenceKind is not ("BUILD" or "TEST_RUN" or "ARCHITECTURE_BOUNDARY" or "PUBLIC_API_SURFACE" or "SQLITE_SCHEMA")))
+            throw new ArgumentException("Each done_when criterion requires text and one of BUILD, TEST_RUN, ARCHITECTURE_BOUNDARY, PUBLIC_API_SURFACE, SQLITE_SCHEMA.");
         var id = canonical.NextId(root, "tasks", "TASK");
-        var item = new TaskRecord(1, id, title, null, WorkStatus.Open, risk, DateTimeOffset.UtcNow);
+        var item = new TaskRecord(1, id, title, null, WorkStatus.Open, risk, DateTimeOffset.UtcNow, objective?.Trim(), scope?.ToArray(), invariants?.ToArray(), doneWhen?.ToArray());
         await canonical.WriteAsync(root, "tasks", id, item, cancellationToken);
         await RecordAsync(root, "task.created", id, item, cancellationToken); return item;
     }
 
     public Task<TaskRecord?> GetTaskAsync(string root, string id, CancellationToken cancellationToken = default) => canonical.ReadAsync<TaskRecord>(root, "tasks", id, cancellationToken);
 
+    public async Task<TaskRecord> UpdateTaskContractAsync(string root, string id, string objective, IReadOnlyList<string> scope, IReadOnlyList<string> invariants, IReadOnlyList<TaskCriterion> doneWhen, CancellationToken cancellationToken = default)
+    {
+        RequireSafeId(id);
+        if (string.IsNullOrWhiteSpace(objective) || scope.Count == 0 || invariants.Count == 0 || doneWhen.Count == 0)
+            throw new ArgumentException("A task contract requires objective, scope, invariants, and done_when.");
+        if (doneWhen.Any(criterion => string.IsNullOrWhiteSpace(criterion.Text) || criterion.EvidenceKind is not ("BUILD" or "TEST_RUN" or "ARCHITECTURE_BOUNDARY" or "PUBLIC_API_SURFACE" or "SQLITE_SCHEMA")))
+            throw new ArgumentException("Each done_when criterion requires text and a supported evidence kind.");
+        var updated = await canonical.UpdateAsync<TaskRecord>(root, "tasks", id, current =>
+        {
+            if (current.Status == WorkStatus.Abandoned) throw new InvalidOperationException($"Task {id} is abandoned.");
+            return current with { Objective = objective.Trim(), Scope = scope.ToArray(), Invariants = invariants.ToArray(), DoneWhen = doneWhen.ToArray() };
+        }, cancellationToken);
+        await RecordAsync(root, "task.contract-updated", id, new { updated.Objective, updated.Scope, updated.Invariants, updated.DoneWhen }, cancellationToken);
+        return updated;
+    }
+
     public async Task<TaskRecord> CompleteTaskAsync(string root, string id, CancellationToken cancellationToken = default)
     {
         var item = await GetTaskAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Task {id} was not found.");
+        if (item.DoneWhen is { Count: > 0 }) throw new InvalidOperationException($"Task {id} has a completion contract; use task complete with --claim, --satisfy and, when required, --acceptance.");
         if (item.Status is WorkStatus.Abandoned or WorkStatus.Completed) throw new InvalidOperationException($"Task {id} is already {item.Status}.");
         var updated = await canonical.UpdateAsync<TaskRecord>(root, "tasks", id, current =>
         {
@@ -61,6 +85,97 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
             return current with { Status = WorkStatus.Completed };
         }, cancellationToken);
         await RecordAsync(root, "task.completed", id, updated, cancellationToken); return updated;
+    }
+
+    public async Task<TaskCompletionCheck> CheckTaskCompletionAsync(string root, string id, CancellationToken cancellationToken = default)
+    {
+        RequireSafeId(id);
+        var task = await GetTaskAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Task {id} was not found.");
+        if (task.DoneWhen is not { Count: > 0 }) return new(id, task.Status == WorkStatus.Completed ? "LEGACY_UNVERIFIED" : "NO_CONTRACT", ["No structured done_when contract exists; completion is not evidence-verified."]);
+        if (task.Status != WorkStatus.Completed) return new(id, "INCOMPLETE", [$"Task status is {task.Status}; completion has not been recorded."]);
+        if (task.Completion is null) return new(id, "INCOMPLETE", ["No completion basis is recorded."]);
+        var failures = await ValidateTaskCompletionAsync(root, task, task.Completion, cancellationToken);
+        return new(id, failures.Count == 0 ? "VERIFIED" : "NEEDS_REVERIFY", failures);
+    }
+
+    public async Task<TaskRecord> CompleteContractedTaskAsync(string root, string id, string claimId, IReadOnlyDictionary<string, string> evidenceByCriterion, string? acceptanceId = null, CancellationToken cancellationToken = default)
+    {
+        RequireSafeId(id);
+        RequireSafeId(claimId);
+        if (acceptanceId is not null) RequireSafeId(acceptanceId);
+        var task = await GetTaskAsync(root, id, cancellationToken) ?? throw new InvalidOperationException($"Task {id} was not found.");
+        if (task.DoneWhen is not { Count: > 0 }) throw new InvalidOperationException($"Task {id} has no structured completion contract.");
+        if (task.Status == WorkStatus.Abandoned) throw new InvalidOperationException($"Task {id} is abandoned.");
+        if (task.Status == WorkStatus.Completed && (await CheckTaskCompletionAsync(root, id, cancellationToken)).State == "VERIFIED") throw new InvalidOperationException($"Task {id} is already verified.");
+        var basis = new TaskCompletionBasis(claimId, evidenceByCriterion, acceptanceId, DateTimeOffset.UtcNow, TaskContractDigest(task));
+        var failures = await ValidateTaskCompletionAsync(root, task, basis, cancellationToken);
+        if (failures.Count > 0) throw new InvalidOperationException("Task completion is not verified: " + string.Join(" ", failures));
+        var updated = await canonical.UpdateAsync<TaskRecord>(root, "tasks", id, current =>
+        {
+            if (current.Status == WorkStatus.Abandoned) throw new InvalidOperationException($"Task {id} is abandoned.");
+            if (current.DoneWhen is null || !current.DoneWhen.SequenceEqual(task.DoneWhen)) throw new InvalidOperationException("Task contract changed during completion; retry verification.");
+            return current with { Status = WorkStatus.Completed, Completion = basis };
+        }, cancellationToken);
+        await RecordAsync(root, "task.completed", id, updated, cancellationToken);
+        return updated;
+    }
+
+    private async Task<List<string>> ValidateTaskCompletionAsync(string root, TaskRecord task, TaskCompletionBasis basis, CancellationToken cancellationToken)
+    {
+        var failures = new List<string>();
+        if (!IsSafeId(basis.ClaimId) || basis.AcceptanceId is not null && !IsSafeId(basis.AcceptanceId))
+            return ["Completion basis contains an invalid canonical ID."];
+        if (string.IsNullOrWhiteSpace(basis.ContractDigest) || !string.Equals(basis.ContractDigest, TaskContractDigest(task), StringComparison.Ordinal))
+            failures.Add("Task engineering contract changed after completion; re-verification is required.");
+        var claim = await GetClaimAsync(root, basis.ClaimId, cancellationToken);
+        if (claim is null || !string.Equals(claim.TaskId, task.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"Claim {basis.ClaimId} is missing or does not belong to {task.Id}.");
+            return failures;
+        }
+        if (claim.Risk < task.Risk) failures.Add($"Claim {claim.Id} risk {claim.Risk} is lower than task risk {task.Risk}.");
+        if (claim.Status is not (ClaimStatus.Supported or ClaimStatus.PartiallyVerified or ClaimStatus.Verified)) failures.Add($"Claim {claim.Id} is not supported by current evidence.");
+        var snapshot = await git.CaptureAsync(root, cancellationToken);
+        for (var index = 0; index < task.DoneWhen!.Count; index++)
+        {
+            var key = (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var criterion = task.DoneWhen[index];
+            if (!basis.EvidenceByCriterion.TryGetValue(key, out var evidenceId) || !claim.Evidence.Contains(evidenceId, StringComparer.OrdinalIgnoreCase))
+            {
+                failures.Add($"Criterion {key} has no claim-owned evidence.");
+                continue;
+            }
+            var evidence = string.IsNullOrWhiteSpace(evidenceId) || evidenceId.IndexOfAny(['/', '\\', ':']) >= 0
+                ? null : await canonical.ReadAsync<EvidenceRecord>(root, "evidence", evidenceId, cancellationToken);
+            if (evidence is null || !string.Equals(evidence.ClaimId, claim.Id, StringComparison.OrdinalIgnoreCase) || !string.Equals(evidence.Kind, criterion.EvidenceKind, StringComparison.OrdinalIgnoreCase) || evidence.ExitCode != 0 || evidence.Metrics?.Errors > 0 || evidence.Metrics?.Failed > 0 || await EvidenceScopeTracker.EvaluateAsync(root, evidence, snapshot, cancellationToken) != EvidenceFreshness.Current)
+                failures.Add($"Criterion {key} evidence {evidenceId} is wrong-kind, failed, foreign, or stale.");
+        }
+        if (VerificationPolicy.For(task.Risk).HumanApproval)
+        {
+            var acceptance = string.IsNullOrWhiteSpace(basis.AcceptanceId) ? null : await GetAcceptanceAsync(root, basis.AcceptanceId, cancellationToken);
+            var approvalCurrent = acceptance is not null && acceptance.Status == AcceptanceStatus.Accepted && string.Equals(acceptance.ClaimId, claim.Id, StringComparison.OrdinalIgnoreCase) && acceptance.EvidenceIds.Count > 0;
+            if (approvalCurrent)
+                foreach (var id in acceptance!.EvidenceIds)
+                    if (!claim.Evidence.Contains(id, StringComparer.OrdinalIgnoreCase) || !await IsCurrentOwnedEvidenceAsync(root, id, claim.Id, snapshot, cancellationToken)) { approvalCurrent = false; break; }
+            if (!approvalCurrent)
+                failures.Add("Current accepted approval for the same claim is required.");
+        }
+        return failures;
+    }
+
+    private static string TaskContractDigest(TaskRecord task)
+    {
+        var content = JsonSerializer.Serialize(new { task.Objective, task.Scope, task.Invariants, task.DoneWhen, task.Risk }, JsonDefaults.Options);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content)));
+    }
+
+    private static bool IsSafeId(string? id) => id is { Length: > 2 and <= 80 }
+        && id.Contains('-')
+        && id.All(character => character is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9' or '-');
+
+    private static void RequireSafeId(string? id)
+    {
+        if (!IsSafeId(id)) throw new ArgumentException("A valid canonical entity ID is required.");
     }
 
     public async Task<DecisionRecord> CreateDecisionAsync(string root, string title, string decision, string? historicalRationale, CancellationToken cancellationToken = default)
@@ -148,10 +263,12 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         await RecordAsync(root, "checkpoint.created", id, item, cancellationToken); return item;
     }
 
-    public async Task<ClaimRecord> CreateClaimAsync(string root, string statement, RiskLevel risk, CancellationToken cancellationToken = default)
+    public async Task<ClaimRecord> CreateClaimAsync(string root, string statement, RiskLevel risk, CancellationToken cancellationToken = default, string? taskId = null)
     {
+        if (taskId is not null) RequireSafeId(taskId);
+        if (taskId is not null && await GetTaskAsync(root, taskId, cancellationToken) is null) throw new InvalidOperationException($"Task {taskId} was not found.");
         var id = canonical.NextId(root, "claims", "CLAIM");
-        var item = new ClaimRecord(1, id, statement, ClaimStatus.Unverified, risk, await git.CaptureAsync(root, cancellationToken), [], DateTimeOffset.UtcNow);
+        var item = new ClaimRecord(1, id, statement, ClaimStatus.Unverified, risk, await git.CaptureAsync(root, cancellationToken), [], DateTimeOffset.UtcNow, taskId);
         await canonical.WriteAsync(root, "claims", id, item, cancellationToken);
         await RecordAsync(root, "claim.created", id, item, cancellationToken); return item;
     }
@@ -508,6 +625,48 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var markdown = $"# Handoff\n\n## Trust Warnings\n\n{trustWarnings}\n\n## Knowledge Warnings\n\n{knowledgeWarnings}\n\n## Current State\n\n{current}\n\n## Latest Task\n\n{tasks}\n\n## Latest Decision\n\n{decisions}\n\n## Latest Failed Attempt\n\n{attempts}\n\n## Latest Checkpoint\n\n{checkpoints}\n\n## Latest Claim\n\n{claims}\n\n## Latest Evidence\n\n{evidence}\n\n## Latest Finding\n\n{findings}\n\n## Latest Review\n\n{reviews}\n\n## Git State\n\n- Branch: {snapshot.Branch ?? "unknown"}\n- Commit: {snapshot.Commit ?? "none"}\n- Dirty: {snapshot.IsDirty}\n- Modified files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles))}\n\n## Next Recommended Actions\n\nReview open work, resolve knowledge warnings, retrieve targeted context, and verify claims against the current snapshot.\n";
         var id = canonical.NextId(root, "handoffs", "HANDOFF"); var item = new HandoffRecord(1, id, markdown, snapshot, DateTimeOffset.UtcNow);
         await canonical.WriteAsync(root, "handoffs", id, item, cancellationToken); await RecordAsync(root, "handoff.created", id, item, cancellationToken); return item;
+    }
+
+    public async Task<HandoffRecord> HandoffForTaskAsync(string root, string taskId, CancellationToken cancellationToken = default)
+    {
+        RequireSafeId(taskId);
+        var task = await GetTaskAsync(root, taskId, cancellationToken) ?? throw new InvalidOperationException($"Task {taskId} was not found.");
+        var check = await CheckTaskCompletionAsync(root, taskId, cancellationToken);
+        var claims = (await ReadRecordsAsync<ClaimRecord>(root, "claims", cancellationToken)).Where(item => string.Equals(item.TaskId, taskId, StringComparison.OrdinalIgnoreCase)).OrderByDescending(item => item.CreatedAtUtc).Take(5).ToArray();
+        var attempts = (await ReadRecordsAsync<AttemptRecord>(root, "attempts", cancellationToken)).Where(item => string.Equals(item.TaskId, taskId, StringComparison.OrdinalIgnoreCase)).OrderByDescending(item => item.CreatedAtUtc).Take(5).ToArray();
+        var findings = (await ReadRecordsAsync<FindingRecord>(root, "findings", cancellationToken)).Where(item => string.Equals(item.TaskId, taskId, StringComparison.OrdinalIgnoreCase) && item.Status != WorkStatus.Completed).OrderByDescending(item => item.CreatedAtUtc).Take(5).ToArray();
+        var snapshot = await git.CaptureAsync(root, cancellationToken);
+        var lines = new List<string>
+        {
+            $"# Handoff: {task.Id}", "", "## Objective", "", task.Objective ?? task.Title,
+            "", "## Scope", "", task.Scope is { Count: > 0 } ? string.Join("\n", task.Scope.Select(value => $"- {value}")) : "Not recorded.",
+            "", "## Invariants", "", task.Invariants is { Count: > 0 } ? string.Join("\n", task.Invariants.Select(value => $"- {value}")) : "Not recorded.",
+            "", "## Verified", "", $"Completion: {check.State}. " + (check.Reasons.Count == 0 ? "All recorded criteria have current evidence." : string.Join(" ", check.Reasons)),
+            "", "## Work and claims", "", claims.Length == 0 ? "No completed work is independently established by a task-linked claim." : string.Join("\n", claims.Select(value => $"- {value.Id} [{value.Status}]: {Truncate(value.Statement, 160)}; evidence: {string.Join(", ", value.Evidence.Take(8))}")),
+            "", "## Failed attempts", "", attempts.Length == 0 ? "None recorded." : string.Join("\n", attempts.Select(value => $"- {value.Id} [{value.Result}]: {Truncate(value.Approach, 100)} — {Truncate(value.Reason, 160)}")),
+            "", "## Unresolved", "", findings.Length == 0 ? "No open task-linked findings." : string.Join("\n", findings.Select(value => $"- {value.Id} [{value.Severity}]: {Truncate(value.Title, 140)}")),
+            "", "## Repository state", "", $"- Branch: {snapshot.Branch ?? "unknown"}", $"- Commit: {snapshot.Commit ?? "none"}", $"- Dirty: {snapshot.IsDirty}", $"- Changed files: {(snapshot.ChangedFiles.Count == 0 ? "none" : string.Join(", ", snapshot.ChangedFiles.Take(20)))}",
+            "", "## Next action", "", check.State == "VERIFIED" ? "Continue with the next task." : "Resolve open findings, gather current claim-owned evidence for each done_when criterion, then recheck completion."
+        };
+        var id = canonical.NextId(root, "handoffs", "HANDOFF");
+        var handoff = new HandoffRecord(1, id, string.Join('\n', lines) + "\n", snapshot, DateTimeOffset.UtcNow);
+        await canonical.WriteAsync(root, "handoffs", id, handoff, cancellationToken);
+        await RecordAsync(root, "handoff.created", id, new { taskId, handoff.Id }, cancellationToken);
+        return handoff;
+    }
+
+    private static async Task<IReadOnlyList<T>> ReadRecordsAsync<T>(string root, string directory, CancellationToken cancellationToken)
+    {
+        var path = Path.Combine(root, ".arifce", directory);
+        if (!Directory.Exists(path)) return [];
+        var records = new List<T>();
+        foreach (var file in Directory.EnumerateFiles(path, "*.json").Order(StringComparer.Ordinal))
+        {
+            var record = JsonSerializer.Deserialize<T>(await File.ReadAllTextAsync(file, cancellationToken), JsonDefaults.Options)
+                ?? throw new InvalidOperationException($"Canonical record {Path.GetFileName(file)} is invalid.");
+            records.Add(record);
+        }
+        return records;
     }
 
     public async Task<RefactorCampaign> StartRefactorAsync(string root, string title, string objective, IReadOnlyList<string>? invariants = null, IReadOnlyList<string>? inventory = null, IReadOnlyList<RefactorGuard>? guards = null, CancellationToken cancellationToken = default)

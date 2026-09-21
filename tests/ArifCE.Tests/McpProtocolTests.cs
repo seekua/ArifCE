@@ -36,6 +36,8 @@ public sealed class McpProtocolTests
         Assert.Contains(lines, line => line.Contains("arifce_llm_review", StringComparison.Ordinal));
         Assert.Contains(lines, line => line.Contains("arifce_knowledge_audit", StringComparison.Ordinal));
         Assert.Contains(lines, line => line.Contains("arifce_decision_supersede", StringComparison.Ordinal));
+        Assert.Contains(lines, line => line.Contains("arifce_task_check", StringComparison.Ordinal));
+        Assert.Contains(lines, line => line.Contains("arifce_task_complete", StringComparison.Ordinal));
     }
 
     [Fact]

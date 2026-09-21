@@ -74,18 +74,43 @@ internal sealed partial class McpServer
         {
             Tool("arifce_status", "Read the current project status and Git snapshot.", new { type = "object", properties = new { } }),
             Tool("arifce_search", "Search indexed project intelligence using explainable lexical matching.", new { type = "object", required = new[] { "query" }, properties = new { query = new { type = "string" }, limit = new { type = "integer", minimum = 1, maximum = 50 } } }),
-            Tool("arifce_context", "Compose bounded repository context for an LLM task.", new { type = "object", required = new[] { "task" }, properties = new { task = new { type = "string" }, budget = new { type = "integer", minimum = 1, maximum = 20000 } } }),
+            Tool("arifce_context", "Compose bounded repository context for a query or a canonical task ID.", new { type = "object", properties = new { task = new { type = "string" }, taskId = new { type = "string" }, budget = new { type = "integer", minimum = 1, maximum = 20000 } } }),
             Tool("arifce_checkpoint", "Record a project checkpoint with an explicit summary.", new { type = "object", required = new[] { "summary" }, properties = new { summary = new { type = "string", minLength = 1 } } }),
-            Tool("arifce_task_create", "Create a tracked task in the canonical project store.", new { type = "object", required = new[] { "title" }, properties = new { title = new { type = "string" }, risk = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } } } }),
+            Tool("arifce_task_create", "Create a task, optionally with an objective, scope, invariants and evidence-backed done_when contract.", new
+            {
+                type = "object", required = new[] { "title" },
+                properties = new
+                {
+                    title = new { type = "string" },
+                    risk = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } },
+                    objective = new { type = "string" },
+                    scope = new { type = "array", items = new { type = "string" } },
+                    invariants = new { type = "array", items = new { type = "string" } },
+                    doneWhen = new { type = "array", items = new { type = "object", required = new[] { "text", "evidenceKind" }, properties = new { text = new { type = "string" }, evidenceKind = new { type = "string" } } } }
+                }
+            }),
+            Tool("arifce_task_check", "Check current completion evidence and freshness for a task.", new { type = "object", required = new[] { "taskId" }, properties = new { taskId = new { type = "string" } } }),
+            Tool("arifce_task_edit", "Replace all four task contract fields; old completion then needs re-verification.", new
+            {
+                type = "object", required = new[] { "taskId", "objective", "scope", "invariants", "doneWhen" },
+                properties = new
+                {
+                    taskId = new { type = "string" }, objective = new { type = "string" },
+                    scope = new { type = "array", items = new { type = "string" } },
+                    invariants = new { type = "array", items = new { type = "string" } },
+                    doneWhen = new { type = "array", items = new { type = "object", required = new[] { "text", "evidenceKind" }, properties = new { text = new { type = "string" }, evidenceKind = new { type = "string" } } } }
+                }
+            }),
+            Tool("arifce_task_complete", "Complete a contracted task only after all criteria have current claim-owned evidence.", new { type = "object", required = new[] { "taskId", "claimId", "satisfied" }, properties = new { taskId = new { type = "string" }, claimId = new { type = "string" }, satisfied = new { type = "object" }, acceptanceId = new { type = "string" } } }),
             Tool("arifce_decision_create", "Record a project decision and its historical rationale.", new { type = "object", required = new[] { "title", "decision" }, properties = new { title = new { type = "string" }, decision = new { type = "string" }, historicalRationale = new { type = "string" } } }),
             Tool("arifce_decision_supersede", "Supersede one active decision with another active decision while preserving history.", new { type = "object", required = new[] { "id", "replacementId" }, properties = new { id = new { type = "string" }, replacementId = new { type = "string" } } }),
             Tool("arifce_knowledge_audit", "Detect duplicate, conflicting, malformed, or broken canonical decisions and claims.", new { type = "object", properties = new { } }),
             Tool("arifce_attempt_record", "Record a failed or rejected approach for an existing task.", new { type = "object", required = new[] { "taskId", "approach", "result", "reason" }, properties = new { taskId = new { type = "string" }, approach = new { type = "string" }, result = new { type = "string" }, reason = new { type = "string" } } }),
-            Tool("arifce_claim_create", "Create an explicit claim requiring evidence.", new { type = "object", required = new[] { "statement" }, properties = new { statement = new { type = "string" }, risk = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } } } }),
+            Tool("arifce_claim_create", "Create an explicit claim requiring evidence; link it to a task for contracted completion.", new { type = "object", required = new[] { "statement" }, properties = new { statement = new { type = "string" }, risk = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } }, taskId = new { type = "string" } } }),
             Tool("arifce_finding_create", "Record an actionable project finding.", new { type = "object", required = new[] { "title", "description" }, properties = new { title = new { type = "string" }, description = new { type = "string" }, severity = new { type = "string", @enum = new[] { "Low", "Medium", "High", "Critical" } }, taskId = new { type = "string" }, path = new { type = "string" } } }),
             Tool("arifce_review_record", "Record a review verdict for an existing claim.", new { type = "object", required = new[] { "claimId", "reviewer", "verdict", "summary" }, properties = new { claimId = new { type = "string" }, reviewer = new { type = "string" }, verdict = new { type = "string", @enum = new[] { "Agree", "PartiallyAgree", "Disagree", "Inconclusive" } }, summary = new { type = "string" } } }),
             Tool("arifce_acceptance_create", "Accept a supported or verified claim with explicit human rationale.", new { type = "object", required = new[] { "claimId", "actor", "rationale" }, properties = new { claimId = new { type = "string" }, actor = new { type = "string" }, rationale = new { type = "string" } } }),
-            Tool("arifce_handoff", "Create a semantic handoff from the current project state.", new { type = "object", properties = new { } })
+            Tool("arifce_handoff", "Create a semantic handoff from the project or a specific task.", new { type = "object", properties = new { taskId = new { type = "string" } } })
             ,Tool("arifce_llm_providers", "List locally configured LLM providers without exposing API keys.", new { type = "object", properties = new { } })
             ,Tool("arifce_llm_run", "Run a local LLM task and persist canonical evidence; explicit approval is required.", new { type = "object", required = new[] { "task", "prompt", "approved" }, properties = new { task = new { type = "string" }, prompt = new { type = "string" }, claimId = new { type = "string" }, approved = new { type = "boolean" } } })
             ,Tool("arifce_llm_review", "Run an approved local LLM reviewer for a claim and persist a review record.", new { type = "object", required = new[] { "claimId", "prompt", "reviewer", "rationale", "approved" }, properties = new { claimId = new { type = "string" }, prompt = new { type = "string" }, reviewer = new { type = "string" }, rationale = new { type = "string" }, approved = new { type = "boolean" } } })
@@ -110,16 +135,19 @@ internal sealed partial class McpServer
             "arifce_search" => await SearchAsync(root, arguments),
             "arifce_context" => await ContextAsync(root, arguments),
             "arifce_checkpoint" => (await service.CheckpointAsync(root, Required(arguments, "summary"))).Id,
-            "arifce_task_create" => (await service.CreateTaskAsync(root, Required(arguments, "title"), Enum(arguments, "risk", RiskLevel.Medium))).Id,
+            "arifce_task_create" => (await service.CreateTaskAsync(root, Required(arguments, "title"), Enum(arguments, "risk", RiskLevel.Medium), objective: Optional(arguments, "objective"), scope: OptionalStrings(arguments, "scope"), invariants: OptionalStrings(arguments, "invariants"), doneWhen: OptionalCriteria(arguments, "doneWhen"))).Id,
+            "arifce_task_check" => JsonSerializer.Serialize(await service.CheckTaskCompletionAsync(root, Required(arguments, "taskId")), JsonDefaults.Options),
+            "arifce_task_edit" => (await service.UpdateTaskContractAsync(root, Required(arguments, "taskId"), Required(arguments, "objective"), OptionalStrings(arguments, "scope") ?? [], OptionalStrings(arguments, "invariants") ?? [], OptionalCriteria(arguments, "doneWhen") ?? [])).Id,
+            "arifce_task_complete" => (await service.CompleteContractedTaskAsync(root, Required(arguments, "taskId"), Required(arguments, "claimId"), RequiredMap(arguments, "satisfied"), Optional(arguments, "acceptanceId"))).Status.ToString(),
             "arifce_decision_create" => (await service.CreateDecisionAsync(root, Required(arguments, "title"), Required(arguments, "decision"), Optional(arguments, "historicalRationale"))).Id,
             "arifce_decision_supersede" => (await service.SupersedeDecisionAsync(root, Required(arguments, "id"), Required(arguments, "replacementId"))).Status,
             "arifce_knowledge_audit" => JsonSerializer.Serialize(await KnowledgeConflictAnalyzer.AuditAsync(root), JsonDefaults.Options),
             "arifce_attempt_record" => (await service.RecordAttemptAsync(root, Required(arguments, "taskId"), Required(arguments, "approach"), Required(arguments, "result"), Required(arguments, "reason"))).Id,
-            "arifce_claim_create" => (await service.CreateClaimAsync(root, Required(arguments, "statement"), Enum(arguments, "risk", RiskLevel.Medium))).Id,
+            "arifce_claim_create" => (await service.CreateClaimAsync(root, Required(arguments, "statement"), Enum(arguments, "risk", RiskLevel.Medium), taskId: Optional(arguments, "taskId"))).Id,
             "arifce_finding_create" => (await service.CreateFindingAsync(root, Required(arguments, "title"), Required(arguments, "description"), Enum(arguments, "severity", RiskLevel.Medium), Optional(arguments, "taskId"), Optional(arguments, "path"))).Id,
             "arifce_review_record" => (await service.RecordReviewAsync(root, Required(arguments, "claimId"), Required(arguments, "reviewer"), Enum(arguments, "verdict", ReviewVerdict.Inconclusive), Required(arguments, "summary"), [])).Id,
             "arifce_acceptance_create" => (await service.CreateAcceptanceAsync(root, Required(arguments, "claimId"), Required(arguments, "actor"), Required(arguments, "rationale"))).Id,
-            "arifce_handoff" => (await service.HandoffAsync(root)).Markdown,
+            "arifce_handoff" => (Optional(arguments, "taskId") is { } handoffTaskId ? await service.HandoffForTaskAsync(root, handoffTaskId) : await service.HandoffAsync(root)).Markdown,
             "arifce_llm_providers" => await LlmProvidersAsync(),
             "arifce_llm_run" => await LlmRunAsync(root, arguments),
             "arifce_llm_review" => await LlmReviewAsync(root, arguments),
@@ -153,10 +181,11 @@ internal sealed partial class McpServer
 
     private static async Task<string> ContextAsync(string root, JsonElement arguments)
     {
-        var task = Required(arguments, "task");
         var budget = 4000;
         if (arguments.TryGetProperty("budget", out var value) && (!value.TryGetInt32(out budget) || budget is < 1 or > 20000)) throw new McpException(-32602, "budget must be an integer from 1 to 20000.");
-        var context = await new LlmContextComposer(new IndexStore()).ComposeAsync(root, task, budget);
+        var composer = new LlmContextComposer(new IndexStore());
+        var taskId = Optional(arguments, "taskId");
+        var context = taskId is null ? await composer.ComposeAsync(root, Required(arguments, "task"), budget) : await composer.ComposeForTaskAsync(root, taskId, budget);
         return JsonSerializer.Serialize(context, JsonDefaults.Options);
     }
 
@@ -205,6 +234,23 @@ internal sealed partial class McpServer
         if (text is { Length: > MaxArgumentCharacters } || text?.Contains('\0') == true) throw new McpException(-32602, $"Argument {name} is too large or contains a null character.");
         return text;
     }
+    private static string[]? OptionalStrings(JsonElement value, string name)
+    {
+        if (!value.TryGetProperty(name, out var property)) return null;
+        if (property.ValueKind != JsonValueKind.Array || property.GetArrayLength() > 32) throw new McpException(-32602, $"{name} must be an array of up to 32 strings.");
+        return property.EnumerateArray().Select(item => item.ValueKind == JsonValueKind.String && item.GetString() is { Length: > 0 and <= MaxArgumentCharacters } text ? text : throw new McpException(-32602, $"{name} must contain non-empty bounded strings.")).ToArray();
+    }
+    private static TaskCriterion[]? OptionalCriteria(JsonElement value, string name)
+    {
+        if (!value.TryGetProperty(name, out var property)) return null;
+        if (property.ValueKind != JsonValueKind.Array || property.GetArrayLength() > 32) throw new McpException(-32602, "doneWhen must be an array of up to 32 criteria.");
+        return property.EnumerateArray().Select(item => new TaskCriterion(Required(item, "text"), Required(item, "evidenceKind"))).ToArray();
+    }
+    private static Dictionary<string, string> RequiredMap(JsonElement value, string name)
+    {
+        if (!value.TryGetProperty(name, out var property) || property.ValueKind != JsonValueKind.Object || property.EnumerateObject().Count() > 32) throw new McpException(-32602, $"{name} must be an object of up to 32 criterion-to-evidence mappings.");
+        return property.EnumerateObject().ToDictionary(item => item.Name, item => item.Value.ValueKind == JsonValueKind.String && item.Value.GetString() is { Length: > 0 and <= 100 } text ? text : throw new McpException(-32602, "Evidence IDs must be bounded strings."), StringComparer.Ordinal);
+    }
     private static T Enum<T>(JsonElement value, string name, T fallback) where T : struct, System.Enum
     {
         var text = Optional(value, name);
@@ -215,15 +261,19 @@ internal sealed partial class McpServer
     {
         var allowed = tool switch
         {
-            "arifce_status" or "arifce_handoff" or "arifce_llm_providers" or "arifce_knowledge_audit" => Array.Empty<string>(),
+            "arifce_status" or "arifce_llm_providers" or "arifce_knowledge_audit" => Array.Empty<string>(),
+            "arifce_handoff" => ["taskId"],
             "arifce_search" => ["query", "limit"],
-            "arifce_context" => ["task", "budget"],
+            "arifce_context" => ["task", "taskId", "budget"],
             "arifce_checkpoint" => ["summary"],
-            "arifce_task_create" => ["title", "risk"],
+            "arifce_task_create" => ["title", "risk", "objective", "scope", "invariants", "doneWhen"],
+            "arifce_task_check" => ["taskId"],
+            "arifce_task_edit" => ["taskId", "objective", "scope", "invariants", "doneWhen"],
+            "arifce_task_complete" => ["taskId", "claimId", "satisfied", "acceptanceId"],
             "arifce_decision_create" => ["title", "decision", "historicalRationale"],
             "arifce_decision_supersede" => ["id", "replacementId"],
             "arifce_attempt_record" => ["taskId", "approach", "result", "reason"],
-            "arifce_claim_create" => ["statement", "risk"],
+            "arifce_claim_create" => ["statement", "risk", "taskId"],
             "arifce_finding_create" => ["title", "description", "severity", "taskId", "path"],
             "arifce_review_record" => ["claimId", "reviewer", "verdict", "summary"],
             "arifce_acceptance_create" => ["claimId", "actor", "rationale"],

@@ -784,6 +784,66 @@ public sealed class BehaviorTests : IDisposable
     }
 
     [Fact]
+    public async Task Contracted_task_requires_owned_current_evidence_and_reports_staleness()
+    {
+        await Service.InitializeAsync(root, false);
+        var source = Path.Combine(root, "PaymentService.cs");
+        await File.WriteAllTextAsync(source, "class PaymentService { }\n");
+        var task = await Service.CreateTaskAsync(root, "Protect payments", RiskLevel.Low,
+            objective: "Prevent forbidden payment call",
+            scope: ["PaymentService.cs"],
+            invariants: ["No ForbiddenGateway reference"],
+            doneWhen: [new TaskCriterion("Architecture scan passes", "ARCHITECTURE_BOUNDARY")]);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CompleteTaskAsync(root, task.Id));
+        var foreign = await Service.CreateClaimAsync(root, "No forbidden call", RiskLevel.Low);
+        var foreignEvidence = await Service.VerifyArchitectureBoundaryAsync(root, foreign.Id, ["ForbiddenGateway"], ["PaymentService.cs"]);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CompleteContractedTaskAsync(root, task.Id, foreign.Id, new Dictionary<string, string> { ["1"] = foreignEvidence.Evidence.Id }));
+        var claim = await Service.CreateClaimAsync(root, "Payment boundary holds", RiskLevel.Low, taskId: task.Id);
+        var verified = await Service.VerifyArchitectureBoundaryAsync(root, claim.Id, ["ForbiddenGateway"], ["PaymentService.cs"]);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CompleteContractedTaskAsync(root, task.Id, claim.Id, new Dictionary<string, string> { ["1"] = foreignEvidence.Evidence.Id }));
+        var completed = await Service.CompleteContractedTaskAsync(root, task.Id, claim.Id, new Dictionary<string, string> { ["1"] = verified.Evidence.Id });
+        Assert.Equal(WorkStatus.Completed, completed.Status);
+        Assert.Equal("VERIFIED", (await Service.CheckTaskCompletionAsync(root, task.Id)).State);
+        var handoff = await Service.HandoffForTaskAsync(root, task.Id);
+        Assert.Contains("Prevent forbidden payment call", handoff.Markdown);
+        Assert.Contains(verified.Evidence.Id, handoff.Markdown);
+        Assert.Contains("Completion: VERIFIED", handoff.Markdown);
+        Assert.DoesNotContain("Latest Decision", handoff.Markdown);
+        await File.WriteAllTextAsync(source, "class PaymentService { ForbiddenGateway gateway; }\n");
+        Assert.Equal("NEEDS_REVERIFY", (await Service.CheckTaskCompletionAsync(root, task.Id)).State);
+        Assert.Contains("NEEDS_REVERIFY", (await Service.HandoffForTaskAsync(root, task.Id)).Markdown);
+        await Service.UpdateTaskContractAsync(root, task.Id, "Different objective", ["PaymentService.cs"], ["No ForbiddenGateway reference"], [new TaskCriterion("Architecture scan passes", "ARCHITECTURE_BOUNDARY")]);
+        Assert.Contains((await Service.CheckTaskCompletionAsync(root, task.Id)).Reasons, reason => reason.Contains("contract changed", StringComparison.Ordinal));
+        await File.WriteAllTextAsync(source, "class PaymentService { }\n");
+        var renewed = await Service.VerifyArchitectureBoundaryAsync(root, claim.Id, ["ForbiddenGateway"], ["PaymentService.cs"]);
+        await Service.CompleteContractedTaskAsync(root, task.Id, claim.Id, new Dictionary<string, string> { ["1"] = renewed.Evidence.Id });
+        Assert.Equal("VERIFIED", (await Service.CheckTaskCompletionAsync(root, task.Id)).State);
+    }
+
+    [Fact]
+    public async Task Higher_risk_task_cannot_complete_using_lower_risk_claim()
+    {
+        await Service.InitializeAsync(root, false);
+        await File.WriteAllTextAsync(Path.Combine(root, "Boundary.cs"), "class Boundary { }\n");
+        var task = await Service.CreateTaskAsync(root, "Protect boundary", RiskLevel.High,
+            objective: "Keep the boundary", scope: ["Boundary.cs"], invariants: ["No forbidden call"],
+            doneWhen: [new TaskCriterion("Boundary scan passes", "ARCHITECTURE_BOUNDARY")]);
+        var claim = await Service.CreateClaimAsync(root, "Boundary holds", RiskLevel.Low, taskId: task.Id);
+        var evidence = await Service.VerifyArchitectureBoundaryAsync(root, claim.Id, ["ForbiddenGateway"], ["Boundary.cs"]);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => Service.CompleteContractedTaskAsync(root, task.Id, claim.Id, new Dictionary<string, string> { ["1"] = evidence.Evidence.Id }));
+        Assert.Contains("lower than task risk", exception.Message);
+    }
+
+    [Fact]
+    public async Task Task_scoped_operations_reject_path_like_ids_before_file_access()
+    {
+        await Service.InitializeAsync(root, false);
+        await Assert.ThrowsAsync<ArgumentException>(() => Service.CheckTaskCompletionAsync(root, "../../outside"));
+        await Assert.ThrowsAsync<ArgumentException>(() => Service.HandoffForTaskAsync(root, "../../outside"));
+        await Assert.ThrowsAsync<ArgumentException>(() => Service.CreateClaimAsync(root, "Unsafe link", RiskLevel.Low, taskId: "../../outside"));
+    }
+
+    [Fact]
     public async Task Refactor_inventory_can_be_resolved_before_guarded_completion()
     {
         await Service.InitializeAsync(root, false);

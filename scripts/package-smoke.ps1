@@ -36,7 +36,7 @@ try {
         $taskId = (& $executable task create 'Package fixture continuity task' --risk HIGH | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $taskId -notmatch '^TASK-\d{4}$') { throw "Task creation failed: $taskId" }
         $invalidTaskOutput = (& $executable task create 'Package fixture invalid option' --unknown HIGH 2>&1 | Out-String)
-        if ($LASTEXITCODE -eq 0 -or $invalidTaskOutput -notmatch 'supports only --risk') { throw 'Unsupported task-create options were not rejected.' }
+        if ($LASTEXITCODE -eq 0 -or $invalidTaskOutput -notmatch 'Unsupported or incomplete task create option') { throw 'Unsupported task-create options were not rejected.' }
         $decisionId = (& $executable decision create 'Package fixture storage choice' --decision 'Use canonical JSON records' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $decisionId -notmatch '^ADR-\d{4}$') { throw "Decision creation failed: $decisionId" }
         $supersededDecisionId = (& $executable decision create 'Legacy package fixture storage choice' --decision 'Use transient memory' | Select-Object -Last 1).Trim()
@@ -112,6 +112,21 @@ try {
         if ($LASTEXITCODE -ne 0 -or $architectureClaimId -notmatch '^CLAIM-\d{4}$') { throw "Architecture claim creation failed: $architectureClaimId" }
         $architectureOutput = (& $executable architecture check $architectureClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src | Out-String)
         if ($LASTEXITCODE -ne 0 -or $architectureOutput -notmatch "${architectureClaimId}: \w+ \(EVIDENCE-\d{4}\)") { throw 'Packaged architecture boundary verification failed.' }
+        $contractedTaskId = (& $executable task create 'Package fixture contracted task' --risk LOW --objective 'Protect the package boundary' --scope 'src/Boundary.cs' --invariant 'Forbidden fixture reference remains absent' --done-when 'ARCHITECTURE_BOUNDARY:Boundary scan passes' | Select-Object -Last 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or $contractedTaskId -notmatch '^TASK-\d{4}$') { throw "Contracted task creation failed: $contractedTaskId" }
+        $taskContext = (& $executable context --task $contractedTaskId --budget 500 | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $taskContext -notmatch 'Kind: TASK_CONTRACT' -or $taskContext -notmatch 'Protect the package boundary') { throw 'Packaged task-aware context did not pin the engineering contract.' }
+        $contractedClaimId = (& $executable claim create 'The package boundary remains protected' --task $contractedTaskId --risk LOW | Select-Object -Last 1).Trim()
+        if ($LASTEXITCODE -ne 0 -or $contractedClaimId -notmatch '^CLAIM-\d{4}$') { throw "Task-linked claim creation failed: $contractedClaimId" }
+        $contractedVerification = (& $executable architecture check $contractedClaimId --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' --path src/Boundary.cs | Out-String)
+        $contractedEvidenceId = [regex]::Match($contractedVerification, 'EVIDENCE-\d{4}').Value
+        if ($LASTEXITCODE -ne 0 -or $contractedEvidenceId -notmatch '^EVIDENCE-\d{4}$') { throw 'Contracted task verification failed.' }
+        & $executable task complete $contractedTaskId --claim $contractedClaimId --satisfy "1:$contractedEvidenceId"
+        if ($LASTEXITCODE -ne 0) { throw 'Evidence-backed contracted task completion failed.' }
+        $contractedCheck = (& $executable task check $contractedTaskId | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $contractedCheck -notmatch '"state"\s*:\s*"VERIFIED"') { throw "Contracted task did not report VERIFIED. Output: $contractedCheck" }
+        $taskHandoff = (& $executable handoff --task $contractedTaskId | Out-String)
+        if ($LASTEXITCODE -ne 0 -or $taskHandoff -notmatch 'Protect the package boundary' -or $taskHandoff -notmatch 'Completion: VERIFIED') { throw 'Task-focused handoff did not preserve verified continuity.' }
         $apiAssembly = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\src\ArifCE.Core\bin\Release\net10.0\ArifCE.Core.dll'))
         if (-not (Test-Path -LiteralPath $apiAssembly)) { throw 'Built core assembly fixture was not found.' }
         Copy-Item -Force -LiteralPath $apiAssembly -Destination (Join-Path $repositoryDirectory 'ArifCE.Cli.dll')
@@ -135,7 +150,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Finding resolution failed.' }
 
         $handoffOutput = (& $executable handoff | Out-String)
-        if ($LASTEXITCODE -ne 0 -or $handoffOutput -notmatch 'Package fixture continuity task' -or $handoffOutput -notmatch 'Latest Decision' -or $handoffOutput -notmatch 'Latest Failed Attempt' -or $handoffOutput -notmatch 'Latest Evidence' -or $handoffOutput -notmatch 'Latest Finding' -or $handoffOutput -notmatch 'Latest Review' -or $handoffOutput -notmatch 'Saved HANDOFF-\d{4}') { throw 'Semantic handoff did not contain the required continuity and trust state.' }
+        if ($LASTEXITCODE -ne 0 -or $handoffOutput -notmatch 'Package fixture contracted task' -or $handoffOutput -notmatch 'Latest Decision' -or $handoffOutput -notmatch 'Latest Failed Attempt' -or $handoffOutput -notmatch 'Latest Evidence' -or $handoffOutput -notmatch 'Latest Finding' -or $handoffOutput -notmatch 'Latest Review' -or $handoffOutput -notmatch 'Saved HANDOFF-\d{4}') { throw 'Semantic handoff did not contain the required continuity and trust state.' }
 
         $refactorId = (& $executable refactor start 'Package fixture refactor' 'Exercise packaged guarded completion' --invariant 'Preserve fixture behavior' --inventory 'fixture-item' --forbid '__ARIFCE_PACKAGE_FIXTURE_FORBIDDEN_7C31__' | Select-Object -Last 1).Trim()
         if ($LASTEXITCODE -ne 0 -or $refactorId -notmatch '^REF-\d{4}$') { throw "Refactor creation failed: $refactorId" }

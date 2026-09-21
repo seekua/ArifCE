@@ -204,6 +204,30 @@ public sealed class LlmProviderTests
     }
 
     [Fact]
+    public async Task Task_context_pins_contract_and_never_leaks_it_past_budget()
+    {
+        var root = Directory.CreateTempSubdirectory("arifce-task-context-");
+        try
+        {
+            InitializeGit(root.FullName);
+            var canonical = new CanonicalStore();
+            var task = new TaskRecord(1, "TASK-0001", "Payment regression", null, WorkStatus.Open, RiskLevel.Low, DateTimeOffset.UtcNow,
+                "Protect payment calculations", ["PaymentService.cs"], ["Rounding remains stable"], [new TaskCriterion("Tests pass", "TEST_RUN")]);
+            await canonical.WriteAsync(root.FullName, "tasks", task.Id, task);
+            var composer = new LlmContextComposer(new IndexStore());
+            var context = await composer.ComposeForTaskAsync(root.FullName, task.Id, 500);
+            Assert.Contains("Protect payment calculations", context.Content);
+            Assert.Equal("TASK_CONTRACT", context.Items[0].Kind);
+            Assert.True(context.EstimatedTokens <= 500);
+            var tiny = await composer.ComposeForTaskAsync(root.FullName, task.Id, 1);
+            Assert.Empty(tiny.Content);
+            Assert.All(tiny.Items, item => Assert.Empty(item.Snippet));
+            Assert.DoesNotContain("Protect payment calculations", JsonSerializer.Serialize(tiny, JsonDefaults.Options));
+        }
+        finally { root.Delete(true); }
+    }
+
+    [Fact]
     public async Task Context_assembly_explains_trust_and_budget_rejections_deterministically()
     {
         var root = Directory.CreateTempSubdirectory("arifce-context-explain-");
@@ -229,6 +253,7 @@ public sealed class LlmProviderTests
             Assert.Contains(first.Items, item => item.Path.Contains("adr-0001", StringComparison.Ordinal) && item.Included);
             Assert.Contains(first.Items, item => item.Freshness == "STALE" && !item.Included && item.Reason.Contains("re-verification", StringComparison.Ordinal));
             Assert.Contains(first.Items, item => item.Freshness == "SUPERSEDED" && !item.Included && item.Reason.Contains("ADR-0001", StringComparison.Ordinal));
+            Assert.All(first.Items.Where(item => !item.Included), item => Assert.Empty(item.Snippet));
             Assert.Equal(
                 first.Items.Select(item => (item.Path, item.Included, item.Freshness, item.Priority, item.Reason)),
                 second.Items.Select(item => (item.Path, item.Included, item.Freshness, item.Priority, item.Reason)));
@@ -237,6 +262,10 @@ public sealed class LlmProviderTests
             Assert.Equal(0, tiny.Telemetry.SelectedRecords);
             Assert.Equal(1, tiny.Telemetry.BudgetRejected);
             Assert.Empty(tiny.Content);
+            Assert.All(tiny.Items, item => Assert.Empty(item.Snippet));
+            var serialized = JsonSerializer.Serialize(tiny, JsonDefaults.Options);
+            Assert.DoesNotContain("Use the current token migration", serialized, StringComparison.Ordinal);
+            Assert.DoesNotContain("Use the legacy token migration", serialized, StringComparison.Ordinal);
         }
         finally { root.Delete(true); }
     }

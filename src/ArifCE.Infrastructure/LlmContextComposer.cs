@@ -41,7 +41,32 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
 {
     private readonly GitInspector git = git ?? new GitInspector();
 
-    public async Task<LlmContext> ComposeAsync(string root, string task, int budget = 4000, CancellationToken cancellationToken = default)
+    public async Task<LlmContext> ComposeForTaskAsync(string root, string taskId, int budget = 4000, CancellationToken cancellationToken = default)
+    {
+        if (budget <= 0) throw new ArgumentOutOfRangeException(nameof(budget));
+        if (string.IsNullOrWhiteSpace(taskId) || taskId.IndexOfAny(['/', '\\', ':']) >= 0) throw new ArgumentException("A valid task ID is required.", nameof(taskId));
+        var taskRecord = await new CanonicalStore().ReadAsync<TaskRecord>(root, "tasks", taskId, cancellationToken)
+            ?? throw new InvalidOperationException($"Task {taskId} was not found.");
+        var completion = await new ProjectService(new CanonicalStore(), new JournalStore(), index, git).CheckTaskCompletionAsync(root, taskId, cancellationToken);
+        var contract = $"[tasks/{taskId.ToLowerInvariant()}.json]\nKind: TASK_CONTRACT\nObjective: {taskRecord.Objective ?? taskRecord.Title}\nScope: {string.Join(", ", taskRecord.Scope ?? [])}\nInvariants: {string.Join("; ", taskRecord.Invariants ?? [])}\nDone when: {string.Join("; ", (taskRecord.DoneWhen ?? []).Select((criterion, index) => $"{index + 1}. {criterion.Text} [{criterion.EvidenceKind}]"))}\nCompletion: {completion.State}";
+        var contractTokens = EstimateTokens(contract);
+        var path = $"tasks/{taskId.ToLowerInvariant()}.json";
+        if (contractTokens > budget)
+        {
+            var excluded = new ContextAssemblyItem(path, "TASK_CONTRACT", string.Empty, 0, 110, "CURRENT", contractTokens, false, $"task contract exceeds {budget}-token budget; no partial contract was emitted");
+            return new LlmContext(taskId, string.Empty, 0, [], [excluded], new ContextAssemblyTelemetry(1, 0, 1, contractTokens, 0, 1, 0, 0, 0, 0));
+        }
+        var contractItem = new ContextAssemblyItem(path, "TASK_CONTRACT", contract, 0, 110, "CURRENT", contractTokens, true, "explicit task contract; pinned before lexical results");
+        var query = string.Join(' ', new[] { taskId, taskRecord.Title, taskRecord.Objective ?? string.Empty }.Concat(taskRecord.Scope ?? []).Concat(taskRecord.Invariants ?? []));
+        if (contractTokens + 1 >= budget)
+            return new LlmContext(taskId, contract, contractTokens, [path], [contractItem], new ContextAssemblyTelemetry(1, 1, 0, contractTokens, contractTokens, 0, 0, 0, 0, 0));
+        var related = await ComposeAsync(root, query, budget - contractTokens - 1, cancellationToken, path);
+        var content = string.IsNullOrWhiteSpace(related.Content) ? contract : contract + "\n\n" + related.Content;
+        var selected = contractTokens + related.EstimatedTokens + (related.EstimatedTokens > 0 ? 1 : 0);
+        return new LlmContext(taskId, content, selected, new[] { path }.Concat(related.Sources).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), new[] { contractItem }.Concat(related.Items).ToArray(), related.Telemetry with { CandidateRecords = related.Telemetry.CandidateRecords + 1, SelectedRecords = related.Telemetry.SelectedRecords + 1, CandidateTokens = related.Telemetry.CandidateTokens + contractTokens, SelectedTokens = selected });
+    }
+
+    public async Task<LlmContext> ComposeAsync(string root, string task, int budget = 4000, CancellationToken cancellationToken = default, string? omittedPath = null)
     {
         if (budget <= 0) throw new ArgumentOutOfRangeException(nameof(budget));
         var terms = Regex.Matches(task ?? string.Empty, "[A-Za-z0-9_]+", RegexOptions.CultureInvariant)
@@ -60,6 +85,7 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
         var candidates = new List<Candidate>(hits.Count);
         foreach (var hit in hits)
         {
+            if (string.Equals(hit.Path, omittedPath, StringComparison.OrdinalIgnoreCase)) continue;
             var kind = KindOf(hit.Path);
             if (kind is "CLAIM" or "EVIDENCE" or "ACCEPTANCE" && currentSnapshot is null) currentSnapshot = await git.CaptureAsync(root, cancellationToken);
             var trust = ApplyKnowledgeIssues(hit.Path, await AssessTrustAsync(root, hit.Path, kind, currentSnapshot, cancellationToken), knowledge);
@@ -130,7 +156,7 @@ public sealed class LlmContextComposer(IndexStore index, GitInspector? git = nul
     }
 
     private static ContextAssemblyItem ToItem(Candidate candidate, int tokens, bool included, string reason) =>
-        new(candidate.Path, candidate.Kind, candidate.Snippet, candidate.Score, candidate.Priority, candidate.Trust.Freshness, tokens, included, reason);
+        new(candidate.Path, candidate.Kind, included ? candidate.Snippet : string.Empty, candidate.Score, candidate.Priority, candidate.Trust.Freshness, tokens, included, reason);
 
     private static TrustAssessment ApplyKnowledgeIssues(string path, TrustAssessment trust, KnowledgeAuditResult audit)
     {

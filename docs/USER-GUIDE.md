@@ -65,6 +65,20 @@ arifce attempt record TASK-0001 "Redis invalidation" --result rejected --reason 
 
 Task risk defaults to `MEDIUM`. Put `--risk LOW`, `--risk MEDIUM`, `--risk HIGH`, or `--risk CRITICAL` after the title; an unsupported option is rejected instead of being stored as part of the task title.
 
+For a task that needs an evidence-backed completion decision, create all four engineering-contract fields together:
+
+```bash
+arifce task create "Protect payment boundary" --risk LOW --objective "Remove forbidden dependency" --scope src/PaymentService.cs --invariant "No ForbiddenGateway reference" --done-when "ARCHITECTURE_BOUNDARY:Forbidden dependency scan passes"
+arifce context --task TASK-0001 --budget 4000
+arifce claim create "Payment boundary holds" --task TASK-0001
+arifce architecture check CLAIM-0001 --forbid ForbiddenGateway --path src/PaymentService.cs
+arifce task complete TASK-0001 --claim CLAIM-0001 --satisfy 1:EVIDENCE-0001
+arifce task check TASK-0001
+arifce handoff --task TASK-0001
+```
+
+Replace the IDs with those printed by your commands. A passing scan proves only the configured forbidden-reference check. To protect additional invariants, add a matching criterion and verification evidence; prose alone is not machine-verified. After relevant files change, `task check` reports `NEEDS_REVERIFY`; a fresh verification and `task complete` can renew the completion basis.
+
 Attempts must reference a task. Unknown historical rationale is stored as `Unknown.`.
 
 ## Checkpoints and handoffs

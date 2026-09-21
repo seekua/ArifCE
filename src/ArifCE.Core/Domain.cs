@@ -11,10 +11,13 @@ public enum AgentRunStatus { Running, Completed, Failed }
 public enum AgentStepKind { Investigation, Attempt, Evidence, Decision, Result }
 
 public sealed record GitSnapshot(string? Commit, string? Branch, bool IsDirty, IReadOnlyList<string> ChangedFiles, string Digest);
-public sealed record TaskRecord(int SchemaVersion, string Id, string Title, string? Description, WorkStatus Status, RiskLevel Risk, DateTimeOffset CreatedAtUtc);
+public sealed record TaskCriterion(string Text, string EvidenceKind);
+public sealed record TaskCompletionBasis(string ClaimId, IReadOnlyDictionary<string, string> EvidenceByCriterion, string? AcceptanceId, DateTimeOffset CompletedAtUtc, string? ContractDigest = null);
+public sealed record TaskCompletionCheck(string TaskId, string State, IReadOnlyList<string> Reasons);
+public sealed record TaskRecord(int SchemaVersion, string Id, string Title, string? Description, WorkStatus Status, RiskLevel Risk, DateTimeOffset CreatedAtUtc, string? Objective = null, IReadOnlyList<string>? Scope = null, IReadOnlyList<string>? Invariants = null, IReadOnlyList<TaskCriterion>? DoneWhen = null, TaskCompletionBasis? Completion = null);
 public sealed record DecisionRecord(int SchemaVersion, string Id, string Title, string Decision, string HistoricalRationale, string Status, string Provenance, string? SupersededBy, DateTimeOffset CreatedAtUtc);
 public sealed record AttemptRecord(int SchemaVersion, string Id, string TaskId, string Approach, string Result, string Reason, IReadOnlyList<string> EvidenceIds, DateTimeOffset CreatedAtUtc);
-public sealed record ClaimRecord(int SchemaVersion, string Id, string Statement, ClaimStatus Status, RiskLevel Risk, GitSnapshot Snapshot, IReadOnlyList<string> Evidence, DateTimeOffset CreatedAtUtc);
+public sealed record ClaimRecord(int SchemaVersion, string Id, string Statement, ClaimStatus Status, RiskLevel Risk, GitSnapshot Snapshot, IReadOnlyList<string> Evidence, DateTimeOffset CreatedAtUtc, string? TaskId = null);
 public sealed record AcceptanceRecord(int SchemaVersion, string Id, string ClaimId, string Actor, AcceptanceStatus Status, string Rationale, GitSnapshot Snapshot, IReadOnlyList<string> EvidenceIds, DateTimeOffset CreatedAtUtc, DateTimeOffset? RevokedAtUtc = null);
 public sealed record EvidenceMetrics(int? Total, int? Passed, int? Failed, int? Skipped, int? Warnings = null, int? Errors = null);
 public sealed record EvidenceDependency(string Path, string Digest, string Mode = "CONTENT");

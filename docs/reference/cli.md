@@ -40,11 +40,15 @@ Adding a missing root or a duplicate root fails. Removing an entry never deletes
 arifce search <query>
 arifce context <task> [--budget <estimated-tokens>]
 arifce context explain <task> [--budget <estimated-tokens>]
+arifce context --task <task-id> [--budget <estimated-tokens>]
+arifce context explain --task <task-id> [--budget <estimated-tokens>]
 arifce why <path-or-id>
 arifce knowledge audit
 ```
 
 Search uses SQLite FTS5. Context assembly uses deterministic lexical candidates, record-type priority, trust-state filtering, and a positive token budget. It updates the disposable index before retrieval and reports candidate, selected, rejected, and token totals. `context explain` lists every candidate with its score, priority, freshness, cost, disposition, and reason. Stale evidence and claims, superseded decisions, non-current acceptances, and malformed typed records are rejected; disputed and unverified claims remain visible only with an explicit warning. `why` reports known provenance or explicitly says the historical rationale is unknown.
+
+`context --task` pins the canonical task contract and current completion state before filling the remaining budget with explainable lexical results. When even the contract cannot fit, it returns no partial contract. Excluded snippets are not serialized into the context response. Token counts are estimates, not tokenizer-exact guarantees.
 
 `knowledge audit` reads canonical decisions and claims directly and reports duplicates, conflicting active decisions, opposing equivalent claims, malformed records, and broken supersession links. Blocking conflicts return a failure after the report; the command never chooses a winner or rewrites records.
 
@@ -52,8 +56,12 @@ Search uses SQLite FTS5. Context assembly uses deterministic lexical candidates,
 
 ```text
 arifce task create <title> [--risk <LOW|MEDIUM|HIGH|CRITICAL>]
+arifce task create <title> --objective <text> --scope <path> --invariant <text> --done-when <KIND:text> [--scope ...] [--invariant ...] [--done-when ...]
+arifce task edit <task-id> --objective <text> --scope <path> --invariant <text> --done-when <KIND:text> [--scope ...] [--invariant ...] [--done-when ...]
 arifce task status <task-id>
+arifce task check <task-id>
 arifce task complete <task-id>
+arifce task complete <task-id> --claim <claim-id> --satisfy <1:evidence-id> [--satisfy <2:evidence-id> ...] [--acceptance <acceptance-id>]
 
 arifce decision create <title> --decision <text> [--rationale <text>]
 arifce decision status <decision-id>
@@ -68,9 +76,16 @@ arifce finding resolve <finding-id>
 
 arifce checkpoint --summary <text>
 arifce handoff
+arifce handoff --task <task-id>
 ```
 
 Task risk defaults to `MEDIUM`. `--risk` must follow the title and accepts `LOW`, `MEDIUM`, `HIGH`, or `CRITICAL`; unsupported options are rejected rather than becoming title text.
+
+The four contract fields are optional for legacy workflows but must be supplied together for contracted tasks. `--done-when` accepts `BUILD`, `TEST_RUN`, `ARCHITECTURE_BOUNDARY`, `PUBLIC_API_SURFACE`, or `SQLITE_SCHEMA` as the evidence kind. Criteria are numbered in the order supplied, starting at 1. Create a task-linked claim with `claim create <statement> --task <task-id>`, run verification to produce evidence, then map each criterion number to current claim-owned evidence with `--satisfy`. High-risk approval follows the existing acceptance policy. A legacy task can still be completed without a contract, but `task check` labels it `LEGACY_UNVERIFIED`, never evidence-verified. Contracted completion is `VERIFIED` only while its evidence is current; later relevant changes produce `NEEDS_REVERIFY`. This checks the recorded evidence and kind, not whether a prose criterion semantically follows from it. Scope and invariant wording still require engineering review.
+
+`task edit` replaces the entire four-field contract. Changing it after completion invalidates the prior completion basis; run verification and `task complete` again to establish a new one. The linked claim risk must be at least the task risk; use `claim create <statement> --task <task-id> --risk <level>` for higher-risk tasks.
+
+`handoff --task` includes the objective, scope, invariants, linked claims/evidence, failed attempts, open findings, repository state, completion check and next action without copying a transcript. The original project-wide `handoff` remains available.
 
 Omitted historical rationale is stored as `Unknown.`. Decision creation is serialized and rejects a normalized title already held by an active decision. Supersession requires two distinct active decisions and preserves the replaced record with a link to its active replacement. Attempts must reference an existing task. Handoffs select current engineering state, include trust and knowledge warnings, and never dump raw transcripts.
 

@@ -40,7 +40,7 @@ internal static class Cli
                 case "api": await ApiCommand(service, root, args); break;
                 case "schema": await SchemaCommand(service, root, args); break;
                 case "llm": await LlmCommand(root, args); break;
-                case "handoff": var handoff = await service.HandoffAsync(root); Console.WriteLine(handoff.Markdown); Console.WriteLine($"Saved {handoff.Id}"); break;
+                case "handoff": var handoff = Option(args, "--task") is { } handoffTaskId ? await service.HandoffForTaskAsync(root, handoffTaskId) : await service.HandoffAsync(root); Console.WriteLine(handoff.Markdown); Console.WriteLine($"Saved {handoff.Id}"); break;
                 case "journal": await JournalCommand(new JournalStore(), root, args); break;
                 case "why": Require(args, 2, "why <path-or-id>"); await Why(index, root, args[1]); break;
                 case "refactor": await Refactor(service, canonical, root, args); break;
@@ -107,12 +107,14 @@ internal static class Cli
     {
         var explain = args.Length > 1 && args[1].Equals("explain", StringComparison.OrdinalIgnoreCase);
         var taskStart = explain ? 2 : 1;
-        if (args.Length <= taskStart) throw new ArgumentException("context [explain] <task> [--budget N]");
+        if (args.Length <= taskStart) throw new ArgumentException("context [explain] <task> [--budget N] | context [explain] --task TASK-ID [--budget N]");
         var marker = Array.IndexOf(args, "--budget");
         var budget = marker >= 0 && marker + 1 < args.Length && int.TryParse(args[marker + 1], out var parsed) && parsed > 0 ? parsed : 8000;
         var taskEnd = marker >= 0 ? marker : args.Length;
-        var task = string.Join(' ', args[taskStart..taskEnd]);
-        var context = await new LlmContextComposer(index).ComposeAsync(root, task, budget);
+        var taskId = args[taskStart] == "--task" && args.Length > taskStart + 1 ? args[taskStart + 1] : null;
+        var task = taskId ?? string.Join(' ', args[taskStart..taskEnd]);
+        var composer = new LlmContextComposer(index);
+        var context = taskId is null ? await composer.ComposeAsync(root, task, budget) : await composer.ComposeForTaskAsync(root, taskId, budget);
         Console.WriteLine($"Context budget: {budget}\nCandidate records: {context.Telemetry.CandidateRecords}\nSelected records: {context.Telemetry.SelectedRecords}\nRejected records: {context.Telemetry.RejectedRecords}\nCandidate tokens: {context.Telemetry.CandidateTokens}\nSelected tokens: {context.Telemetry.SelectedTokens}");
         if (!explain)
         {
@@ -130,7 +132,7 @@ internal static class Cli
     private static async Task Why(IndexStore index, string root, string query) { var hits = await index.SearchAsync(root, $"\"{query.Replace("\"", "\"\"")}\"", 10); if (hits.Count == 0) Console.WriteLine("No recorded provenance or rationale was found. Historical rationale: unknown."); else foreach (var hit in hits) Console.WriteLine($"{hit.Path}: {hit.Snippet}"); }
     private static async Task TaskCommand(ProjectService service, string root, string[] args)
     {
-        Require(args, 3, "task create <title> [--risk <LOW|MEDIUM|HIGH|CRITICAL>] | task status <id> | task complete <id>");
+        Require(args, 3, "task create <title> [--objective TEXT --scope PATH --invariant TEXT --done-when KIND:TEXT] | task status|check|complete <id>");
 
         switch (args[1])
         {
@@ -143,32 +145,64 @@ internal static class Cli
                 {
                     throw new ArgumentException("Task title is required.");
                 }
-
-                if (optionIndex >= 0 && (!args[optionIndex].Equals("--risk", StringComparison.OrdinalIgnoreCase) || optionIndex != args.Length - 2))
+                if (optionIndex >= 0)
                 {
-                    throw new ArgumentException("task create supports only --risk <LOW|MEDIUM|HIGH|CRITICAL> after the title.");
+                    var allowed = new HashSet<string>(StringComparer.Ordinal) { "--risk", "--objective", "--scope", "--invariant", "--done-when" };
+                    for (var i = optionIndex; i < args.Length; i += 2)
+                        if (!allowed.Contains(args[i]) || i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal))
+                            throw new ArgumentException($"Unsupported or incomplete task create option: {args[i]}.");
                 }
 
-                var riskText = optionIndex < 0 ? nameof(RiskLevel.Medium) : args[optionIndex + 1];
-                if (!Enum.TryParse<RiskLevel>(riskText, ignoreCase: true, out var risk))
+                var riskText = Option(args, "--risk") ?? nameof(RiskLevel.Medium);
+                if (!Enum.TryParse<RiskLevel>(riskText, ignoreCase: true, out var risk) || !Enum.IsDefined(risk))
                 {
                     throw new ArgumentException("Task risk must be LOW, MEDIUM, HIGH, or CRITICAL.");
                 }
-
-                Console.WriteLine((await service.CreateTaskAsync(root, title, risk)).Id);
+                var criteria = Options(args, "--done-when").Select(value =>
+                {
+                    var colon = value.IndexOf(':');
+                    if (colon < 1 || colon == value.Length - 1) throw new ArgumentException("--done-when requires KIND:criterion text.");
+                    return new TaskCriterion(value[(colon + 1)..], value[..colon].ToUpperInvariant());
+                }).ToArray();
+                Console.WriteLine((await service.CreateTaskAsync(root, title, risk, objective: Option(args, "--objective"), scope: Options(args, "--scope").Length > 0 ? Options(args, "--scope") : null, invariants: Options(args, "--invariant").Length > 0 ? Options(args, "--invariant") : null, doneWhen: criteria.Length > 0 ? criteria : null)).Id);
                 break;
             }
             case "status":
                 Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetTaskAsync(root, args[2]) ?? throw new InvalidOperationException("Task not found."), JsonDefaults.Options));
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.CheckTaskCompletionAsync(root, args[2]), JsonDefaults.Options));
+                break;
+            case "edit":
+            {
+                var criteria = Options(args, "--done-when").Select(value =>
+                {
+                    var colon = value.IndexOf(':');
+                    if (colon < 1 || colon == value.Length - 1) throw new ArgumentException("--done-when requires KIND:criterion text.");
+                    return new TaskCriterion(value[(colon + 1)..], value[..colon].ToUpperInvariant());
+                }).ToArray();
+                Console.WriteLine((await service.UpdateTaskContractAsync(root, args[2], Option(args, "--objective") ?? throw new ArgumentException("--objective is required."), Options(args, "--scope"), Options(args, "--invariant"), criteria)).Id);
+                break;
+            }
+            case "check":
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.CheckTaskCompletionAsync(root, args[2]), JsonDefaults.Options));
                 break;
             case "complete":
-                Console.WriteLine((await service.CompleteTaskAsync(root, args[2])).Status);
+                if (Option(args, "--claim") is { } claimId)
+                {
+                    var satisfied = Options(args, "--satisfy").Select(value =>
+                    {
+                        var colon = value.IndexOf(':');
+                        if (colon < 1 || colon == value.Length - 1) throw new ArgumentException("--satisfy requires 1:EVIDENCE-ID.");
+                        return new KeyValuePair<string, string>(value[..colon], value[(colon + 1)..]);
+                    }).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+                    Console.WriteLine((await service.CompleteContractedTaskAsync(root, args[2], claimId, satisfied, Option(args, "--acceptance"))).Status);
+                }
+                else Console.WriteLine((await service.CompleteTaskAsync(root, args[2])).Status);
                 break;
             default:
                 throw new ArgumentException("Unknown task action.");
         }
     }
-    private static async Task ClaimCommand(ProjectService service, string root, string[] args) { Require(args, 3, "claim create <statement> | claim status <id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateClaimAsync(root, string.Join(' ', args[2..]), RiskLevel.Medium)).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetClaimAsync(root, args[2]) ?? throw new InvalidOperationException("Claim not found."), JsonDefaults.Options)); break; default: throw new ArgumentException("Unknown claim action."); } }
+    private static async Task ClaimCommand(ProjectService service, string root, string[] args) { Require(args, 3, "claim create <statement> [--task TASK-ID] [--risk LEVEL] | claim status <id>"); switch (args[1]) { case "create": var end = Array.FindIndex(args, 2, value => value.StartsWith("--", StringComparison.Ordinal)); var riskText = Option(args, "--risk") ?? nameof(RiskLevel.Medium); if (!Enum.TryParse<RiskLevel>(riskText, true, out var risk) || !Enum.IsDefined(risk)) throw new ArgumentException("Claim risk must be LOW, MEDIUM, HIGH, or CRITICAL."); Console.WriteLine((await service.CreateClaimAsync(root, string.Join(' ', args[2..(end < 0 ? args.Length : end)]), risk, taskId: Option(args, "--task"))).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetClaimAsync(root, args[2]) ?? throw new InvalidOperationException("Claim not found."), JsonDefaults.Options)); break; default: throw new ArgumentException("Unknown claim action."); } }
     private static async Task AcceptanceCommand(ProjectService service, string root, string[] args) { Require(args, 3, "acceptance create <claim-id> --actor <name> --rationale <text> | acceptance status <id> | acceptance revoke <id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateAcceptanceAsync(root, args[2], Option(args, "--actor") ?? throw new ArgumentException("--actor is required."), Option(args, "--rationale") ?? throw new ArgumentException("--rationale is required."))).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetAcceptanceAsync(root, args[2]) ?? throw new InvalidOperationException("Acceptance not found."), JsonDefaults.Options)); break; case "revoke": Console.WriteLine((await service.RevokeAcceptanceAsync(root, args[2])).Status); break; default: throw new ArgumentException("Unknown acceptance action."); } }
     private static async Task DecisionCommand(ProjectService service, string root, string[] args) { Require(args, 3, "decision create <title> --decision <text> [--rationale <text>] | decision status <id> | decision supersede <id> --by <replacement-id>"); switch (args[1]) { case "create": Console.WriteLine((await service.CreateDecisionAsync(root, args[2], Option(args, "--decision") ?? throw new ArgumentException("--decision is required."), Option(args, "--rationale"))).Id); break; case "status": Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await service.GetDecisionAsync(root, args[2]) ?? throw new InvalidOperationException("Decision not found."), JsonDefaults.Options)); break; case "supersede": Console.WriteLine((await service.SupersedeDecisionAsync(root, args[2], Option(args, "--by") ?? throw new ArgumentException("--by is required."))).Status); break; default: throw new ArgumentException("Unknown decision action."); } }
     private static async Task KnowledgeCommand(string root, string[] args)
@@ -277,5 +311,5 @@ internal static class Cli
         var execution = await orchestrator.ExecuteAsync(root, new LlmRequest(args[2], prompt), Option(args, "--claim") ?? "CLAIM-UNASSIGNED");
         Console.WriteLine($"{execution.Route.Response.Text}\n\nProvider: {execution.Route.Response.ProviderId}\nModel: {execution.Route.Response.Model}\nTokens: {execution.Route.Response.Usage.TotalTokens}\nEstimated cost: {execution.Route.EstimatedCost:0.########}\nEvidence: {execution.Evidence.Id}");
     }
-    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context [explain], knowledge audit, codegraph build|query, contract create|status, run start|event|finish|status, checkpoint, handoff, workspace list|add|remove|use, task create|status|complete, decision create|status|supersede, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, trust refresh, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, llm review, llm benchmark, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
+    private static void Help() => Console.WriteLine("ArifCE CLI\n\nCommands: init, adopt, status, doctor [--repair], rebuild, search, context [explain] [--task TASK-ID] [--budget N], knowledge audit, codegraph build|query, contract create|status, run start|event|finish|status, checkpoint, handoff [--task TASK-ID], workspace list|add|remove|use, task create|edit|status|check|complete, decision create|status|supersede, attempt record|status, finding create|status|resolve, claim create|status, acceptance create|status|revoke, trust refresh, verify, architecture check, api baseline|compare, schema baseline|compare, review record|status, llm provider list|add|remove|test, llm context, llm run, llm review, llm benchmark, why, refactor start|status|checkpoint|resolve|workstream|safepoint|verify|finish|abandon");
 }
