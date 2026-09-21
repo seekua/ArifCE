@@ -103,8 +103,18 @@ try {
     $successfulWorkflowEvents = [System.Collections.Generic.List[object]]::new()
     $successfulWorkflowEvents.Add(@{ type='thread.started'; thread_id='fixture-successful-arifce-thread' })
     $successfulWorkflowEvents.Add(@{ type='turn.started' })
-    foreach ($operation in @('rebuild','context','search','task','claim','verify','handoff')) {
-        $successfulWorkflowEvents.Add(@{ type='item.completed'; item=@{ type='command_execution'; command="dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll $operation"; aggregated_output='ok'; exit_code=0 } })
+    foreach ($command in @(
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll task create benchmark --risk LOW --objective objective --scope src --scope tests --invariant invariant --done-when TEST_RUN:tests',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll context --task TASK-0001 --budget 4000',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll search relevant',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll claim create complete --task TASK-0001 --risk LOW',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll verify CLAIM-0001 --command "dotnet test ArifCE.slnx --configuration Release --no-restore"',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll task complete TASK-0001 --claim CLAIM-0001 --satisfy 1:EVIDENCE-0001',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll task check TASK-0001',
+        'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll handoff --task TASK-0001'
+    )) {
+        $successfulWorkflowEvents.Add(@{ type='item.completed'; item=@{ type='command_execution'; command=$command; aggregated_output='ok'; exit_code=0 } })
     }
     $successfulWorkflowEvents.Add(@{ type='turn.completed'; usage=@{ input_tokens=100; cached_input_tokens=60; output_tokens=20 } })
     [IO.File]::WriteAllLines($successfulWorkflowLog, @($successfulWorkflowEvents | ForEach-Object { $_ | ConvertTo-Json -Compress -Depth 6 }))

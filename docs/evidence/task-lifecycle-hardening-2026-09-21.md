@@ -21,3 +21,7 @@ Local verification on 2026-09-21: `dotnet test tests/ArifCE.Tests/ArifCE.Tests.c
 - No fresh metered baseline/ArifCE pair, handoff recovery study, or external CI run was performed for this change. Phase 79 and the V1 effectiveness gate remain open.
 
 The next validation step is to run the existing matched benchmark harness on identical checkout/task/evaluator conditions, report failures as well as successes, and only compare token efficiency for evaluator-passing pairs. Do not infer a percentage benefit from these deterministic tests.
+
+## Benchmark harness integration
+
+The ArifCE arm now instructs a participant to create a fresh four-field task contract, obtain `context --task`, search canonical memory, create a task-linked claim, persist named test evidence, complete and check the task, and finish with `handoff --task`. The result collector requires separate successful host command events for every one of those stages; generic commands or failed command text no longer satisfy the workflow gate. The trial-isolation smoke test and completion/provenance smoke test pass locally. This proves harness enforcement, not an ArifCE effectiveness advantage; no metered model pair was run.

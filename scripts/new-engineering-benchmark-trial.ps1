@@ -130,10 +130,12 @@ Before changing code, follow .arifce/PROTOCOL.md and use only ArifCE context ava
 Use the product workflow, not just its Markdown files:
 1. Build the CLI once through `./BENCHMARK_RUN_CHECK.ps1 -Action build -Project src/ArifCE.Cli/ArifCE.Cli.csproj -AdditionalArguments @('--configuration','Release')`.
 2. Use `dotnet ./src/ArifCE.Cli/bin/Release/net10.0/ArifCE.Cli.dll rebuild` once so the disposable local index reflects this isolated checkout.
-3. Use that same platform-neutral DLL invocation to obtain task context and search relevant canonical memory before editing.
-4. Create or reuse a task and claim when the work requires them.
-5. Record verification as ArifCE evidence after relevant repository checks pass.
-6. Produce an ArifCE handoff before the final commit.
+3. Create a LOW-risk task with all four engineering-contract fields. Use the benchmark instruction as the objective, `src` and `tests` as initial scope, the public acceptance/API contract as the invariant, and one `TEST_RUN` done_when criterion. Do not use a pre-existing task.
+4. Use `context --task <task-id> --budget 4000`, then use `search` for relevant canonical memory before editing.
+5. After the candidate passes the repository check wrapper, create a LOW-risk claim linked with `--task <task-id>`.
+6. Record a successful named `dotnet test` verification as ArifCE evidence for that claim. Do not use unsafe-command evidence.
+7. Complete the task with `task complete <task-id> --claim <claim-id> --satisfy 1:<evidence-id>`, then run `task check <task-id>` and require `VERIFIED`.
+8. Produce `handoff --task <task-id>` before the final commit.
 
 Run each ArifCE workflow operation as a separate host tool action so its exit status is independently observable.
 
@@ -174,7 +176,7 @@ Run restore/build/test checks through `BENCHMARK_RUN_CHECK.ps1`; it retains full
 Set-Content -LiteralPath (Join-Path $trialRoot 'prompt.md') -Value $prompt -Encoding utf8
 
 $session = [ordered]@{
-    schemaVersion = 2
+    schemaVersion = 3
     runId = [Guid]::NewGuid().ToString('D')
     state = 'PREPARED'
     preparedAtUtc = [DateTime]::UtcNow.ToString('O')

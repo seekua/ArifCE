@@ -138,8 +138,18 @@ $arifceWorkflowPassed = if ($session.arm -eq 'arifce') {
     }
     finally { $workflowReader.Dispose() }
     $successfulCommandText = $successfulArifceCommands -join "`n"
-    $required = @('rebuild','context','search','task','claim','verify','handoff')
-    @($required | Where-Object { $successfulCommandText -notmatch "(?i)ArifCE\.Cli\.dll['`"]?\s+$_\b" }).Count -eq 0
+    $requiredPatterns = @(
+        'ArifCE\.Cli\.dll[''"]?\s+rebuild\b',
+        'ArifCE\.Cli\.dll[''"]?\s+context\s+--task\s+TASK-',
+        'ArifCE\.Cli\.dll[''"]?\s+search\b',
+        'ArifCE\.Cli\.dll[''"]?\s+task\s+create\b.+--objective\b.+--scope\b.+--invariant\b.+--done-when\b',
+        'ArifCE\.Cli\.dll[''"]?\s+claim\s+create\b.+--task\s+TASK-',
+        'ArifCE\.Cli\.dll[''"]?\s+verify\s+CLAIM-.+--command\b',
+        'ArifCE\.Cli\.dll[''"]?\s+task\s+complete\s+TASK-.+--claim\s+CLAIM-.+--satisfy\b',
+        'ArifCE\.Cli\.dll[''"]?\s+task\s+check\s+TASK-',
+        'ArifCE\.Cli\.dll[''"]?\s+handoff\s+--task\s+TASK-'
+    )
+    @($requiredPatterns | Where-Object { $successfulCommandText -notmatch "(?i)$_" }).Count -eq 0
 } else { $null }
 $result = [ordered]@{
     schemaVersion = 6
