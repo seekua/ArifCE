@@ -41,6 +41,9 @@ try {
         if ($agentInstructions -notmatch 'Engineering benchmark participant instructions' -or $agentInstructions -match 'PROTOCOL.md') {
             throw "$arm checkout did not receive neutral participant instructions."
         }
+        if ($agentInstructions -notmatch 'Before repeating a materially similar failed action' -or $agentInstructions -notmatch 'never rerun an identical failed command unchanged' -or $agentInstructions -notmatch 'Treat transient lock errors this way too') {
+            throw "$arm checkout does not require a re-plan before an identical failed retry."
+        }
         if ([string]::IsNullOrWhiteSpace([string]$session.sourceFixtureTree) -or $session.sourceFixtureTree -eq $session.fixtureTree) {
             throw "$arm session did not preserve source and neutralized fixture provenance."
         }

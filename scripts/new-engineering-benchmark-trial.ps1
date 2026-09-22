@@ -91,7 +91,7 @@ $neutralAgentInstructions = @'
 
 Follow the adjacent benchmark prompt exactly. Work only inside this isolated checkout. Do not inspect parent or sibling directories, external history, remotes, the network, or another participant's output. Report failed attempts and verification failures honestly.
 
-Start with a repository map, then select relevant symbols and bounded line ranges. Do not repeatedly read an unchanged full file or repeat an unchanged repository search. Summarize successful build/test results; on failure inspect only the relevant error and nearby context before expanding. After two materially similar failed tool actions, stop and re-plan.
+Start with a repository map, then select relevant symbols and bounded line ranges. Do not repeatedly read an unchanged full file or repeat an unchanged repository search. Summarize successful build/test results; on failure inspect only the relevant error and nearby context before expanding. After any failed tool action, inspect the failure before retrying. Before repeating a materially similar failed action, emit an explicit re-plan message that states the changed hypothesis or the next diagnostic or wait action; never rerun an identical failed command unchanged. Treat transient lock errors this way too. After two materially similar failed tool actions, stop and re-plan.
 
 Use the host's structured patch/edit tool for source changes. If it reports a Windows reparse-point error, stop the edit attempt and report the infrastructure failure. Do not embed source files, base64 source, or multiline C# payloads in PowerShell, cmd, Python, or another shell command.
 '@
