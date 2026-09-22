@@ -2,17 +2,31 @@
 param(
     [Parameter(Mandatory)][ValidateSet('restore','build','test')][string]$Action,
     [string]$Project = 'ArifCE.slnx',
-    [string[]]$AdditionalArguments = @()
+    [string[]]$AdditionalArguments = @(),
+    [ValidateRange(1, 3600)][int]$LockTimeoutSeconds = 600
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'benchmark-operation-lock.ps1')
 $log = Join-Path ([IO.Path]::GetTempPath()) ('arifce-check-' + [Guid]::NewGuid().ToString('N') + '.log')
 $started = [Diagnostics.Stopwatch]::StartNew()
+$exitCode = -1
 try {
     $callerArguments = @($AdditionalArguments | Where-Object { $_ -notmatch '(?i)^(?:--|-|/)(?:p|property):NuGetAudit=' })
     $arguments = @($Action, $Project, '--disable-build-servers', '--maxcpucount:1', '--nologo', '--verbosity:minimal', '-p:NuGetAudit=false') + $callerArguments
-    & dotnet @arguments *> $log
-    $exitCode = $LASTEXITCODE
+    $result = Invoke-WithBenchmarkOperationLock -Root (Get-Location).Path -TimeoutSeconds $LockTimeoutSeconds -Operation {
+        $previousNodeReuse = $env:MSBUILDDISABLENODEREUSE
+        try {
+            $env:MSBUILDDISABLENODEREUSE = '1'
+            & dotnet @arguments *> $log
+            [pscustomobject]@{ ExitCode = $LASTEXITCODE }
+        }
+        finally {
+            if ($null -eq $previousNodeReuse) { Remove-Item Env:MSBUILDDISABLENODEREUSE -ErrorAction SilentlyContinue }
+            else { $env:MSBUILDDISABLENODEREUSE = $previousNodeReuse }
+        }
+    }
+    $exitCode = $result.ExitCode
     $started.Stop()
     $lines = @(Get-Content -LiteralPath $log)
     $warnings = @($lines | Select-String -Pattern '\bwarning\b' -CaseSensitive:$false).Count
@@ -35,5 +49,5 @@ try {
     exit $exitCode
 }
 finally {
-    if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $log)) { Remove-Item -LiteralPath $log -Force }
+    if ($exitCode -eq 0 -and (Test-Path -LiteralPath $log)) { Remove-Item -LiteralPath $log -Force }
 }

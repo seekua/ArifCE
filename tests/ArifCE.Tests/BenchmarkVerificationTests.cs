@@ -52,6 +52,22 @@ public sealed class BenchmarkVerificationTests : IDisposable
         Assert.Equal(ClaimStatus.Supported, persistedClaim!.Status);
     }
 
+    [Fact]
+    public async Task Verification_drains_stdout_and_stderr_concurrently_without_leaking_the_process()
+    {
+        await service.InitializeAsync(root, false);
+        var claim = await service.CreateClaimAsync(root, "Large verification output completes", RiskLevel.Low);
+        var script = Path.Combine(root, "large-output.ps1");
+        await File.WriteAllTextAsync(script, "$text = 'x' * 131072\n[Console]::Error.Write($text)\n[Console]::Out.Write('completed')\n");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+
+        var result = await service.VerifyAsync(root, claim.Id, $"pwsh -NoProfile -File {script}", true, cancellationToken: timeout.Token);
+
+        Assert.Equal(0, result.Evidence.ExitCode);
+        Assert.Equal("UNSAFE_COMMAND", result.Evidence.Kind);
+        Assert.Contains("completed", result.Evidence.Summary, StringComparison.Ordinal);
+    }
+
     private Dictionary<string, string> Hashes() => Directory.EnumerateFiles(Path.Combine(root, ".arifce"), "*", SearchOption.AllDirectories)
         .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}index{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
         .ToDictionary(path => Path.GetRelativePath(root, path), path => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))), StringComparer.OrdinalIgnoreCase);

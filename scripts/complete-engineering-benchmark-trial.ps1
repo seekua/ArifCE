@@ -133,7 +133,7 @@ $arifceWorkflowPassed = if ($session.arm -eq 'arifce') {
             if ($workflowEvent.type -cne 'item.completed' -or $workflowEvent.item.type -cne 'command_execution') { continue }
             if ($null -eq $workflowEvent.item.exit_code -or [int]$workflowEvent.item.exit_code -ne 0) { continue }
             $workflowCommand = [string]$workflowEvent.item.command
-            if ($workflowCommand -match '(?i)(?:ArifCE\.Cli\.csproj|(?:ArifCE\.Cli|arifce)\.dll)') { $successfulArifceCommands.Add($workflowCommand) }
+            if ($workflowCommand -match '(?i)(?:ArifCE\.Cli\.csproj|(?:ArifCE\.Cli|arifce)\.dll|BENCHMARK_VERIFY_CHECK\.ps1)') { $successfulArifceCommands.Add($workflowCommand) }
         }
     }
     finally { $workflowReader.Dispose() }
@@ -145,7 +145,7 @@ $arifceWorkflowPassed = if ($session.arm -eq 'arifce') {
         ($cliInvocation + 'search\b'),
         ($cliInvocation + 'task\s+create\b.+--objective\b.+--scope\b.+--invariant\b.+--done-when\b'),
         ($cliInvocation + 'claim\s+create\b.+--task\s+TASK-'),
-        ($cliInvocation + 'verify\s+CLAIM-.+--command\b'),
+        ('(?:' + $cliInvocation + 'verify\s+CLAIM-.+--command\b|BENCHMARK_VERIFY_CHECK\.ps1\b.+-ClaimId\s+CLAIM-)'),
         ($cliInvocation + 'task\s+complete\s+TASK-.+--claim\s+CLAIM-.+--satisfy\b'),
         ($cliInvocation + 'task\s+check\s+TASK-'),
         ($cliInvocation + 'handoff\s+--task\s+TASK-')

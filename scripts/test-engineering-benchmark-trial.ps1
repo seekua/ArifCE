@@ -25,6 +25,9 @@ try {
         $trial = Join-Path (Join-Path $root 'trust-dirty-content') $arm
         $session = Get-Content -LiteralPath (Join-Path $trial 'session.json') -Raw | ConvertFrom-Json
         $checkout = Join-Path $trial 'checkout'
+        foreach ($helper in @('BENCHMARK_RUN_CHECK.ps1','BENCHMARK_VERIFY_CHECK.ps1','benchmark-operation-lock.ps1')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $checkout $helper) -PathType Leaf)) { throw "$arm checkout is missing $helper." }
+        }
         $expectedContract = Get-BenchmarkAcceptanceContract $manifest $manifest.tasks[0]
         $promptText = Get-Content -LiteralPath (Join-Path $trial 'prompt.md') -Raw
         if (-not $promptText.Contains($expectedContract) -or $session.acceptanceContractSha256 -cne (Get-BenchmarkContractHash $expectedContract)) { throw "$arm did not receive the same hash-bound public contract." }
@@ -54,7 +57,7 @@ try {
     if ($baselinePrompt -notmatch 'without reading any path under \.arifce') { throw 'Baseline prompt does not prohibit ArifCE memory reads.' }
     $arifcePrompt = Get-Content -LiteralPath (Join-Path $root 'trust-dirty-content/arifce/prompt.md') -Raw
     if ($arifcePrompt -notmatch [regex]::Escape('dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll rebuild')) { throw 'ArifCE prompt does not initialize the disposable index through the actual platform-neutral CLI assembly.' }
-    if ($arifcePrompt -notmatch 'all four engineering-contract fields' -or $arifcePrompt -notmatch 'context --task <task-id>' -or $arifcePrompt -notmatch 'task complete <task-id> --claim <claim-id> --satisfy' -or $arifcePrompt -notmatch 'handoff --task <task-id>') { throw 'ArifCE prompt does not require the contracted continuity lifecycle.' }
+    if ($arifcePrompt -notmatch 'all four engineering-contract fields' -or $arifcePrompt -notmatch 'context --task <task-id>' -or $arifcePrompt -notmatch 'BENCHMARK_VERIFY_CHECK\.ps1' -or $arifcePrompt -notmatch 'Do not run this concurrently' -or $arifcePrompt -notmatch 'task complete <task-id> --claim <claim-id> --satisfy' -or $arifcePrompt -notmatch 'handoff --task <task-id>') { throw 'ArifCE prompt does not require the serialized contracted continuity lifecycle.' }
     if ($arifcePrompt -notmatch 'separate host tool action') { throw 'ArifCE prompt does not require independently observable workflow operations.' }
     $duplicateRejected = $false
     try {

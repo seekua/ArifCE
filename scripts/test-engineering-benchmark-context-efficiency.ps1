@@ -13,6 +13,7 @@ try {
         @{ type='item.completed'; item=@{ type='command_execution'; command='rg -n Symbol src'; aggregated_output=('b' * 200); exit_code=0 } },
         @{ type='item.completed'; item=@{ type='command_execution'; command='rg -n Symbol src'; aggregated_output=('b' * 200); exit_code=0 } },
         @{ type='item.completed'; item=@{ type='command_execution'; command='./BENCHMARK_RUN_CHECK.ps1 -Action test'; aggregated_output='{"exitCode":0}'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='./BENCHMARK_VERIFY_CHECK.ps1 -CliPath ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll -ClaimId CLAIM-0001 -TestProject ArifCE.slnx -Path src'; aggregated_output='CLAIM-0001: VERIFIED (EVIDENCE-0001)'; exit_code=0 } },
         @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll verify CLAIM-0001 --command "dotnet test ArifCE.slnx --no-restore"'; aggregated_output=('v' * 80); exit_code=0 } },
         @{ type='item.completed'; item=@{ type='command_execution'; command=('Set-Content src/A.cs ' + ('x' * 2100)); aggregated_output='failed'; exit_code=1 } },
         @{ type='item.completed'; item=@{ type='agent_message'; text='I will re-plan after the failed edit.' } }
@@ -24,7 +25,7 @@ try {
     if ($metrics.largeShellEditCount -ne 1 -or $metrics.policyPassed -or 'LARGE_SOURCE_EDIT_EMBEDDED_IN_SHELL' -notin $metrics.policyViolations) { throw 'Large shell edits were not rejected by policy.' }
     if ($metrics.uniqueUsefulContextTokensEstimate -ne 150 -or $metrics.usefulContextRatioEstimate -ne 0.15 -or $metrics.contextAmplificationFactorEstimate -ne 6.667) { throw 'Useful-context estimates are inconsistent.' }
     if ($metrics.replanSignals -ne 1 -or $metrics.unboundedBuildTestCount -ne 0) { throw 'Replanning or bounded build detection is wrong.' }
-    if ($metrics.arifceCommandCount -ne 1 -or $metrics.arifceOverheadTokens -ne 20) { throw 'The actual arifce.dll invocation was not attributed as ArifCE overhead.' }
+    if ($metrics.arifceCommandCount -ne 2 -or $metrics.arifceOverheadTokens -le 20) { throw 'The actual arifce.dll invocation and serialized verification wrapper were not attributed as ArifCE overhead.' }
 
     $directBuildLog = Join-Path $root 'direct-build.jsonl'
     $directBuildEvent = @{ type='item.completed'; item=@{ type='command_execution'; command='pwsh -Command "dotnet test ArifCE.slnx --no-restore"'; aggregated_output='full direct output'; exit_code=0 } }

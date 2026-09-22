@@ -98,6 +98,8 @@ Use the host's structured patch/edit tool for source changes. If it reports a Wi
 Set-Content -LiteralPath (Join-Path $checkout 'AGENTS.md') -Value $neutralAgentInstructions -Encoding utf8
 if ($null -ne $apiContract) { Copy-Item -LiteralPath (Join-Path $repo $task[0].apiContractFile) -Destination (Join-Path $checkout 'BENCHMARK_API_CONTRACT.cs.txt') }
 Copy-Item -LiteralPath (Join-Path $repo 'scripts/benchmark-run-check.ps1') -Destination (Join-Path $checkout 'BENCHMARK_RUN_CHECK.ps1')
+Copy-Item -LiteralPath (Join-Path $repo 'scripts/benchmark-verify-check.ps1') -Destination (Join-Path $checkout 'BENCHMARK_VERIFY_CHECK.ps1')
+Copy-Item -LiteralPath (Join-Path $repo 'scripts/benchmark-operation-lock.ps1') -Destination (Join-Path $checkout 'benchmark-operation-lock.ps1')
 
 Invoke-Git @('-C', $checkout, 'init', '--quiet') | Out-Null
 Invoke-Git @('-C', $checkout, 'config', 'user.name', 'ArifCE Benchmark') | Out-Null
@@ -133,7 +135,7 @@ Use the product workflow, not just its Markdown files:
 3. Create a LOW-risk task with all four engineering-contract fields. Use the benchmark instruction as the objective, `src` and `tests` as initial scope, the public acceptance/API contract as the invariant, and one `TEST_RUN` done_when criterion. Do not use a pre-existing task.
 4. Use `context --task <task-id> --budget 4000`, then use `search` for relevant canonical memory before editing.
 5. After the candidate passes the repository check wrapper, create a LOW-risk claim linked with `--task <task-id>`.
-6. Record a successful named `dotnet test` verification as ArifCE evidence for that claim. Do not use unsafe-command evidence.
+6. After every earlier check process has completed, record a successful named `dotnet test` verification through `./BENCHMARK_VERIFY_CHECK.ps1 -CliPath ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll -ClaimId <claim-id> -TestProject ArifCE.slnx -Path <changed-path>`. Add one `-Path` per changed source/test path. Do not run this concurrently with another restore/build/test action and do not use unsafe-command evidence.
 7. Complete the task with `task complete <task-id> --claim <claim-id> --satisfy 1:<evidence-id>`, then run `task check <task-id>` and require `VERIFIED`.
 8. Produce `handoff --task <task-id>` before the final commit.
 

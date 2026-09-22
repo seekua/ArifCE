@@ -837,5 +837,25 @@ public sealed class ProjectService(CanonicalStore canonical, JournalStore journa
         var shell = OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh"; var args = OperatingSystem.IsWindows() ? $"/d /s /c \"{command}\"" : $"-c \"{command.Replace("\"", "\\\"")}\"";
         return await RunProcessAsync(new ProcessStartInfo(shell, args) { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true }, ct);
     }
-    private static async Task<(int ExitCode, string Output)> RunProcessAsync(ProcessStartInfo start, CancellationToken ct) { using var p = new Process { StartInfo = start }; p.Start(); var stdout = await p.StandardOutput.ReadToEndAsync(ct); var stderr = await p.StandardError.ReadToEndAsync(ct); await p.WaitForExitAsync(ct); return (p.ExitCode, stdout + stderr); }
+    private static async Task<(int ExitCode, string Output)> RunProcessAsync(ProcessStartInfo start, CancellationToken ct)
+    {
+        using var process = new Process { StartInfo = start };
+        process.Start();
+        var stdout = process.StandardOutput.ReadToEndAsync(ct);
+        var stderr = process.StandardError.ReadToEndAsync(ct);
+        try
+        {
+            await process.WaitForExitAsync(ct);
+            return (process.ExitCode, await stdout + await stderr);
+        }
+        catch (OperationCanceledException)
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync(CancellationToken.None);
+            }
+            throw;
+        }
+    }
 }
