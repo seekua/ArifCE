@@ -13,7 +13,7 @@ try {
         @{ type='item.completed'; item=@{ type='command_execution'; command='rg -n Symbol src'; aggregated_output=('b' * 200); exit_code=0 } },
         @{ type='item.completed'; item=@{ type='command_execution'; command='rg -n Symbol src'; aggregated_output=('b' * 200); exit_code=0 } },
         @{ type='item.completed'; item=@{ type='command_execution'; command='./BENCHMARK_RUN_CHECK.ps1 -Action test'; aggregated_output='{"exitCode":0}'; exit_code=0 } },
-        @{ type='item.completed'; item=@{ type='command_execution'; command='./BENCHMARK_VERIFY_CHECK.ps1 -CliPath ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll -ClaimId CLAIM-0001 -TestProject ArifCE.slnx -Path src'; aggregated_output='CLAIM-0001: VERIFIED (EVIDENCE-0001)'; exit_code=0 } },
+        @{ type='item.completed'; item=@{ type='command_execution'; command='./BENCHMARK_VERIFY_CHECK.ps1 -CliPath ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll -ClaimId CLAIM-0001 -TestProject ArifCE.slnx -PathCsv src,tests'; aggregated_output='CLAIM-0001: VERIFIED (EVIDENCE-0001)'; exit_code=0 } },
         @{ type='item.completed'; item=@{ type='command_execution'; command='dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll verify CLAIM-0001 --command "dotnet test ArifCE.slnx --no-restore"'; aggregated_output=('v' * 80); exit_code=0 } },
         @{ type='item.completed'; item=@{ type='command_execution'; command=('Set-Content src/A.cs ' + ('x' * 2100)); aggregated_output='failed'; exit_code=1 } },
         @{ type='item.completed'; item=@{ type='agent_message'; text='I will re-plan after the failed edit.' } }

@@ -134,8 +134,8 @@ Use the product workflow, not just its Markdown files:
 2. Use `dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll rebuild` once so the disposable local index reflects this isolated checkout.
 3. Create a LOW-risk task with all four engineering-contract fields. Use the benchmark instruction as the objective, `src` and `tests` as initial scope, the public acceptance/API contract as the invariant, and one `TEST_RUN` done_when criterion. Do not use a pre-existing task.
 4. Use `context --task <task-id> --budget 4000`, then use `search` for relevant canonical memory before editing.
-5. After the candidate passes the repository check wrapper, create a LOW-risk claim linked with `--task <task-id>`.
-6. After every earlier check process has completed, record a successful named `dotnet test` verification through `./BENCHMARK_VERIFY_CHECK.ps1 -CliPath ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll -ClaimId <claim-id> -TestProject ArifCE.slnx -Path <changed-path>`. Add one `-Path` per changed source/test path. Do not run this concurrently with another restore/build/test action and do not use unsafe-command evidence.
+5. After the candidate builds successfully through the repository check wrapper, create a LOW-risk claim linked with `--task <task-id>`. Do not run a separate final full-suite test before evidence verification.
+6. After every earlier check process has completed, run the one final repository test and record it as named `dotnet test` evidence through `./BENCHMARK_VERIFY_CHECK.ps1 -CliPath ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll -ClaimId <claim-id> -TestProject ArifCE.slnx -PathCsv <changed-path-1>,<changed-path-2>`. Pass all changed source/test paths once in the comma-separated `-PathCsv` value. Wait for this exact tool action to finish with exit code 0 before issuing any other tool action. Do not run it concurrently with another restore/build/test action and do not use unsafe-command evidence.
 7. Complete the task with `task complete <task-id> --claim <claim-id> --satisfy 1:<evidence-id>`, then run `task check <task-id>` and require `VERIFIED`.
 8. Produce `handoff --task <task-id>` before the final commit.
 

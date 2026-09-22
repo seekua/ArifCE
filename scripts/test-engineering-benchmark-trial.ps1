@@ -57,7 +57,7 @@ try {
     if ($baselinePrompt -notmatch 'without reading any path under \.arifce') { throw 'Baseline prompt does not prohibit ArifCE memory reads.' }
     $arifcePrompt = Get-Content -LiteralPath (Join-Path $root 'trust-dirty-content/arifce/prompt.md') -Raw
     if ($arifcePrompt -notmatch [regex]::Escape('dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll rebuild')) { throw 'ArifCE prompt does not initialize the disposable index through the actual platform-neutral CLI assembly.' }
-    if ($arifcePrompt -notmatch 'all four engineering-contract fields' -or $arifcePrompt -notmatch 'context --task <task-id>' -or $arifcePrompt -notmatch 'BENCHMARK_VERIFY_CHECK\.ps1' -or $arifcePrompt -notmatch 'Do not run this concurrently' -or $arifcePrompt -notmatch 'task complete <task-id> --claim <claim-id> --satisfy' -or $arifcePrompt -notmatch 'handoff --task <task-id>') { throw 'ArifCE prompt does not require the serialized contracted continuity lifecycle.' }
+    if ($arifcePrompt -notmatch 'all four engineering-contract fields' -or $arifcePrompt -notmatch 'context --task <task-id>' -or $arifcePrompt -notmatch 'BENCHMARK_VERIFY_CHECK\.ps1' -or $arifcePrompt -notmatch '-PathCsv' -or $arifcePrompt -notmatch 'Wait for this exact tool action' -or $arifcePrompt -notmatch 'Do not run it concurrently' -or $arifcePrompt -notmatch 'task complete <task-id> --claim <claim-id> --satisfy' -or $arifcePrompt -notmatch 'handoff --task <task-id>') { throw 'ArifCE prompt does not require the serialized contracted continuity lifecycle.' }
     if ($arifcePrompt -notmatch 'separate host tool action') { throw 'ArifCE prompt does not require independently observable workflow operations.' }
     $duplicateRejected = $false
     try {

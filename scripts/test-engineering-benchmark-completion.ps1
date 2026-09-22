@@ -109,7 +109,7 @@ try {
         'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll context --task TASK-0001 --budget 4000',
         'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll search relevant',
         'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll claim create complete --task TASK-0001 --risk LOW',
-        './BENCHMARK_VERIFY_CHECK.ps1 -CliPath ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll -ClaimId CLAIM-0001 -TestProject ArifCE.slnx -Path src',
+        './BENCHMARK_VERIFY_CHECK.ps1 -CliPath ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll -ClaimId CLAIM-0001 -TestProject ArifCE.slnx -PathCsv src,tests',
         'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll task complete TASK-0001 --claim CLAIM-0001 --satisfy 1:EVIDENCE-0001',
         'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll task check TASK-0001',
         'dotnet ./src/ArifCE.Cli/bin/Release/net10.0/arifce.dll handoff --task TASK-0001'
