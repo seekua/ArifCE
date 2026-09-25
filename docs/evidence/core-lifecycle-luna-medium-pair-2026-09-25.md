@@ -4,7 +4,9 @@ This is a preserved ineligible comparison, not a token-savings or product-effect
 
 The baseline passed repository tests, the public API gate, and the pinned independent evaluator with 83,342 measured primary tokens. The ArifCE host completed its workflow and repository tests with 97,842 measured primary tokens. Before its independent evaluator could be accepted, final provenance verification rejected the ArifCE result with `Token measurement mismatch: churnRatio`.
 
-The mismatch means that the persisted telemetry no longer exactly agreed with the immutable raw host capture. The harness correctly failed closed. The evaluator was not treated as complete, and neither arm enters successful-task comparison. The telemetry invariant must be diagnosed before a new Luna study; it must not be weakened to admit this run.
+The mismatch was traced to insignificant trailing-zero formatting of the derived floating-point `churnRatio`, not a disagreement in raw input, cache, or output counters. The verifier now recomputes and rounds that derived value while retaining exact fail-closed checks for every raw counter. After that correction, provenance verification passed and the ArifCE independent evaluator ran.
+
+The final ArifCE evaluator failed `Explicit_task_links_precede_lexical_results_and_foreign_links_are_rejected` because the required foreign-link exclusion content was not present. The pair therefore remains ineligible for a real behavioral reason. Neither arm enters successful-task comparison, and no retry was made.
 
 ## Fixed conditions
 
