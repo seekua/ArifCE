@@ -116,6 +116,8 @@ V0.7 starts with documentation integrity. No language is marked reviewed until i
 
 The first fresh Terra/low pair is preserved as ineligible in [its evidence record](docs/evidence/core-lifecycle-terra-low-pair-2026-09-25.md). The baseline failed the pinned foreign-link exclusion assertion; the ArifCE checkout was dirty at completion. Neither side is included in successful-task token comparison and no retry was made.
 
+The first [Luna/medium pair](docs/evidence/core-lifecycle-luna-medium-pair-2026-09-25.md) is also preserved as ineligible. Derived telemetry formatting was corrected without weakening raw-counter provenance, then the ArifCE candidate failed the same pinned foreign-link exclusion behavior. No lower-model effectiveness conclusion is claimed.
+
 ## Explicit deferrals
 
 - **V1 core lifecycle focus (owner-approved product direction):** strengthen `TASK → CONTEXT → WORK → CLAIM → VERIFY → HANDOFF` before expanding peripheral features. Structured task contracts, task-linked claims, evidence-backed completion checks, task-aware bounded context, and focused handoffs have passed [local verification](docs/evidence/task-lifecycle-hardening-2026-09-21.md). No matched effectiveness benchmark, external CI run, or V1 outcome is claimed yet. The working product boundary is [documented](docs/product-direction.md). Agent launchers, generic memory, vector databases, cloud sync, and new UI subsystems are deferred unless later measurement establishes a core need.
