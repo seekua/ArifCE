@@ -67,10 +67,15 @@ function Assert-BenchmarkTokenUsage($Result, [string]$LogPath) {
     }
     if ($Result.tokenSource -cne 'agent-host' -or $null -eq $Result.tokenMeasurement) { throw 'Token counts require supported captured host usage; manual totals are not provenance.' }
     $expected = Read-BenchmarkTokenUsage $LogPath
-    $properties = if ([int]$Result.tokenMeasurement.version -eq 1) { @('format','threadId','inputTokens','cachedInputTokens','outputTokens','totalTokens') } else { @($expected.PSObject.Properties.Name) }
+    # Counters and identifiers are canonical host facts. Derived ratios are recomputed
+    # from those facts because JSON numeric formatting may remove insignificant zeros.
+    $properties = if ([int]$Result.tokenMeasurement.version -eq 1) { @('format','threadId','inputTokens','cachedInputTokens','outputTokens','totalTokens') } else { @($expected.PSObject.Properties.Name | Where-Object { $_ -ne 'churnRatio' }) }
     foreach ($propertyName in $properties) {
         $property = $expected.PSObject.Properties[$propertyName]
         if (($Result.tokenMeasurement.($property.Name) | ConvertTo-Json -Compress) -cne ($property.Value | ConvertTo-Json -Compress)) { throw "Token measurement mismatch: $($property.Name)." }
+    }
+    if ([int]$Result.tokenMeasurement.version -ge 2 -and $null -ne $expected.churnRatio) {
+        if ([Math]::Round([double]$Result.tokenMeasurement.churnRatio, 6) -ne $expected.churnRatio) { throw 'Token measurement mismatch: churnRatio.' }
     }
     if ((Read-BenchmarkTokenCount $Result.tokensConsumed 'tokensConsumed') -ne $expected.totalTokens) { throw 'Total tokens do not match captured host usage.' }
 }

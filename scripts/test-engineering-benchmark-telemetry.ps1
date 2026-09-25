@@ -20,6 +20,8 @@ try {
     if ($usage.totalTokens -ne 120 -or $usage.cachedInputTokens -ne 60 -or $usage.nonCachedInputTokens -ne 40 -or $usage.primaryTokens -ne 60 -or $usage.churnRatio -ne 2) { throw 'Primary, cached, churn, or total usage is wrong.' }
     $measured = [pscustomobject]@{ tokenSource = 'agent-host'; tokensConsumed = 120L; tokenMeasurement = $usage }
     Assert-BenchmarkTokenUsage $measured $log
+    $jsonRoundTrip = $usage | ConvertTo-Json -Compress | ConvertFrom-Json
+    Assert-BenchmarkTokenUsage ([pscustomobject]@{ tokenSource = 'agent-host'; tokensConsumed = 120L; tokenMeasurement = $jsonRoundTrip }) $log
     $legacyUsage = [pscustomobject][ordered]@{ format='codex-exec-jsonl';version=1;threadId='fixture-thread';inputTokens=100L;cachedInputTokens=60L;outputTokens=20L;totalTokens=120L }
     Assert-BenchmarkTokenUsage ([pscustomobject]@{ tokenSource='agent-host';tokensConsumed=120L;tokenMeasurement=$legacyUsage }) $log
     $summary = Get-BenchmarkTokenSummary @($measured, $measured)
