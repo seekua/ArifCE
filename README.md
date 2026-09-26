@@ -1,9 +1,6 @@
 # ArifCE
 <p align="center"><img src="assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
-[English](README.md) · [简体中文](docs/locales/README.zh-CN.md) · [繁體中文](docs/locales/README.zh-TW.md) · [한국어](docs/locales/README.ko.md) · [Deutsch](docs/locales/README.de.md) · [Español](docs/locales/README.es.md) · [Français](docs/locales/README.fr.md) · [Italiano](docs/locales/README.it.md) · [Dansk](docs/locales/README.da.md) · [日本語](docs/locales/README.ja.md) · [Polski](docs/locales/README.pl.md) · [Русский](docs/locales/README.ru.md) · [Bosanski](docs/locales/README.bs.md) · [العربية](docs/locales/README.ar.md) · [Norsk](docs/locales/README.no.md) · [Português (Brasil)](docs/locales/README.pt-BR.md) · [ไทย](docs/locales/README.th.md) · [Türkçe](docs/locales/README.tr.md) · [Українська](docs/locales/README.uk.md) · [বাংলা](docs/locales/README.bn.md) · [Ελληνικά](docs/locales/README.el.md) · [Tiếng Việt](docs/locales/README.vi.md)
-
-
 **Agents change. Your project should not forget.**
 
 [![CI](https://github.com/seekua/ArifCE/actions/workflows/ci.yml/badge.svg)](https://github.com/seekua/ArifCE/actions/workflows/ci.yml) [![Latest release](https://img.shields.io/github/v/release/seekua/ArifCE?cacheSeconds=300)](https://github.com/seekua/ArifCE/releases/latest) [![License](https://img.shields.io/github/license/seekua/ArifCE?cacheSeconds=300)](LICENSE)
@@ -12,7 +9,37 @@ ArifCE is a local-first project intelligence and continuity layer for AI-assiste
 
 > The repository owns the context. The agent only borrows it.
 
-## Why ArifCE exists
+**Your limit ended? Continue in two commands.**
+
+```bash
+# Before you stop:
+arifce handoff --task TASK-0031
+
+# When you return with Codex, Claude Code, OpenCode, or a local model:
+arifce context --task TASK-0031 --budget 2000
+```
+
+The handoff carries the objective, completed work, verified evidence, unresolved items, failures, and next action. The context command gives the next agent a bounded view of the same repository state rather than a raw chat transcript.
+
+## Installation and quick start
+
+Download the self-contained archive for your platform from [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.0), extract it, and add `arifce` to your `PATH`. No separate .NET, Node, Python, Docker, or database installation is required.
+
+```bash
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+See the [installation guide](docs/getting-started/installation.md) for each platform.
+
+**Read in another language.**
+
+[English](README.md) · [简体中文](docs/locales/README.zh-CN.md) · [繁體中文](docs/locales/README.zh-TW.md) · [한국어](docs/locales/README.ko.md) · [Deutsch](docs/locales/README.de.md) · [Español](docs/locales/README.es.md) · [Français](docs/locales/README.fr.md) · [Italiano](docs/locales/README.it.md) · [Dansk](docs/locales/README.da.md) · [日本語](docs/locales/README.ja.md) · [Polski](docs/locales/README.pl.md) · [Русский](docs/locales/README.ru.md) · [Bosanski](docs/locales/README.bs.md) · [العربية](docs/locales/README.ar.md) · [Norsk](docs/locales/README.no.md) · [Português (Brasil)](docs/locales/README.pt-BR.md) · [ไทย](docs/locales/README.th.md) · [Türkçe](docs/locales/README.tr.md) · [Українська](docs/locales/README.uk.md) · [বাংলা](docs/locales/README.bn.md) · [Ελληνικά](docs/locales/README.el.md) · [Tiếng Việt](docs/locales/README.vi.md)
+
+**Why ArifCE exists.**
 
 Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
 
@@ -20,7 +47,7 @@ The goal is not to make agents sound more certain. The goal is to help every con
 
 ArifCE turns continuity into a shared engineering practice: focused context for the next task, explicit evidence for important claims, and honest handoffs when work is incomplete.
 
-## Who it is for
+**Who it is for.**
 
 ArifCE is for AI-assisted engineering teams, developers who work with coding agents, and maintainers who need project context to survive beyond one person, chat, or session. It is especially useful when several contributors share a repository and need a clear record of decisions, verification, and unfinished work.
 
@@ -64,7 +91,7 @@ ArifCE tracks what the task was, what changed, why it changed, what an agent cla
 
 Technical verification and product acceptance are separate: acceptance records identify who approved a claim and which current evidence supported that decision.
 
-## V0.1 workflow
+## Core workflow
 
 ```text
 arifce init
@@ -80,11 +107,9 @@ Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a dis
 
 ## Architecture
 
-The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and [V0.1 specification](docs/SPECIFICATION-v0.1.md).
+The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and the [historical V0.1 foundation specification](docs/SPECIFICATION-v0.1.md).
 
-## Installation and quick start
-
-V0.8.0 is the current release. Download the self-contained archive for your platform from [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.0), extract it, and place the `arifce` executable on your `PATH`. No separate .NET, Node, Python, Docker, or database installation is required. See [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md). From source:
+**Source development.** V0.8.0 is the current release. For source development, see [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md):
 
 ```bash
 git clone https://github.com/seekua/ArifCE.git
@@ -100,18 +125,7 @@ For a complete installation and feature walkthrough, see the [User Guide](docs/U
 
 ### 60-second quick start
 
-```bash
-# After extracting the matching V0.8.0 release archive and adding it to PATH:
-arifce help
-mkdir my-project && cd my-project
-git init
-arifce init
-arifce task create "Ship the first change"
-arifce checkpoint --summary "Project context initialized"
-arifce handoff
-```
-
-You now have a repository-local project state, a task, a checkpoint, and a semantic handoff ready for the next contributor.
+The install-and-start commands above create a repository-local project state, a task, and a handoff ready for the next contributor.
 
 ### Local LLM workflows
 
@@ -126,13 +140,6 @@ arifce llm run review "Check the migration for data-loss risk" --with-context --
 
 Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](docs/reference/LLM-PROVIDERS.md).
 
-```bash
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project src/ArifCE.Cli -- init
-```
-
 Run `init` in a new Git repository or `adopt` in an existing one. Both are non-destructive and idempotent. `adopt` records observed structure and labels unknown historical rationale as unknown.
 
 ## Continuity, verification, and refactors
@@ -144,7 +151,7 @@ Run `init` in a new Git repository or `adopt` in an existing one. Both are non-d
 
 ## Security and limitations
 
-Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. V0.1 does not guarantee correctness, token savings, or better review quality. It has no cloud service, UI, vector database, autonomous swarm, or production cross-agent invocation.
+Raw transcripts are untrusted and are never bulk-loaded or executed. Import paths redact common secrets; credentials and machine authentication data do not belong in `.arifce/`. ArifCE does not guarantee correctness, token savings, or better review quality. It has no cloud service, hosted UI, vector database, autonomous swarm, or production cross-agent invocation. A local dashboard is included; it is not a hosted web application.
 
 See [ROADMAP.md](ROADMAP.md), [SECURITY.md](SECURITY.md), and [CONTRIBUTING.md](CONTRIBUTING.md). The exact implemented command syntax is documented in the [CLI reference](docs/reference/cli.md).
 
