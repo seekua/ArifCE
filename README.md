@@ -20,7 +20,7 @@ arifce handoff --task TASK-0031
 arifce context --task TASK-0031 --budget 2000
 ```
 
-The handoff carries the objective, completed work, verified evidence, unresolved items, failures, and next action. The context command gives the next agent a bounded view of the same repository state rather than a raw chat transcript.
+The handoff carries the objective, completed work, verified evidence, unresolved items, failures, and next action. Copy the printed `context` output into the new agent's opening prompt (or have an MCP-capable agent call the same tool); the CLI does not inject context into a model session automatically.
 
 ## Installation and quick start
 
