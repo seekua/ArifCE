@@ -25,5 +25,19 @@ if ($release -notmatch '(?ms)workflow_dispatch:\s*\r?\n\s+inputs:\s*\r?\n\s+tag:
 if ($release -notmatch 'Tag .* does not match CLI package version' -or $release -notmatch 'Release asset conflict; refusing to overwrite') {
     throw 'Release workflow is missing tag/version or immutable-asset guards.'
 }
+if ($release -notmatch '(?s)Package binary preserving Linux executable mode.*?chmod 755.*?zip -X -r' -or $release -notmatch 'self-contained-smoke\.ps1') {
+    throw 'Release workflow must exercise task continuity on the published binary and preserve executable mode in Linux ZIPs.'
+}
+$archiveVerifier = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'verify-release-artifacts.ps1')
+if ($archiveVerifier -notmatch 'arifce-linux-\(x64\|arm64\)' -or $archiveVerifier -notmatch 'ExternalAttributes' -or $archiveVerifier -notmatch '0x49') {
+    throw 'Release archive verification must reject Linux binaries without an executable permission bit.'
+}
+$binarySmoke = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'self-contained-smoke.ps1')
+foreach ($requiredSmokeCommand in @("'task', 'check'", "'context', '--task'", "'handoff', '--task'")) {
+    if ($binarySmoke -notmatch [regex]::Escape($requiredSmokeCommand)) { throw "Self-contained binary smoke is missing $requiredSmokeCommand." }
+}
+if ($ci -notmatch 'self-contained-smoke\.ps1') {
+    throw 'The native CI matrix must exercise task check, task-aware context, and task-focused handoff on every binary target.'
+}
 
 Write-Output 'Release workflow policy passed: five targets, scoped write permission, immutable assets, explicit tag.'

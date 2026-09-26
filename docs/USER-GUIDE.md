@@ -8,7 +8,7 @@ Requirements: Git. The self-contained release binary does not require a separate
 
 ```bash
 # Download and extract the matching archive first.
-# Example release URL: https://github.com/seekua/ArifCE/releases/download/v0.8.0/arifce-linux-x64.zip
+# Example release URL: https://github.com/seekua/ArifCE/releases/download/v0.8.1/arifce-linux-x64.zip
 arifce help
 ```
 

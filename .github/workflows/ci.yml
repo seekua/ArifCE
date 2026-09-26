@@ -160,13 +160,13 @@ jobs:
         run: ./scripts/publish-self-contained.ps1 -Runtime $env:ARIFCE_RID -Configuration Release
         env:
           ARIFCE_RID: ${{ matrix.rid }}
-      - name: Run binary smoke check
+      - name: Run self-contained workflow smoke check
         shell: pwsh
         run: |
-          $binary = Get-ChildItem -LiteralPath "artifacts/self-contained/${{ matrix.rid }}" -File | Where-Object { $_.Name -notlike 'SHA256SUMS' -and $_.Extension -notin @('.dll', '.json', '.pdb') } | Select-Object -First 1
+          $binaryName = if ('${{ matrix.rid }}' -like 'win-*') { 'arifce.exe' } else { 'arifce' }
+          $binary = Get-Item -LiteralPath "artifacts/self-contained/${{ matrix.rid }}/$binaryName" -ErrorAction SilentlyContinue
           if ($null -eq $binary) { throw 'Published executable not found' }
-          & $binary.FullName help
-          if ($LASTEXITCODE -ne 0) { throw "Binary smoke check failed with exit code $LASTEXITCODE" }
+          ./scripts/self-contained-smoke.ps1 -Executable $binary.FullName
       - name: Upload self-contained artifact
         uses: actions/upload-artifact@v6
         with:

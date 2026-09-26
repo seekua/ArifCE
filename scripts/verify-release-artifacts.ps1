@@ -6,6 +6,18 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if (-not (Test-Path -LiteralPath $Archive -PathType Leaf)) { throw "Archive not found: $Archive" }
+$archiveName = [IO.Path]::GetFileName($Archive)
+if ($archiveName -match '^arifce-linux-(x64|arm64)\.zip$') {
+    Add-Type -AssemblyName System.IO.Compression
+    $zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path -LiteralPath $Archive).Path)
+    try {
+        $executableEntry = @($zip.Entries | Where-Object { $_.FullName -eq 'arifce' }) | Select-Object -First 1
+        if ($null -eq $executableEntry) { throw "Linux archive $archiveName does not contain the arifce executable at its root." }
+        $unixMode = ([int]$executableEntry.ExternalAttributes -shr 16) -band 0x0FFF
+        if (($unixMode -band 0x49) -eq 0) { throw "Linux archive $archiveName does not preserve an executable bit for arifce (stored mode: 0$([Convert]::ToString($unixMode, 8)))." }
+    }
+    finally { $zip.Dispose() }
+}
 $root = Join-Path ([IO.Path]::GetTempPath()) ("arifce-verify-" + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $root | Out-Null
 try {

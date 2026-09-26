@@ -13,14 +13,17 @@ $project = Join-Path $repo 'src/ArifCE.Cli/ArifCE.Cli.csproj'
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) { $OutputRoot = Join-Path $repo 'artifacts/self-contained' }
 
 New-Item -ItemType Directory -Force -Path $OutputRoot | Out-Null
+$outputRootFull = [System.IO.Path]::GetFullPath($OutputRoot)
 foreach ($rid in $Runtime) {
-    $output = Join-Path $OutputRoot $rid
+    $output = [System.IO.Path]::GetFullPath((Join-Path $outputRootFull $rid))
+    if ([System.IO.Path]::GetDirectoryName($output) -ne $outputRootFull) { throw "Refusing to publish outside the configured output root: $output" }
+    if (Test-Path -LiteralPath $output) { Remove-Item -LiteralPath $output -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $output | Out-Null
     dotnet publish $project --configuration $Configuration --runtime $rid --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --output $output
     $binary = if ($rid -like 'win-*') {
-        Get-ChildItem -LiteralPath $output -Filter '*.exe' -File | Where-Object { $_.Name -notlike '*.dll' } | Select-Object -First 1
+        Get-Item -LiteralPath (Join-Path $output 'arifce.exe') -ErrorAction SilentlyContinue
     } else {
-        Get-ChildItem -LiteralPath $output -File | Where-Object { $_.Name -notmatch '\\.(dll|json|pdb|deps|runtimeconfig)$' -and $_.Name -notlike 'SHA256SUMS' } | Select-Object -First 1
+        Get-Item -LiteralPath (Join-Path $output 'arifce') -ErrorAction SilentlyContinue
     }
     if ($null -eq $binary) { throw "No self-contained executable was produced in $output" }
     $binary = $binary.FullName

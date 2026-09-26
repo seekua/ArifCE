@@ -24,7 +24,7 @@ The handoff carries the objective, completed work, verified evidence, unresolved
 
 ## Installation and quick start
 
-Download the self-contained archive for your platform from [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.0), extract it, and add `arifce` to your `PATH`. No separate .NET, Node, Python, Docker, or database installation is required.
+Download the self-contained archive for your platform from [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.1), extract it, and add `arifce` to your `PATH`. On Linux, preserve the executable permission when extracting (or run `chmod +x arifce` if your extraction tool does not preserve it). No separate .NET, Node, Python, Docker, or database installation is required.
 
 For a new project:
 
@@ -121,7 +121,7 @@ Canonical Markdown, YAML, JSON, and JSONL live under `.arifce/`. SQLite is a dis
 
 The core separates domain rules, canonical storage and indexing, Git observation, retrieval, verification, refactoring, security, and the CLI. Vendor instruction files are small adapters; they never become the canonical memory store. See [architecture overview](docs/architecture/overview.md), [domain model](docs/architecture/domain-model.md), and the [historical V0.1 foundation specification](docs/SPECIFICATION-v0.1.md).
 
-**Source development.** V0.8.0 is the current release. For source development, see [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md):
+**Source development.** V0.8.1 is the current release. For source development, see [installation](docs/getting-started/installation.md) and the [quick start](docs/getting-started/quick-start.md):
 
 ```bash
 git clone https://github.com/seekua/ArifCE.git

@@ -1,8 +1,8 @@
 # Installation
 
-ArifCE V0.8.0 ships as self-contained archives for Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Git is required; the .NET SDK is required only when building from source.
+ArifCE V0.8.1 ships as self-contained archives for Windows x64, Linux x64/ARM64, and macOS Intel/Apple Silicon. Git is required; the .NET SDK is required only when building from source.
 
-1. Download the matching `arifce-<runtime>.zip` from the [V0.8.0 release](https://github.com/seekua/ArifCE/releases/tag/v0.8.0).
+1. Download the matching `arifce-<runtime>.zip` from the [V0.8.1 release](https://github.com/seekua/ArifCE/releases/tag/v0.8.1).
 2. Verify the archive against the release-level `SHA256SUMS` file.
 3. Extract the archive and place `arifce` (or `arifce.exe` on Windows) on your `PATH`.
 4. Run `arifce help`.
@@ -27,7 +27,7 @@ dotnet run --project src/ArifCE.Cli -- help
 
 ```bash
 dotnet pack src/ArifCE.Cli/ArifCE.Cli.csproj --configuration Release --output ./artifacts/packages
-dotnet tool install --global ArifCE.Cli --version 0.8.0 --add-source ./artifacts/packages
+dotnet tool install --global ArifCE.Cli --version 0.8.1 --add-source ./artifacts/packages
 arifce help
 ```
 
