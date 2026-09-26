@@ -68,7 +68,7 @@ flowchart LR
 
 ## Explore the project
 
-Run the local dashboard to get a visual overview of project health, recent records, and searchable context:
+When working from a source checkout, run the local dashboard to get a visual overview of project health, recent records, and searchable context. This developer command uses the .NET SDK; the self-contained release installation described above does not require it:
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
