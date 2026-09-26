@@ -11,8 +11,9 @@ ArifCE is a local-first project intelligence and continuity layer for AI-assiste
 
 **Your limit ended? Continue in two commands.**
 
+After completing real work on an existing task, record its handoff before you stop:
+
 ```bash
-# Before you stop:
 arifce handoff --task TASK-0031
 
 # When you return with Codex, Claude Code, OpenCode, or a local model:
@@ -39,7 +40,7 @@ See the [installation guide](docs/getting-started/installation.md) for each plat
 
 [English](README.md) · [简体中文](docs/locales/README.zh-CN.md) · [繁體中文](docs/locales/README.zh-TW.md) · [한국어](docs/locales/README.ko.md) · [Deutsch](docs/locales/README.de.md) · [Español](docs/locales/README.es.md) · [Français](docs/locales/README.fr.md) · [Italiano](docs/locales/README.it.md) · [Dansk](docs/locales/README.da.md) · [日本語](docs/locales/README.ja.md) · [Polski](docs/locales/README.pl.md) · [Русский](docs/locales/README.ru.md) · [Bosanski](docs/locales/README.bs.md) · [العربية](docs/locales/README.ar.md) · [Norsk](docs/locales/README.no.md) · [Português (Brasil)](docs/locales/README.pt-BR.md) · [ไทย](docs/locales/README.th.md) · [Türkçe](docs/locales/README.tr.md) · [Українська](docs/locales/README.uk.md) · [বাংলা](docs/locales/README.bn.md) · [Ελληνικά](docs/locales/README.el.md) · [Tiếng Việt](docs/locales/README.vi.md)
 
-**Why ArifCE exists.**
+## Why ArifCE exists
 
 Software teams lose time and confidence when important context lives only in chat history, individual memory, or a tool that the next contributor cannot inspect. ArifCE exists to make engineering continuity part of the project itself.
 
@@ -122,8 +123,6 @@ dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
 The optional local MCP adapter is documented in [MCP setup](docs/getting-started/mcp.md).
 
 For a complete installation and feature walkthrough, see the [User Guide](docs/USER-GUIDE.md) and [Documentation Policy](docs/DOCUMENTATION-POLICY.md).
-
-### 60-second quick start
 
 The install-and-start commands above create a repository-local project state, a task, and a handoff ready for the next contributor.
 
