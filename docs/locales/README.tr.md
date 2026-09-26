@@ -105,6 +105,15 @@ arifce handoff
 
 Artık depo-yerel proje durumunuz, göreviniz, kontrol noktanız ve sonraki katkıcı için anlamsal devriniz hazırdır.
 
+Zaten bir Git depon varsa o depoya geçip yapısını `adopt` ile kaydet:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ Ham dökümler güvenilmezdir; hiçbir zaman topluca yüklenmez veya çalıştı
 ## Lisans
 
 ArifCE [Apache License 2.0](../../LICENSE) ile lisanslanmıştır.
-### Local LLM workflows
+### Ollama veya LM Studio ile göreve devam
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE, projenin kanonik kayıtlarını depoda tutar. Sağlayıcı prompt’u ve seçilen bağlamı alır; bulut sağlayıcıları seçilen bu içeriği uzaktaki hizmete iletir. `--with-context`, ArifCE’nin seçtiği proje kayıtlarını ekler, ancak kaynak dosyaları okumaz. Aşağıdaki örnekler, modelin incelemesi istenen kodu alması için migration dosyasının içeriğini doğrudan prompt’a koyar. Kullandığın kabuğa uygun örneği seç.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+Modelin yanıtını incele, önerilen değişiklikleri kodlama ortamında uygula ve migration regresyon testlerini çalıştır. Testler geçtikten sonra claim olarak yalnızca test komutunun doğruladığı şeyi kaydet:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+PowerShell’de:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+Test sonucu, regresyon testlerinin geçtiği claim’ini destekler; tek başına model incelemesinin eksiksiz veya doğru olduğunu kanıtlamaz. Örnek yolları ve test komutunu kendi depondakilerle değiştir. LM Studio için yüklediğin model adını ve genellikle `http://127.0.0.1:1234/v1` olan OpenAI uyumlu endpoint’i `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1` komutunda kullan.
+
+Ardından aynı görev, kaynak girdi, test kanıtı ve handoff akışını izle.
+
+Reviewer çalıştırmak açık onay gerektirir. Sağlayıcı yedeklemesi, token/maliyet kaydı, kanonik kanıtlar, embedding’ler, benchmark ölçümleri, MCP araçları ve yerel dashboard [LLM sağlayıcı başvurusunda](../reference/LLM-PROVIDERS.md) açıklanır.
+
+Yeni Git deposunda `init`, mevcut depoda `adopt` çalıştır. İkisi de tahribatsızdır ve tekrar çalıştırılabilir; `adopt` gözlenen yapıyı kaydeder ve bilinmeyen geçmiş gerekçeleri bilinmiyor olarak işaretler.
 ### From source
 
 ```bash

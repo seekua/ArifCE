@@ -105,6 +105,15 @@ arifce handoff
 
 Sada imate stanje projekta u repozitoriju, zadatak, kontrolnu tačku i semantičku primopredaju spremnu za sljedećeg saradnika.
 
+Ako već imate Git repozitorij, prijeđite u njega i zabilježite njegovu strukturu pomoću `adopt`:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ Pogledajte [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) i [C
 ## Licenca
 
 ArifCE je licenciran pod [Apache License 2.0](../../LICENSE).
-### Local LLM workflows
+### Nastavite zadatak uz Ollama ili LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE čuva kanonske projektne zapise u repozitoriju. Pružalac dobija prompt i odabrani kontekst; pružaoci u oblaku taj odabrani sadržaj primaju udaljeno. Opcija `--with-context` dodaje zapise projekta koje je odabrao ArifCE, ali ne čita izvorne datoteke. Primjeri ispod izričito stavljaju sadržaj migracijske datoteke u prompt, tako da model dobije kod koji treba pregledati. Odaberite primjer za svoj shell.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+Pregledajte odgovor modela, primijenite predloženu izmjenu u svom razvojnom okruženju i pokrenite regresijske testove za migraciju. Nakon što prođu, kao tvrdnju zabilježite samo ono što testna naredba potvrđuje:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+U PowerShellu:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+Rezultat testa potvrđuje tvrdnju da regresijski testovi prolaze; sam po sebi ne dokazuje da je pregled modela bio potpun ili tačan. Zamijenite primjer putanje i naredbu testiranja vrijednostima iz svog repozitorija. Za LM Studio navedite naziv učitanog modela i OpenAI-kompatibilnu krajnju tačku, najčešće `http://127.0.0.1:1234/v1`, u naredbi `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+
+Zatim slijedite isti tok zadatka, ulaza izvornog koda, dokaza testiranja i predaje.
+
+Pokretanje reviewera zahtijeva izričito odobrenje. Rezervni pružaoci, obračun tokena/troškova, kanonski dokazi, embeddings, benchmark metrike, MCP alati i lokalna kontrolna ploča opisani su u [referenci LLM pružaoca](../reference/LLM-PROVIDERS.md).
+
+Pokrenite `init` u novom Git repozitoriju ili `adopt` u postojećem. Obje naredbe su sigurne za ponavljanje i ne uništavaju postojeći sadržaj; `adopt` bilježi uočenu strukturu i nepoznate historijske razloge označava kao nepoznate.
 ### From source
 
 ```bash

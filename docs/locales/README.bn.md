@@ -105,6 +105,15 @@ arifce handoff
 
 এখন আপনার কাছে রিপোজিটরি-স্থানীয় প্রকল্প অবস্থা, একটি কাজ, একটি চেকপয়েন্ট এবং পরবর্তী অবদানকারীর জন্য প্রস্তুত একটি অর্থবহ হস্তান্তর রয়েছে।
 
+আগে থেকেই Git repository থাকলে সেখানে যান এবং `adopt` দিয়ে তার কাঠামো নথিভুক্ত করুন:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ dotnet run --project src/ArifCE.Cli -- init
 ## লাইসেন্স
 
 ArifCE [Apache License 2.0](../../LICENSE)-এর অধীনে লাইসেন্সপ্রাপ্ত।
-### Local LLM workflows
+### Ollama বা LM Studio দিয়ে কাজ চালিয়ে যান
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE প্রকল্পের মূল রেকর্ড রিপোজিটরিতেই রাখে। প্রোভাইডার প্রম্পট ও নির্বাচিত কনটেক্সট পায়; ক্লাউড প্রোভাইডার নির্বাচিত কনটেন্ট দূরের সার্ভারে পায়। `--with-context` ArifCE-র নির্বাচিত প্রকল্প রেকর্ড যোগ করে, কিন্তু সোর্স ফাইল পড়ে না। নিচের উদাহরণগুলো মাইগ্রেশন ফাইলের বিষয়বস্তু সরাসরি প্রম্পটে দেয়, যাতে মডেল পর্যালোচনার জন্য নির্দিষ্ট কোডটি পায়। আপনার শেলের জন্য উপযুক্ত উদাহরণটি ব্যবহার করুন।
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+মডেলের উত্তর পর্যালোচনা করে, প্রস্তাবিত পরিবর্তন থাকলে কোডিং ইন্টারফেসে প্রয়োগ করুন এবং মাইগ্রেশনের রিগ্রেশন টেস্ট চালান। টেস্ট সফল হওয়ার পর, কেবল টেস্ট কমান্ডে যা প্রমাণিত হয় সেটিই claim হিসেবে নথিভুক্ত করুন:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+PowerShell-এ:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+টেস্টের ফল টেস্ট পাস করার claim-কে সমর্থন করে; এটি একা প্রমাণ করে না যে মডেলের পর্যালোচনা সম্পূর্ণ বা সঠিক ছিল। আপনার রিপোজিটরির প্রকৃত ফাইলের পথ ও টেস্ট কমান্ড দিয়ে উদাহরণের পথ ও কমান্ড বদলান। LM Studio ব্যবহার করতে, লোড করা মডেলের নাম এবং OpenAI-সামঞ্জস্যপূর্ণ endpoint—সাধারণত `http://127.0.0.1:1234/v1`—দিয়ে `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1` চালান।
+
+এরপর একই task, সোর্স ইনপুট, টেস্ট প্রমাণ ও handoff প্রবাহ ব্যবহার করুন।
+
+Reviewer চালাতে স্পষ্ট অনুমোদন লাগে। বিকল্প provider ব্যবহার, token/cost হিসাব, canonical evidence, embedding, benchmark metric, MCP tool এবং local dashboard-এর বিবরণ [LLM provider reference](../reference/LLM-PROVIDERS.md)-এ আছে।
+
+নতুন Git repository-তে `init` অথবা বিদ্যমান repository-তে `adopt` চালান। দুটিই নিরাপদে বারবার চালানো যায় এবং বিদ্যমান বিষয়বস্তু নষ্ট করে না; `adopt` দেখা repository গঠন নথিভুক্ত করে এবং অজানা পুরোনো কারণকে অজানা হিসেবেই চিহ্নিত করে।
 ### From source
 
 ```bash

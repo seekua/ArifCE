@@ -105,6 +105,15 @@ arifce handoff
 
 이제 저장소에 로컬로 보관되는 프로젝트 상태, 작업, 체크포인트와 다음 기여자를 위한 의미 있는 인수인계가 준비되었습니다.
 
+이미 Git 저장소가 있다면 해당 저장소로 이동한 뒤 `adopt`로 구조를 기록하세요.
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ dotnet run --project src/ArifCE.Cli -- init
 ## 라이선스
 
 ArifCE는 [Apache License 2.0](../../LICENSE)에 따라 사용이 허가됩니다.
-### Local LLM workflows
+### Ollama 또는 LM Studio로 작업 이어가기
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE는 정규 프로젝트 기록을 저장소 안에 보관합니다. 공급자는 프롬프트와 선택된 컨텍스트를 받으며, 클라우드 공급자는 선택된 내용을 원격으로 받습니다. `--with-context`는 ArifCE가 선택한 프로젝트 기록을 추가하지만 소스 파일은 읽지 않습니다. 아래 예제는 검토 대상 코드를 모델에 전달하도록 마이그레이션 파일 내용을 프롬프트에 명시적으로 포함합니다. 사용하는 셸에 맞는 예제를 선택하세요.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+모델 응답을 검토하고 제안된 변경이 있으면 개발 환경에서 적용한 다음 마이그레이션 회귀 테스트를 실행하세요. 테스트가 통과한 뒤에는 테스트 명령으로 실제 확인할 수 있는 내용만 claim으로 기록합니다.
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+PowerShell에서는 다음과 같이 실행합니다.
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+테스트 결과는 회귀 테스트 통과 claim을 뒷받침하지만, 그것만으로 모델 검토가 완전하거나 정확했음을 증명하지는 않습니다. 예시 경로와 테스트 명령을 실제 저장소에 맞게 바꾸세요. LM Studio를 사용할 때는 로드된 모델 이름과 OpenAI 호환 엔드포인트(보통 `http://127.0.0.1:1234/v1`)를 사용해 `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`을 실행합니다.
+
+그다음 동일한 작업, 소스 입력, 테스트 증거, handoff 흐름을 따릅니다.
+
+Reviewer 실행에는 명시적 승인이 필요합니다. 대체 공급자, 토큰/비용 기록, 정규 증거, 임베딩, 벤치마크 지표, MCP 도구, 로컬 대시보드는 [LLM provider reference](../reference/LLM-PROVIDERS.md)에 설명되어 있습니다.
+
+새 Git 저장소에서는 `init`, 기존 저장소에서는 `adopt`를 실행하세요. 두 명령 모두 비파괴적이고 반복 실행해도 안전하며, `adopt`는 관찰된 구조를 기록하고 알 수 없는 과거 결정 사유를 알 수 없음으로 표시합니다.
 ### From source
 
 ```bash

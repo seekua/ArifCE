@@ -105,6 +105,15 @@ arifce handoff
 
 Теперь у вас есть состояние проекта в репозитории, задача, контрольная точка и семантическая передача для следующего участника.
 
+Если у вас уже есть Git-репозиторий, перейдите в него и сохраните его структуру командой `adopt`:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ dotnet run --project src/ArifCE.Cli -- init
 ## Лицензия
 
 ArifCE распространяется по [лицензии Apache 2.0](../../LICENSE).
-### Local LLM workflows
+### Продолжение задачи с Ollama или LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE хранит канонические записи проекта в репозитории. Провайдер получает промпт и выбранный контекст; облачные провайдеры получают выбранное содержимое удалённо. Параметр `--with-context` добавляет выбранные ArifCE записи проекта, но не читает исходные файлы. Примеры ниже явно добавляют содержимое файла миграции в промпт, чтобы модель получила код для проверки. Выберите пример для своей оболочки.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+Проверьте ответ модели, примените предложенные изменения в своей среде разработки и запустите регрессионные тесты миграции. После их успешного прохождения фиксируйте как claim только то, что подтверждает команда тестирования:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+В PowerShell:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+Результат подтверждает claim об успешном прохождении регрессионных тестов, но сам по себе не доказывает полноту или правильность проверки модели. Замените примеры путей и команду тестирования значениями из своего репозитория. Для LM Studio укажите имя загруженной модели и совместимый с OpenAI endpoint, обычно `http://127.0.0.1:1234/v1`, в команде `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+
+Далее используйте тот же порядок действий: задача, исходный код, доказательства тестов и handoff.
+
+Запуск reviewer требует явного разрешения. Резервные провайдеры, учёт токенов и затрат, канонические доказательства, embeddings, метрики benchmark, инструменты MCP и локальная панель описаны в [справочнике провайдеров LLM](../reference/LLM-PROVIDERS.md).
+
+Запустите `init` в новом Git-репозитории или `adopt` в существующем. Обе команды неразрушающие и идемпотентные; `adopt` записывает обнаруженную структуру и отмечает неизвестные исторические причины как неизвестные.
 ### From source
 
 ```bash

@@ -105,6 +105,15 @@ arifce handoff
 
 Giờ đây bạn có trạng thái dự án cục bộ trong repository, một nhiệm vụ, một checkpoint và một bàn giao ngữ nghĩa sẵn sàng cho người đóng góp tiếp theo.
 
+Nếu bạn đã có Git repository, hãy chuyển vào đó và ghi nhận cấu trúc bằng `adopt`:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ Xem [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) và [CONTRI
 ## Giấy phép
 
 ArifCE được cấp phép theo [Apache License 2.0](../../LICENSE).
-### Local LLM workflows
+### Tiếp tục công việc với Ollama hoặc LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE lưu các bản ghi dự án chuẩn tắc trong repository. Provider nhận prompt và phần ngữ cảnh được chọn; provider đám mây nhận nội dung đã chọn đó từ xa. `--with-context` thêm các bản ghi dự án do ArifCE chọn nhưng không đọc tệp mã nguồn. Các ví dụ dưới đây chủ động đưa nội dung tệp migration vào prompt để mô hình nhận được đoạn mã cần xem xét. Hãy chọn ví dụ phù hợp với shell của bạn.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+Hãy xem phản hồi của mô hình, áp dụng các thay đổi được đề xuất trong môi trường lập trình của bạn rồi chạy các kiểm thử hồi quy cho migration. Sau khi kiểm thử đạt, chỉ ghi thành claim điều mà lệnh kiểm thử thực sự xác nhận:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+Trong PowerShell:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+Kết quả kiểm thử hỗ trợ claim rằng các kiểm thử hồi quy đã đạt; riêng kết quả đó không chứng minh việc xem xét của mô hình đầy đủ hay chính xác. Hãy thay đường dẫn mẫu và lệnh kiểm thử bằng giá trị của repository bạn. Với LM Studio, dùng tên model đã tải và endpoint tương thích OpenAI, thường là `http://127.0.0.1:1234/v1`, trong lệnh `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+
+Sau đó tiếp tục theo cùng luồng task, đầu vào mã nguồn, bằng chứng kiểm thử và handoff.
+
+Việc chạy reviewer cần được phê duyệt rõ ràng. Phần [tham chiếu LLM provider](../reference/LLM-PROVIDERS.md) mô tả provider dự phòng, theo dõi token/chi phí, bằng chứng chuẩn tắc, embedding, chỉ số benchmark, công cụ MCP và dashboard cục bộ.
+
+Chạy `init` trong Git repository mới hoặc `adopt` trong repository hiện có. Cả hai đều không phá hủy dữ liệu và có thể chạy lặp lại; `adopt` ghi nhận cấu trúc quan sát được và đánh dấu các lý do lịch sử chưa biết là chưa biết.
 ### From source
 
 ```bash

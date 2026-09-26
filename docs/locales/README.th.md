@@ -105,6 +105,15 @@ arifce handoff
 
 ตอนนี้คุณมีสถานะโครงการในรีโพซิทอรี งานหนึ่งรายการ จุดตรวจ และการส่งต่องานเชิงความหมายที่พร้อมสำหรับผู้มีส่วนร่วมคนถัดไปแล้ว
 
+หากมี Git repository อยู่แล้ว ให้เข้าไปยัง repository นั้นและบันทึกโครงสร้างด้วย `adopt`:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ dotnet run --project src/ArifCE.Cli -- init
 ## ใบอนุญาต
 
 ArifCE เผยแพร่ภายใต้ [Apache License 2.0](../../LICENSE)
-### Local LLM workflows
+### ทำงานต่อด้วย Ollama หรือ LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE เก็บบันทึกโครงการฉบับหลักไว้ใน repository ผู้ให้บริการจะได้รับพรอมป์ต์และบริบทที่เลือก ส่วนผู้ให้บริการบนคลาวด์จะได้รับเนื้อหาที่เลือกนั้นจากระยะไกล `--with-context` จะเพิ่มบันทึกโครงการที่ ArifCE เลือก แต่ไม่ได้อ่านไฟล์ซอร์ส ตัวอย่างด้านล่างใส่เนื้อหาของไฟล์ migration ลงในพรอมป์ต์โดยตรง เพื่อให้โมเดลได้รับโค้ดที่ต้องตรวจสอบ เลือกตัวอย่างให้ตรงกับ shell ที่ใช้
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+ตรวจคำตอบของโมเดลและนำการแก้ไขที่เสนอไปใช้ในสภาพแวดล้อมเขียนโค้ด จากนั้นเรียกใช้ regression test ของ migration เมื่อทดสอบผ่านแล้ว ให้บันทึกเป็น claim เฉพาะสิ่งที่คำสั่งทดสอบยืนยันได้เท่านั้น:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+ใน PowerShell:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+ผลทดสอบรองรับ claim ว่า regression test ผ่าน แต่เพียงอย่างเดียวไม่ได้พิสูจน์ว่าการตรวจของโมเดลครบถ้วนหรือถูกต้อง เปลี่ยน path ตัวอย่างและคำสั่งทดสอบให้ตรงกับ repository ของคุณ หากใช้ LM Studio ให้ระบุชื่อโมเดลที่โหลดและ endpoint ที่เข้ากันได้กับ OpenAI ซึ่งโดยทั่วไปคือ `http://127.0.0.1:1234/v1` ในคำสั่ง `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`
+
+จากนั้นใช้ลำดับงานเดียวกันสำหรับ task, source input, หลักฐานจาก test และ handoff
+
+การเรียกใช้ reviewer ต้องได้รับอนุมัติอย่างชัดเจน รายละเอียดเรื่อง provider สำรอง การติดตาม token/ค่าใช้จ่าย หลักฐาน canonical, embedding, benchmark metric, เครื่องมือ MCP และ dashboard ในเครื่อง อยู่ใน [LLM provider reference](../reference/LLM-PROVIDERS.md)
+
+เรียกใช้ `init` ใน Git repository ใหม่ หรือ `adopt` ใน repository ที่มีอยู่ ทั้งสองคำสั่งไม่ทำลายข้อมูลและเรียกซ้ำได้อย่างปลอดภัย ส่วน `adopt` จะบันทึกโครงสร้างที่ตรวจพบ และทำเครื่องหมายเหตุผลทางประวัติศาสตร์ที่ไม่ทราบว่าไม่ทราบ
 ### From source
 
 ```bash

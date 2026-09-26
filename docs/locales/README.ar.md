@@ -105,6 +105,15 @@ arifce handoff
 
 لديك الآن حالة مشروع محلية للمستودع ومهمة ونقطة تحقق وتسليم دلالي جاهز للمساهم التالي.
 
+إذا كان لديك مستودع Git موجود بالفعل، فانتقل إليه وسجّل بنيته باستخدام `adopt`:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ dotnet run --project src/ArifCE.Cli -- init
 ## الترخيص
 
 تخضع ArifCE لـ [ترخيص Apache 2.0](../../LICENSE).
-### Local LLM workflows
+### متابعة مهمة باستخدام Ollama أو LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+تحتفظ ArifCE بسجلات المشروع الأساسية داخل المستودع. يتلقى المزود نص الطلب والسياق المحدد؛ أما مزودو السحابة فيتلقون ذلك المحتوى المحدد عن بُعد. يضيف الخيار `--with-context` سجلات المشروع التي تختارها ArifCE، لكنه لا يقرأ ملفات المصدر. تضع الأمثلة أدناه محتوى ملف الترحيل صراحةً في الطلب كي يتلقى النموذج الشيفرة المطلوب منه مراجعتها. اختر المثال المناسب لصدفتك.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+راجع رد النموذج وطبّق أي تعديل في واجهة البرمجة التي تستخدمها، ثم شغّل اختبارات الانحدار الخاصة بالترحيل. بعد نجاحها، سجّل كادعاء فقط ما يثبته أمر الاختبار:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+في PowerShell:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+تدعم نتيجة الاختبار ادعاء اجتياز الاختبارات؛ لكنها لا تثبت وحدها أن مراجعة النموذج كانت كاملة أو صحيحة. استبدل المسارات وأمر الاختبار بأوامر مستودعك. لاستخدام LM Studio، حدّد اسم النموذج المحمّل ونقطة النهاية المتوافقة مع OpenAI، وعادةً ما تكون `http://127.0.0.1:1234/v1`، في الأمر `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+
+يتبع ذلك المهمة نفسها ومصدر الشيفرة وأدلة الاختبار والتسليم.
+
+يتطلب تشغيل المراجع موافقة صريحة. يشرح [مرجع مزوّدي LLM](../reference/LLM-PROVIDERS.md) الرجوع إلى مزود بديل، وحساب الرموز والتكلفة، والأدلة الأساسية، والتضمينات، ومقاييس المعايير، وأدوات MCP، ولوحة التحكم المحلية.
+
+شغّل `init` في مستودع Git جديد أو `adopt` في مستودع موجود. كلاهما آمن عند التكرار ولا يتلف المحتوى؛ ويسجل `adopt` البنية المرصودة ويصنف أسباب القرارات التاريخية غير المعروفة على أنها غير معروفة.
 ### From source
 
 ```bash

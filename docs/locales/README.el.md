@@ -105,6 +105,15 @@ arifce handoff
 
 Τώρα έχετε κατάσταση έργου τοπική στο αποθετήριο, εργασία, σημείο ελέγχου και σημασιολογική παράδοση έτοιμη για τον επόμενο συνεργάτη.
 
+Αν έχετε ήδη ένα Git repository, μεταβείτε σε αυτό και καταγράψτε τη δομή του με την εντολή `adopt`:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ dotnet run --project src/ArifCE.Cli -- init
 ## Άδεια
 
 Το ArifCE διατίθεται με την [άδεια Apache 2.0](../../LICENSE).
-### Local LLM workflows
+### Συνέχιση εργασίας με Ollama ή LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+Το ArifCE διατηρεί τις κανονικές εγγραφές του έργου στο αποθετήριο. Ο πάροχος λαμβάνει το prompt και το επιλεγμένο context· οι cloud πάροχοι λαμβάνουν αυτό το επιλεγμένο περιεχόμενο απομακρυσμένα. Η επιλογή `--with-context` προσθέτει τις εγγραφές έργου που επέλεξε το ArifCE, αλλά δεν διαβάζει αρχεία πηγαίου κώδικα. Τα παραδείγματα παρακάτω ενσωματώνουν ρητά το περιεχόμενο του αρχείου migration στο prompt, ώστε το μοντέλο να λάβει τον κώδικα που καλείται να ελέγξει. Χρησιμοποιήστε το παράδειγμα που ταιριάζει στο shell σας.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+Ελέγξτε την απάντηση του μοντέλου, εφαρμόστε τυχόν προτεινόμενη αλλαγή στο περιβάλλον ανάπτυξής σας και εκτελέστε τις regression tests του migration. Αφού περάσουν, καταγράψτε ως claim μόνο ό,τι αποδεικνύει η εντολή των tests:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+Στο PowerShell:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+Το αποτέλεσμα των tests υποστηρίζει το claim ότι πέρασαν τα tests· από μόνο του δεν αποδεικνύει ότι ο έλεγχος του μοντέλου ήταν πλήρης ή σωστός. Αντικαταστήστε τις ενδεικτικές διαδρομές και την εντολή tests με εκείνες του αποθετηρίου σας. Για το LM Studio, χρησιμοποιήστε το όνομα του φορτωμένου μοντέλου και το OpenAI-compatible endpoint, συνήθως `http://127.0.0.1:1234/v1`, στην εντολή `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+
+Στη συνέχεια ακολουθήστε την ίδια ροή για την εργασία, το source input, τα αποδεικτικά των tests και το handoff.
+
+Η εκτέλεση reviewer απαιτεί ρητή έγκριση. Η εναλλακτική δρομολόγηση provider, η καταγραφή token/κόστους, τα canonical evidence, τα embeddings, οι μετρικές benchmark, τα MCP tools και το τοπικό dashboard περιγράφονται στο [LLM provider reference](../reference/LLM-PROVIDERS.md).
+
+Εκτελέστε `init` σε νέο Git repository ή `adopt` σε υπάρχον. Και τα δύο είναι μη καταστροφικά και idempotent· το `adopt` καταγράφει τη δομή που εντοπίζει και επισημαίνει ως άγνωστους τους άγνωστους ιστορικούς λόγους.
 ### From source
 
 ```bash

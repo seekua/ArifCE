@@ -105,6 +105,15 @@ arifce handoff
 
 Du har nu en repository-lokal projektstatus, en opgave, et kontrolpunkt og en semantisk overdragelse klar til næste bidragyder.
 
+Hvis du allerede har et Git-repository, skal du gå til det og registrere dets struktur med `adopt`:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ Se [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) og [CONTRIBU
 ## Licens
 
 ArifCE er licenseret under [Apache License 2.0](../../LICENSE).
-### Local LLM workflows
+### Fortsæt en opgave med Ollama eller LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE gemmer de kanoniske projektposter i repositoriet. Udbyderen modtager prompten og den valgte kontekst; cloududbydere modtager dette udvalgte indhold eksternt. `--with-context` føjer ArifCE's udvalgte projektposter til, men læser ikke kildefiler. Eksemplerne nedenfor indsætter eksplicit indholdet af migrationsfilen i prompten, så modellen får den kode, den bliver bedt om at gennemgå. Vælg eksemplet til din shell.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+Gennemgå modellens svar, anvend eventuelle foreslåede ændringer i dit kodningsmiljø, og kør regressionstestene for migreringen. Når de består, skal du kun registrere det, testkommandoen faktisk beviser, som en claim:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+I PowerShell:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+Testresultatet understøtter claimen om, at testene består; det beviser ikke i sig selv, at modellens gennemgang var fuldstændig eller korrekt. Erstat eksempelstierne og testkommandoen med dem fra dit repository. Til LM Studio skal du angive det indlæste modelnavn og det OpenAI-kompatible endpoint, typisk `http://127.0.0.1:1234/v1`, i `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+
+Følg derefter samme arbejdsgang for opgave, kildeinput, testbevis og overdragelse.
+
+Kørsel af reviewer kræver udtrykkelig godkendelse. Fallbackudbydere, token-/omkostningsregnskab, kanoniske beviser, embeddings, benchmarkmålinger, MCP-værktøjer og det lokale dashboard er beskrevet i [LLM-udbyderreferencen](../reference/LLM-PROVIDERS.md).
+
+Kør `init` i et nyt Git-repository eller `adopt` i et eksisterende. Begge er ikke-destruktive og idempotente; `adopt` registrerer den observerede struktur og markerer ukendte historiske begrundelser som ukendte.
 ### From source
 
 ```bash

@@ -105,6 +105,15 @@ arifce handoff
 
 Agora você tem um estado de projeto local ao repositório, uma tarefa, um ponto de controle e uma transição semântica pronta para o próximo colaborador.
 
+Se você já tem um repositório Git, acesse-o e registre sua estrutura com `adopt`:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
 ```bash
 dotnet restore
 dotnet build
@@ -130,18 +139,57 @@ Consulte [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) e [CON
 ## Licença
 
 O ArifCE é distribuído sob a [licença Apache 2.0](../../LICENSE).
-### Local LLM workflows
+### Continue uma tarefa com Ollama ou LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+O ArifCE mantém os registros canônicos do projeto no repositório. O provedor recebe o prompt e o contexto selecionado; provedores na nuvem recebem esse conteúdo selecionado remotamente. `--with-context` adiciona os registros do projeto selecionados pelo ArifCE, mas não lê arquivos-fonte. Os exemplos abaixo incluem explicitamente o conteúdo do arquivo de migração no prompt, para que o modelo receba o código que deve analisar. Use o exemplo correspondente ao seu shell.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](../reference/LLM-PROVIDERS.md).
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
+
+Revise a resposta do modelo, aplique as alterações sugeridas no seu ambiente de desenvolvimento e execute os testes de regressão da migração. Depois que passarem, registre como claim somente o que o comando de teste comprova:
+
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+No PowerShell:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+O resultado do teste dá suporte ao claim de que os testes de regressão passaram; sozinho, ele não prova que a análise do modelo foi completa ou correta. Substitua os caminhos e o comando de teste de exemplo pelos do seu repositório. Para usar o LM Studio, informe o nome do modelo carregado e o endpoint compatível com OpenAI, geralmente `http://127.0.0.1:1234/v1`, em `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+
+Depois, siga o mesmo fluxo de tarefa, entrada do código-fonte, evidência dos testes e handoff.
+
+Executar um reviewer exige aprovação explícita. A referência de [provedores LLM](../reference/LLM-PROVIDERS.md) documenta o fallback de provedores, o registro de tokens e custos, as evidências canônicas, os embeddings, as métricas de benchmark, as ferramentas MCP e o dashboard local.
+
+Execute `init` em um repositório Git novo ou `adopt` em um existente. Ambos são não destrutivos e idempotentes; `adopt` registra a estrutura observada e marca como desconhecidas as justificativas históricas que não são conhecidas.
 ### From source
 
 ```bash

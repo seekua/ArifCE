@@ -26,13 +26,19 @@ The handoff carries the objective, completed work, verified evidence, unresolved
 
 Download the self-contained archive for your platform from [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.0), extract it, and add `arifce` to your `PATH`. No separate .NET, Node, Python, Docker, or database installation is required.
 
+For a new project:
+
 ```bash
 mkdir my-project && cd my-project
 git init
 arifce init
 arifce task create "Ship the first change"
 arifce handoff
+```
 
+For an existing Git repository:
+
+```bash
 cd path/to/existing-repo
 arifce adopt
 arifce task create "Ship the first change"
@@ -133,7 +139,7 @@ The install-and-start commands above create a repository-local project state, a 
 
 ### Continue a task with Ollama or LM Studio
 
-ArifCE keeps canonical project records in the repository. A provider receives the prompt and selected context; cloud providers receive that selected content remotely. `--with-context` adds ArifCE's selected project records, but does not read source files. This example explicitly reads the migration file into the prompt, so the model receives the code it is asked to review:
+ArifCE keeps canonical project records in the repository. A provider receives the prompt and selected context; cloud providers receive that selected content remotely. `--with-context` adds ArifCE's selected project records, but does not read source files. The examples below explicitly put the migration file contents in the prompt, so the model receives the code it is asked to review. Use the version for your shell.
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
@@ -146,11 +152,36 @@ $migration_source"
 arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-Apply any proposed change in your coding interface, then run the migration regression tests. Record only what that test command establishes as a claim:
+```powershell
+arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
+arifce llm provider test ollama
+$taskId = arifce task create "Review and safely update the migration"
+$migrationSource = Get-Content -Raw -LiteralPath "path/to/migration.sql"
+$prompt = @"
+Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migrationSource
+"@
+arifce llm run "Review and safely update the migration" $prompt --with-context --budget 2000
+```
 
-After the tests pass, run `claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"`, then `arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"` and `arifce handoff`.
+Review the model's response, apply any change in your coding interface, and run the migration regression tests. After they pass, record only what that test command establishes as a claim:
 
-The test result supports the test claim; it does not by itself prove the model's review was complete or correct. Replace the example paths and test command with those from your repository. For LM Studio, configure the provider with its loaded model name and OpenAI-compatible endpoint, usually `http://127.0.0.1:1234/v1`, using `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+```bash
+claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"
+arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+In PowerShell:
+
+```powershell
+$claimId = arifce claim create "Migration regression tests pass" --task $taskId
+arifce verify $claimId --command "dotnet test path/to/migration-tests.csproj"
+arifce handoff
+```
+
+The test result supports the test claim; it does not by itself prove the model's review was complete or correct. Replace the example paths and test command with those from your repository. For LM Studio, use its loaded model name and OpenAI-compatible endpoint, usually `http://127.0.0.1:1234/v1`, in `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
 
 Then use the same task, source input, test evidence, and handoff flow.
 
