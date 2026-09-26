@@ -133,19 +133,26 @@ The install-and-start commands above create a repository-local project state, a 
 
 ### Continue a task with Ollama or LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. This is a real provider run: ArifCE sends the task prompt together with bounded repository context, and the model returns its response. ArifCE does not launch an IDE or edit files on the model's behalf; apply the proposed change in the model's coding interface, then verify and hand it off:
+ArifCE keeps canonical project records in the repository. A provider receives the prompt and selected context; cloud providers receive that selected content remotely. `--with-context` adds ArifCE's selected project records, but does not read source files. This example explicitly reads the migration file into the prompt, so the model receives the code it is asked to review:
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce task create "Review the migration for data-loss risk"
-arifce llm run "Review the migration for data-loss risk" "Inspect the migration, identify data-loss risks, and propose the smallest safe patch." --with-context --budget 2000
-arifce claim create "Migration review completed"
-arifce verify CLAIM-0001 --command "dotnet test"
-arifce handoff
+task_id="$(arifce task create "Review and safely update the migration")"
+migration_source="$(cat path/to/migration.sql)"
+prompt="Review only this SQL migration for data-loss risks. Do not infer unseen source. Suggest the smallest safe change if needed.
+Migration source:
+$migration_source"
+arifce llm run "Review and safely update the migration" "$prompt" --with-context --budget 2000
 ```
 
-For LM Studio, use its OpenAI-compatible local endpoint (usually `http://127.0.0.1:1234/v1`) when adding the provider. The same task, context, evidence, and handoff flow applies.
+Apply any proposed change in your coding interface, then run the migration regression tests. Record only what that test command establishes as a claim:
+
+After the tests pass, run `claim_id="$(arifce claim create "Migration regression tests pass" --task "$task_id")"`, then `arifce verify "$claim_id" --command "dotnet test path/to/migration-tests.csproj"` and `arifce handoff`.
+
+The test result supports the test claim; it does not by itself prove the model's review was complete or correct. Replace the example paths and test command with those from your repository. For LM Studio, configure the provider with its loaded model name and OpenAI-compatible endpoint, usually `http://127.0.0.1:1234/v1`, using `arifce llm provider add lmstudio LmStudio your-loaded-model --endpoint http://127.0.0.1:1234/v1`.
+
+Then use the same task, source input, test evidence, and handoff flow.
 
 Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](docs/reference/LLM-PROVIDERS.md).
 
