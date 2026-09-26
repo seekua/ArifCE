@@ -32,9 +32,14 @@ git init
 arifce init
 arifce task create "Ship the first change"
 arifce handoff
+
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
 ```
 
-See the [installation guide](docs/getting-started/installation.md) for each platform.
+Use `adopt` when the repository already has code: it records the observed structure without overwriting it, then gives the next agent a project-local starting point. See the [installation guide](docs/getting-started/installation.md) for each platform.
 
 **Read in another language.**
 
@@ -126,16 +131,21 @@ For a complete installation and feature walkthrough, see the [User Guide](docs/U
 
 The install-and-start commands above create a repository-local project state, a task, and a handoff ready for the next contributor.
 
-### Local LLM workflows
+### Continue a task with Ollama or LM Studio
 
-ArifCE can use local or cloud-capable providers without moving project memory out of the repository. Configure a provider through an environment variable or stdin, preview bounded context, and run an evidence-backed task:
+ArifCE can use local or cloud-capable providers without moving project memory out of the repository. This is a real provider run: ArifCE sends the task prompt together with bounded repository context, and the model returns its response. ArifCE does not launch an IDE or edit files on the model's behalf; apply the proposed change in the model's coding interface, then verify and hand it off:
 
 ```bash
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
-arifce llm context "review the migration" --budget 2000
-arifce llm run review "Check the migration for data-loss risk" --with-context --claim CLAIM-0001
+arifce task create "Review the migration for data-loss risk"
+arifce llm run "Review the migration for data-loss risk" "Inspect the migration, identify data-loss risks, and propose the smallest safe patch." --with-context --budget 2000
+arifce claim create "Migration review completed"
+arifce verify CLAIM-0001 --command "dotnet test"
+arifce handoff
 ```
+
+For LM Studio, use its OpenAI-compatible local endpoint (usually `http://127.0.0.1:1234/v1`) when adding the provider. The same task, context, evidence, and handoff flow applies.
 
 Reviewer execution requires explicit approval. Provider fallback, token/cost accounting, canonical evidence, embeddings, benchmark metrics, MCP tools, and the local dashboard are documented in the [LLM provider reference](docs/reference/LLM-PROVIDERS.md).
 
