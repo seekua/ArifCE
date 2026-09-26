@@ -141,7 +141,10 @@ The install-and-start commands above create a repository-local project state, a 
 
 ArifCE keeps canonical project records in the repository. A provider receives the prompt and selected context; cloud providers receive that selected content remotely. `--with-context` adds ArifCE's selected project records, but does not read source files. The examples below explicitly put the migration file contents in the prompt, so the model receives the code it is asked to review. Use the version for your shell.
 
+Before either example, install and start Ollama. The first command downloads `llama3`; keep Ollama running at the configured local endpoint.
+
 ```bash
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 task_id="$(arifce task create "Review and safely update the migration")"
@@ -153,6 +156,7 @@ arifce llm run "Review and safely update the migration" "$prompt" --with-context
 ```
 
 ```powershell
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 $taskId = arifce task create "Review and safely update the migration"

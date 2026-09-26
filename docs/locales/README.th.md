@@ -143,7 +143,10 @@ ArifCE เผยแพร่ภายใต้ [Apache License 2.0](../../LICENS
 
 ArifCE เก็บบันทึกโครงการฉบับหลักไว้ใน repository ผู้ให้บริการจะได้รับพรอมป์ต์และบริบทที่เลือก ส่วนผู้ให้บริการบนคลาวด์จะได้รับเนื้อหาที่เลือกนั้นจากระยะไกล `--with-context` จะเพิ่มบันทึกโครงการที่ ArifCE เลือก แต่ไม่ได้อ่านไฟล์ซอร์ส ตัวอย่างด้านล่างใส่เนื้อหาของไฟล์ migration ลงในพรอมป์ต์โดยตรง เพื่อให้โมเดลได้รับโค้ดที่ต้องตรวจสอบ เลือกตัวอย่างให้ตรงกับ shell ที่ใช้
 
+ก่อนใช้ตัวอย่างใดตัวอย่างหนึ่ง ให้ติดตั้งและเริ่ม Ollama ก่อน คำสั่งแรกจะดาวน์โหลดโมเดล `llama3`; เปิด Ollama ค้างไว้ที่ local endpoint ที่ระบุด้านล่าง
+
 ```bash
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 task_id="$(arifce task create "Review and safely update the migration")"
@@ -155,6 +158,7 @@ arifce llm run "Review and safely update the migration" "$prompt" --with-context
 ```
 
 ```powershell
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 $taskId = arifce task create "Review and safely update the migration"

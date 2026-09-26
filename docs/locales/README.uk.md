@@ -143,7 +143,10 @@ ArifCE поширюється за [ліцензією Apache 2.0](../../LICENSE
 
 ArifCE зберігає канонічні записи проєкту в репозиторії. Провайдер отримує prompt і вибраний контекст; хмарні провайдери отримують цей вибраний вміст віддалено. `--with-context` додає вибрані ArifCE записи проєкту, але не читає файли вихідного коду. Наведені нижче приклади явно додають вміст файлу міграції до prompt, щоб модель отримала код для перевірки. Виберіть приклад для своєї оболонки.
 
+Перш ніж використовувати будь-який приклад, установіть і запустіть Ollama. Перша команда завантажить модель `llama3`; залиште Ollama запущеним на вказаній нижче локальній кінцевій точці.
+
 ```bash
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 task_id="$(arifce task create "Review and safely update the migration")"
@@ -155,6 +158,7 @@ arifce llm run "Review and safely update the migration" "$prompt" --with-context
 ```
 
 ```powershell
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 $taskId = arifce task create "Review and safely update the migration"

@@ -143,7 +143,10 @@ dotnet run --project src/ArifCE.Cli -- init
 
 تحتفظ ArifCE بسجلات المشروع الأساسية داخل المستودع. يتلقى المزود نص الطلب والسياق المحدد؛ أما مزودو السحابة فيتلقون ذلك المحتوى المحدد عن بُعد. يضيف الخيار `--with-context` سجلات المشروع التي تختارها ArifCE، لكنه لا يقرأ ملفات المصدر. تضع الأمثلة أدناه محتوى ملف الترحيل صراحةً في الطلب كي يتلقى النموذج الشيفرة المطلوب منه مراجعتها. اختر المثال المناسب لصدفتك.
 
+قبل استخدام أي من المثالين، ثبّت Ollama وشغّله. ينزّل الأمر الأول النموذج `llama3`؛ واترك خدمة Ollama تعمل على نقطة النهاية المحلية المحددة أدناه.
+
 ```bash
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 task_id="$(arifce task create "Review and safely update the migration")"
@@ -155,6 +158,7 @@ arifce llm run "Review and safely update the migration" "$prompt" --with-context
 ```
 
 ```powershell
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 $taskId = arifce task create "Review and safely update the migration"

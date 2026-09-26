@@ -2,7 +2,7 @@
 
 The English `README.md` is canonical. All 21 localized README files under `docs/locales/` retain the complete canonical sections, commands, links, badges, license, safety notes, slogan, and context quote. The directory index is `docs/locales/README.md`; the parity check is enforced by `scripts/check-readme-locales.ps1` in CI.
 
-On 2026-09-26, the existing-repository `adopt` quick start and the Ollama/LM Studio task-continuation demo were synchronized across all 21 localized READMEs. The demo includes Bash and PowerShell commands, passes the migration source explicitly to the model, and limits the test claim to what the test command establishes. These new prose translations have not yet received a separate native-speaker review; command syntax and Markdown structure are checked by the repository parity script.
+On 2026-09-26, the existing-repository `adopt` quick start and the Ollama/LM Studio task-continuation demo were synchronized across all 21 localized READMEs. The demo includes Bash and PowerShell commands, installs and starts Ollama, pulls `llama3` before provider testing, passes the migration source explicitly to the model, and limits the test claim to what the test command establishes. These new prose translations have not yet received a separate native-speaker review; command syntax and Markdown structure are checked by the repository parity script.
 
 Latest successful remote CI evidence: [workflow run 33269324169](https://github.com/seekua/ArifCE/actions/runs/33269324169), validating commit `1bdbcdc`.
 

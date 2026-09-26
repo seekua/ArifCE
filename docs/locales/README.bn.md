@@ -143,7 +143,10 @@ ArifCE [Apache License 2.0](../../LICENSE)-এর অধীনে লাইস�
 
 ArifCE প্রকল্পের মূল রেকর্ড রিপোজিটরিতেই রাখে। প্রোভাইডার প্রম্পট ও নির্বাচিত কনটেক্সট পায়; ক্লাউড প্রোভাইডার নির্বাচিত কনটেন্ট দূরের সার্ভারে পায়। `--with-context` ArifCE-র নির্বাচিত প্রকল্প রেকর্ড যোগ করে, কিন্তু সোর্স ফাইল পড়ে না। নিচের উদাহরণগুলো মাইগ্রেশন ফাইলের বিষয়বস্তু সরাসরি প্রম্পটে দেয়, যাতে মডেল পর্যালোচনার জন্য নির্দিষ্ট কোডটি পায়। আপনার শেলের জন্য উপযুক্ত উদাহরণটি ব্যবহার করুন।
 
+যেকোনো উদাহরণ চালানোর আগে Ollama ইনস্টল করে চালু করুন। প্রথম কমান্ডটি `llama3` মডেল ডাউনলোড করে; নিচে নির্ধারিত local endpoint-এ Ollama চালু রাখুন।
+
 ```bash
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 task_id="$(arifce task create "Review and safely update the migration")"
@@ -155,6 +158,7 @@ arifce llm run "Review and safely update the migration" "$prompt" --with-context
 ```
 
 ```powershell
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 $taskId = arifce task create "Review and safely update the migration"

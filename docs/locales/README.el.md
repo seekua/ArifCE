@@ -143,7 +143,10 @@ dotnet run --project src/ArifCE.Cli -- init
 
 Το ArifCE διατηρεί τις κανονικές εγγραφές του έργου στο αποθετήριο. Ο πάροχος λαμβάνει το prompt και το επιλεγμένο context· οι cloud πάροχοι λαμβάνουν αυτό το επιλεγμένο περιεχόμενο απομακρυσμένα. Η επιλογή `--with-context` προσθέτει τις εγγραφές έργου που επέλεξε το ArifCE, αλλά δεν διαβάζει αρχεία πηγαίου κώδικα. Τα παραδείγματα παρακάτω ενσωματώνουν ρητά το περιεχόμενο του αρχείου migration στο prompt, ώστε το μοντέλο να λάβει τον κώδικα που καλείται να ελέγξει. Χρησιμοποιήστε το παράδειγμα που ταιριάζει στο shell σας.
 
+Πριν χρησιμοποιήσετε οποιοδήποτε παράδειγμα, εγκαταστήστε και ξεκινήστε το Ollama. Η πρώτη εντολή κατεβάζει το μοντέλο `llama3`· αφήστε το Ollama να εκτελείται στο τοπικό endpoint που αναφέρεται παρακάτω.
+
 ```bash
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 task_id="$(arifce task create "Review and safely update the migration")"
@@ -155,6 +158,7 @@ arifce llm run "Review and safely update the migration" "$prompt" --with-context
 ```
 
 ```powershell
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 $taskId = arifce task create "Review and safely update the migration"

@@ -143,7 +143,10 @@ ArifCE được cấp phép theo [Apache License 2.0](../../LICENSE).
 
 ArifCE lưu các bản ghi dự án chuẩn tắc trong repository. Provider nhận prompt và phần ngữ cảnh được chọn; provider đám mây nhận nội dung đã chọn đó từ xa. `--with-context` thêm các bản ghi dự án do ArifCE chọn nhưng không đọc tệp mã nguồn. Các ví dụ dưới đây chủ động đưa nội dung tệp migration vào prompt để mô hình nhận được đoạn mã cần xem xét. Hãy chọn ví dụ phù hợp với shell của bạn.
 
+Trước khi dùng một trong hai ví dụ, hãy cài đặt và khởi động Ollama. Lệnh đầu tiên tải model `llama3`; hãy để Ollama tiếp tục chạy tại endpoint cục bộ được nêu bên dưới.
+
 ```bash
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 task_id="$(arifce task create "Review and safely update the migration")"
@@ -155,6 +158,7 @@ arifce llm run "Review and safely update the migration" "$prompt" --with-context
 ```
 
 ```powershell
+ollama pull llama3
 arifce llm provider add ollama Ollama llama3 --endpoint http://127.0.0.1:11434
 arifce llm provider test ollama
 $taskId = arifce task create "Review and safely update the migration"
