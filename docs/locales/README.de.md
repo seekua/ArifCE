@@ -1,6 +1,8 @@
 # ArifCE
 <p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
+**In einer anderen Sprache lesen.**
+
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **Agenten wechseln. Ihr Projekt sollte nicht vergessen.**
@@ -12,6 +14,43 @@ ArifCE ist eine lokale Projektintelligenz- und Kontinuitätsschicht für KI-gest
 
 > Das Repository besitzt den Kontext. Der Agent leiht ihn nur.
 
+**Limit erreicht? Fahren Sie mit zwei Befehlen fort.**
+
+Nach Abschluss der eigentlichen Arbeit an einer bestehenden Aufgabe halten Sie die Übergabe (Handoff) fest, bevor Sie die Arbeit beenden.
+
+```bash
+arifce handoff --task TASK-0031
+
+# When you return with Codex, Claude Code, OpenCode, or a local model:
+arifce context --task TASK-0031 --budget 2000
+```
+
+Die Übergabe umfasst das Ziel, die erledigte Arbeit, verifizierte Nachweise, offene Punkte, Fehler und die nächste Maßnahme. Kopieren Sie die ausgegebene Kontext-Information in die Eingabeaufforderung (Prompt) für den neuen Agenten; die CLI fügt den Kontext nicht automatisch in die Modellsitzung ein.
+
+## Installation und Schnellstart
+
+Laden Sie das eigenständige Archiv für Ihre Plattform von [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.1) herunter, entpacken Sie es und fügen Sie `arifce` Ihrem `PATH` hinzu. Achten Sie unter Linux darauf, beim Entpacken die Ausführungsrechte beizubehalten, oder führen Sie `chmod +x arifce` aus. Es ist keine separate Installation von .NET, Node, Python, Docker oder einer Datenbank erforderlich.
+
+Für ein neues Projekt:
+
+```bash
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+Für ein bestehendes Git-Repository:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+Verwenden Sie `adopt`, wenn das Repository bereits Code enthält: Es erfasst die vorhandene Struktur, ohne sie zu überschreiben, und bietet dem nächsten Agenten einen projektspezifischen Startpunkt. [Installation und Schnellstart](../getting-started/installation.md).
 
 ## Warum es ArifCE gibt
 
@@ -21,7 +60,7 @@ Das Ziel ist nicht, Agenten sicherer klingen zu lassen. Es geht darum, jedem Bei
 
 ArifCE macht Kontinuität zu einer gemeinsamen Engineering-Praxis: fokussierter Kontext für die nächste Aufgabe, klare Belege für wichtige Behauptungen und ehrliche Übergaben bei unvollständiger Arbeit.
 
-## Für wen es gedacht ist
+**Für wen es gedacht ist.**
 
 ArifCE richtet sich an KI-gestützte Engineering-Teams, Entwickler, die mit Coding-Agenten arbeiten, und Maintainer, deren Projektkontext eine Person, einen Chat oder eine Sitzung überdauern muss. Besonders nützlich ist es, wenn mehrere Beitragende ein Repository teilen und einen klaren Nachweis von Entscheidungen, Verifizierung und offenen Arbeiten benötigen.
 
@@ -42,7 +81,7 @@ flowchart LR
 
 ## Projekt erkunden
 
-Starte das lokale Dashboard, um Projektgesundheit, aktuelle Einträge und durchsuchbaren Kontext visuell zu überblicken:
+Starte das lokale Dashboard, um Projektgesundheit, aktuelle Einträge und durchsuchbaren Kontext visuell zu überblicken: Dieser Entwicklerbefehl verwendet das .NET SDK; die oben beschriebene Installation der eigenständigen Release-Version benötigt es nicht.
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -65,7 +104,7 @@ ArifCE verfolgt, worin die Aufgabe bestand, was und warum geändert wurde, was e
 
 Technische Verifizierung und Produktabnahme sind getrennt: Abnahmeaufzeichnungen nennen, wer eine Behauptung genehmigt hat und welche aktuellen Belege die Entscheidung stützten.
 
-## V0.1-Arbeitsablauf
+## Kern-Workflow
 
 ```text
 arifce init
@@ -83,62 +122,22 @@ Maßgebliche Markdown-, YAML-, JSON- und JSONL-Dateien liegen unter `.arifce/`. 
 
 Der Kern trennt Domänenregeln, maßgebliche Speicherung und Indexierung, Git-Beobachtung, Abruf, Verifizierung, Refactoring, Sicherheit und CLI. Anbieter-Anweisungsdateien sind kleine Adapter und werden nie zum maßgeblichen Speichersystem. Siehe [Architekturüberblick](../architecture/overview.md), [Domänenmodell](../architecture/domain-model.md) und [V0.1-Spezifikation](../SPECIFICATION-v0.1.md).
 
-## Installation und Schnellstart
+**Entwicklung aus dem Quellcode. V0.8.1 ist die aktuelle Version. Informationen zur Entwicklung aus dem Quellcode finden Sie unter Installation und Schnellstart.** [Installation und Schnellstart](../getting-started/installation.md) · [Schnellstart](../getting-started/quick-start.md).
 
-V0.2.0 ist als plattformübergreifendes .NET-Globaltool veröffentlicht. Siehe [Installation](../getting-started/installation.md) und [Schnellstart](../getting-started/quick-start.md). Aus dem Quellcode:
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```
 
 Der optionale lokale MCP-Adapter ist unter [MCP-Einrichtung](../getting-started/mcp.md) dokumentiert.
 
 Eine vollständige Anleitung zu Installation und Funktionen findest du im [Benutzerhandbuch](../USER-GUIDE.md) und in der [Dokumentationsrichtlinie](../DOCUMENTATION-POLICY.md).
 
-### Schnellstart in 60 Sekunden
+Die oben genannten Befehle für Installation und Start erzeugen einen repository-lokalen Projektzustand, eine Aufgabe sowie eine Übergabe, die für den nächsten Mitwirkenden bereitsteht.
 
-```bash
-dotnet tool install --global ArifCE.Cli --version 0.2.0
-mkdir my-project && cd my-project
-git init
-arifce init
-arifce task create "Ship the first change"
-arifce checkpoint --summary "Project context initialized"
-arifce handoff
-```
-
-Du hast jetzt einen repository-lokalen Projektstatus, eine Aufgabe, einen Checkpoint und eine semantische Übergabe für den nächsten Beitragenden.
-
-Wenn du bereits ein Git-Repository hast, wechsle dorthin und erfasse seine Struktur mit `adopt`:
-
-```bash
-cd path/to/existing-repo
-arifce adopt
-arifce task create "Ship the first change"
-arifce handoff
-```
-
-```bash
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project src/ArifCE.Cli -- init
-```
-
-Führen Sie `init` in einem neuen Git-Repository oder `adopt` in einem bestehenden aus. Beide Befehle sind nicht destruktiv und idempotent. `adopt` erfasst die beobachtete Struktur und kennzeichnet unbekannte historische Gründe als unbekannt.
-
-## Kontinuität, Verifizierung und Refactorings
-
-- Ein neuer Agent liest `AGENTS.md`, `.arifce/PROTOCOL.md` und `.arifce/CURRENT.md` und fordert dann aufgabenspezifischen Kontext an, statt den gesamten Verlauf zu laden.
-- Behauptungen verweisen auf repositorybezogene Belege. Belege werden veraltet, wenn sich der relevante Repository-Status ändert.
-- Refactoring-Kampagnen verfolgen Invarianten, Inventar, Prüfungen, Fortschritt und Checkpoints. Sperrende Prüfungen verhindern den Abschluss.
-- Übergaben fassen den aktuellen Engineering-Status zusammen, statt Gesprächsverläufe auszuschütten.
-
-## Sicherheit und Einschränkungen
-
-Rohprotokolle sind nicht vertrauenswürdig und werden niemals vollständig geladen oder ausgeführt. Importpfade schwärzen gängige Geheimnisse; Zugangsdaten und Maschinenauthentifizierung gehören nicht nach `.arifce/`. V0.1 garantiert weder Korrektheit noch Token-Einsparungen oder bessere Reviewqualität. Es gibt keinen Cloud-Dienst, keine UI, keine Vektordatenbank, keinen autonomen Schwarm und keine produktive Agent-zu-Agent-Ausführung.
-
-Siehe [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) und [CONTRIBUTING.md](../../CONTRIBUTING.md). Die exakt implementierte Befehlssyntax ist in der [CLI-Referenz](../reference/cli.md) dokumentiert.
-
-## Lizenz
-
-ArifCE steht unter der [Apache-Lizenz 2.0](../../LICENSE).
 ### Aufgabe mit Ollama oder LM Studio fortsetzen
 
 ArifCE speichert die maßgeblichen Projekteinträge im Repository. Ein Provider erhält den Prompt und den ausgewählten Kontext; Cloud-Provider bekommen diese ausgewählten Inhalte über eine Netzwerkverbindung. `--with-context` ergänzt die von ArifCE ausgewählten Projekteinträge, liest aber keine Quelldateien. Die Beispiele unten fügen den Inhalt der Migrationsdatei ausdrücklich in den Prompt ein, damit das Modell den zu prüfenden Code erhält. Verwende das Beispiel für deine Shell.
@@ -194,12 +193,20 @@ Verwende danach denselben Ablauf für Aufgabe, Quelltext, Testnachweis und Über
 Reviewer-Ausführungen benötigen eine ausdrückliche Freigabe. Fallback-Provider, Token- und Kostenabrechnung, kanonische Nachweise, Embeddings, Benchmark-Metriken, MCP-Werkzeuge und das lokale Dashboard sind in der [LLM-Providerreferenz](../reference/LLM-PROVIDERS.md) beschrieben.
 
 Führe `init` in einem neuen Git-Repository oder `adopt` in einem bestehenden aus. Beide Befehle sind nicht destruktiv und idempotent; `adopt` erfasst die erkannte Struktur und kennzeichnet unbekannte historische Begründungen als unbekannt.
-### From source
 
-```bash
-git clone https://github.com/seekua/ArifCE.git
-cd ArifCE
-dotnet restore ArifCE.slnx
-dotnet build ArifCE.slnx --configuration Release --no-restore
-dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
-```
+## Kontinuität, Verifizierung und Refactorings
+
+- Ein neuer Agent liest `AGENTS.md`, `.arifce/PROTOCOL.md` und `.arifce/CURRENT.md` und fordert dann aufgabenspezifischen Kontext an, statt den gesamten Verlauf zu laden.
+- Behauptungen verweisen auf repositorybezogene Belege. Belege werden veraltet, wenn sich der relevante Repository-Status ändert.
+- Refactoring-Kampagnen verfolgen Invarianten, Inventar, Prüfungen, Fortschritt und Checkpoints. Sperrende Prüfungen verhindern den Abschluss.
+- Übergaben fassen den aktuellen Engineering-Status zusammen, statt Gesprächsverläufe auszuschütten.
+
+## Sicherheit und Einschränkungen
+
+Rohprotokolle gelten als nicht vertrauenswürdig und werden niemals massenhaft geladen oder ausgeführt. Importpfade schwärzen gängige Geheimnisse; Zugangsdaten und Authentifizierungsdaten für Maschinen gehören nicht in `.arifce`. ArifCE garantiert weder Korrektheit noch Token-Einsparungen oder eine bessere Qualität der Code-Überprüfung. Es gibt keinen Cloud-Dienst, keine gehostete Benutzeroberfläche, keine Vektordatenbank, keinen autonomen Schwarm und keinen produktiven Aufruf zwischen Agenten. Ein lokales Dashboard ist enthalten; es handelt sich nicht um eine gehostete Webanwendung.
+
+Siehe [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) und [CONTRIBUTING.md](../../CONTRIBUTING.md). Die exakt implementierte Befehlssyntax ist in der [CLI-Referenz](../reference/cli.md) dokumentiert.
+
+## Lizenz
+
+ArifCE steht unter der [Apache-Lizenz 2.0](../../LICENSE).

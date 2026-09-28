@@ -1,6 +1,8 @@
 # ArifCE
 <p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
+**他の言語で読む。**
+
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **エージェントは変わる。プロジェクトは忘れてはいけない。**
@@ -12,6 +14,43 @@ ArifCE は AI 支援ソフトウェア開発のためのローカル優先のプ
 
 > リポジトリがコンテキストを所有し、エージェントはそれを借りるだけです。
 
+**制限に達しましたか？2つのコマンドで作業を継続できます。**
+
+既存のタスクでの実作業を終えたら、作業を中断する前に「ハンドオフ（引き継ぎ情報）」を記録してください。
+
+```bash
+arifce handoff --task TASK-0031
+
+# When you return with Codex, Claude Code, OpenCode, or a local model:
+arifce context --task TASK-0031 --budget 2000
+```
+
+ハンドオフには、目的、完了した作業、検証済み証拠、未解決事項、失敗、および次のアクションが含まれます。出力されたコンテキスト情報をコピーし、新しいエージェントの開始プロンプトに貼り付けてください。CLIはモデルのセッションにコンテキストを自動的に注入しません。
+
+## インストールとクイックスタート
+
+[GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.1)からお使いのプラットフォーム用の自己完結型アーカイブをダウンロードして展開し、`arifce`を`PATH`に追加してください。Linuxの場合、展開時に実行権限を保持するか、`chmod +x arifce`を実行してください。.NET、Node、Python、Docker、データベースなどの別途インストールは不要です。
+
+新規プロジェクトの場合：
+
+```bash
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+既存のGitリポジトリの場合：
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+リポジトリに既にコードがある場合は`adopt`を使用してください。これは既存の構造を上書きせずに記録し、次のエージェントにプロジェクト固有の開始点を提供します。 [インストールとクイックスタート](../getting-started/installation.md).
 
 ## ArifCE が存在する理由
 
@@ -21,7 +60,7 @@ ArifCE は AI 支援ソフトウェア開発のためのローカル優先のプ
 
 ArifCE は継続性を共有された開発の実践に変えます。次のタスクに集中したコンテキスト、重要な主張を裏付ける明示的な証拠、作業が未完了のときの正直な引き継ぎを提供します。
 
-## 対象ユーザー
+**対象ユーザー.**
 
 ArifCE は AI 支援の開発チーム、コーディングエージェントを使う開発者、そして一人の担当者・チャット・セッションを越えてプロジェクトのコンテキストを残したいメンテナー向けです。複数の貢献者がリポジトリを共有し、決定、検証、未完了作業の明確な記録を必要とする場合に特に役立ちます。
 
@@ -42,7 +81,7 @@ flowchart LR
 
 ## プロジェクトを探索する
 
-ローカルダッシュボードを起動すると、プロジェクトの健全性、最近の記録、検索可能なコンテキストを視覚的に確認できます。
+ローカルダッシュボードを起動すると、プロジェクトの健全性、最近の記録、検索可能なコンテキストを視覚的に確認できます。 この開発者用コマンドは.NET SDKを使用します（前述の自己完結型リリースのインストールでは不要です）。
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -65,7 +104,7 @@ ArifCE はタスクの内容、変更点と理由、エージェントが完了�
 
 技術的な検証と製品の受け入れは別です。受け入れ記録には、誰が主張を承認したか、どの現在の証拠がその判断を支えたかが記録されます。
 
-## V0.1 ワークフロー
+## 基本ワークフロー
 
 ```text
 arifce init
@@ -83,62 +122,22 @@ arifce handoff
 
 コアはドメインルール、正規ストレージとインデックス、Git の監視、取得、検証、リファクタリング、セキュリティ、CLI を分離します。ベンダーの指示ファイルは小さなアダプターであり、正規のメモリーストアにはなりません。[アーキテクチャ概要](../architecture/overview.md)、[ドメインモデル](../architecture/domain-model.md)、[V0.1 仕様](../SPECIFICATION-v0.1.md)を参照してください。
 
-## インストールとクイックスタート
+**ソースコードからの開発。現在のリリースはV0.8.1です。ソースコードからの開発については、インストールおよびクイックスタートを参照してください。** [インストールとクイックスタート](../getting-started/installation.md) · [クイックスタート](../getting-started/quick-start.md).
 
-V0.2.0 はクロスプラットフォームの .NET グローバルツールとして公開されています。[インストール](../getting-started/installation.md)と[クイックスタート](../getting-started/quick-start.md)を参照してください。ソースから実行する場合:
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```
 
 オプションのローカル MCP アダプターについては [MCP セットアップ](../getting-started/mcp.md) に記載しています。
 
 インストールと機能の完全な手順は、[ユーザーガイド](../USER-GUIDE.md)と[ドキュメントポリシー](../DOCUMENTATION-POLICY.md)を参照してください。
 
-### 60-second quick start
+上記のインストールおよび開始コマンドは、リポジトリ固有のプロジェクト状態、タスク、および次の貢献者に引き継ぐためのハンドオフを作成します。
 
-```bash
-dotnet tool install --global ArifCE.Cli --version 0.2.0
-mkdir my-project && cd my-project
-git init
-arifce init
-arifce task create "Ship the first change"
-arifce checkpoint --summary "Project context initialized"
-arifce handoff
-```
-
-これで、リポジトリに紐づくプロジェクト状態、タスク、チェックポイント、次の貢献者に渡せる意味のある引き継ぎが揃いました。
-
-既存の Git リポジトリで作業する場合は、そのリポジトリへ移動して `adopt` で構成を記録します。
-
-```bash
-cd path/to/existing-repo
-arifce adopt
-arifce task create "Ship the first change"
-arifce handoff
-```
-
-```bash
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project src/ArifCE.Cli -- init
-```
-
-新しい Git リポジトリでは `init`、既存のリポジトリでは `adopt` を実行します。どちらも非破壊で冪等です。`adopt` は確認した構造を記録し、不明な過去の理由を不明として扱います。
-
-## 継続性、検証、リファクタリング
-
-- 新しいエージェントは `AGENTS.md`、`.arifce/PROTOCOL.md`、`.arifce/CURRENT.md` を読み、履歴を一括読み込みせずタスク固有のコンテキストを要求します。
-- 主張はリポジトリ範囲の証拠にリンクされます。関連する状態が変わると証拠は古くなります。
-- リファクタリング作業では不変条件、インベントリ、ガード、進捗、チェックポイントを追跡します。ブロッキングガードは完了を防ぎます。
-- 引き継ぎはトランスクリプトをそのまま渡さず、現在の開発状態を要約します。
-
-## セキュリティと制限
-
-生のトランスクリプトは信頼できないため、一括読み込みや実行は行いません。インポート経路では一般的な秘密情報を伏せ字にします。認証情報やマシン認証データを `.arifce/` に置かないでください。V0.1 は正確性、トークン削減、レビュー品質の向上を保証しません。クラウドサービス、UI、ベクトルデータベース、自律スウォーム、本番環境のエージェント間呼び出しもありません。
-
-詳しくは [ROADMAP.md](../../ROADMAP.md)、[SECURITY.md](../../SECURITY.md)、[CONTRIBUTING.md](../../CONTRIBUTING.md) を参照してください。実装済みコマンドの正確な構文は [CLI リファレンス](../reference/cli.md) に記載しています。
-
-## ライセンス
-
-ArifCE は [Apache License 2.0](../../LICENSE) の下でライセンスされています。
 ### Ollama または LM Studio でタスクを続ける
 
 ArifCE はプロジェクトの正規記録をリポジトリ内に保持します。プロバイダーにはプロンプトと選択されたコンテキストが渡され、クラウドプロバイダーにはその選択内容がリモート送信されます。`--with-context` は ArifCE が選んだプロジェクト記録を追加しますが、ソースファイルは読み込みません。以下の例では、レビュー対象のコードをモデルが受け取るよう、マイグレーションファイルの内容を明示的にプロンプトへ入れます。使用するシェルに合った例を選んでください。
@@ -194,12 +193,20 @@ arifce handoff
 Reviewer の実行には明示的な承認が必要です。代替プロバイダー、トークンとコストの記録、正規証拠、埋め込み、ベンチマーク指標、MCP ツール、ローカルダッシュボードについては [LLM プロバイダーリファレンス](../reference/LLM-PROVIDERS.md)を参照してください。
 
 新しい Git リポジトリでは `init`、既存のリポジトリでは `adopt` を実行します。どちらも非破壊的で何度でも実行でき、`adopt` は検出した構成を記録し、分からない過去の理由は不明として扱います。
-### From source
 
-```bash
-git clone https://github.com/seekua/ArifCE.git
-cd ArifCE
-dotnet restore ArifCE.slnx
-dotnet build ArifCE.slnx --configuration Release --no-restore
-dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
-```
+## 継続性、検証、リファクタリング
+
+- 新しいエージェントは `AGENTS.md`、`.arifce/PROTOCOL.md`、`.arifce/CURRENT.md` を読み、履歴を一括読み込みせずタスク固有のコンテキストを要求します。
+- 主張はリポジトリ範囲の証拠にリンクされます。関連する状態が変わると証拠は古くなります。
+- リファクタリング作業では不変条件、インベントリ、ガード、進捗、チェックポイントを追跡します。ブロッキングガードは完了を防ぎます。
+- 引き継ぎはトランスクリプトをそのまま渡さず、現在の開発状態を要約します。
+
+## セキュリティと制限
+
+生のトランスクリプトは信頼できないものとして扱われ、一括読み込みや実行は行われません。インポートパスでは一般的な機密情報が伏せられます。認証情報やマシン認証データは`.arifce`に含めるべきではありません。ArifCEは、正確性、トークン使用量の削減、またはレビュー品質の向上を保証するものではありません。クラウドサービス、ホスト型UI、ベクトルデータベース、自律型スワーム、本番環境でのエージェント間呼び出し機能などは備えていません。ローカルダッシュボードは含まれていますが、これはホスト型Webアプリケーションではありません。
+
+詳しくは [ROADMAP.md](../../ROADMAP.md)、[SECURITY.md](../../SECURITY.md)、[CONTRIBUTING.md](../../CONTRIBUTING.md) を参照してください。実装済みコマンドの正確な構文は [CLI リファレンス](../reference/cli.md) に記載しています。
+
+## ライセンス
+
+ArifCE は [Apache License 2.0](../../LICENSE) の下でライセンスされています。

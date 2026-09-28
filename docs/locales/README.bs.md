@@ -1,6 +1,8 @@
 # ArifCE
 <p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
+**Pročitajte na drugom jeziku.**
+
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **Agenti se mijenjaju. Vaš projekat ne smije zaboraviti.**
@@ -12,6 +14,43 @@ ArifCE je lokalni sloj projektne inteligencije i kontinuiteta za razvoj softvera
 
 > Repozitorij posjeduje kontekst. Agent ga samo posuđuje.
 
+**Vaš limit je istekao? Nastavite kroz dvije komande.**
+
+Nakon završetka stvarnog rada na postojećem zadatku, zabilježite njegovu primopredaju (handoff) prije nego što prekinete rad.
+
+```bash
+arifce handoff --task TASK-0031
+
+# When you return with Codex, Claude Code, OpenCode, or a local model:
+arifce context --task TASK-0031 --budget 2000
+```
+
+Primopredaja sadrži cilj, obavljeni posao, provjerene dokaze, neriješene stavke, greške i sljedeću radnju. Kopirajte ispisani kontekst u početni upit (prompt) novog agenta; CLI ne ubacuje kontekst u sesiju modela automatski.
+
+## Instalacija i brzi početak
+
+Preuzmite samostalnu arhivu za svoju platformu sa [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.1) stranice, raspakujte je i dodajte `arifce` u svoju `PATH` putanju. Na Linuxu, sačuvajte dozvolu za izvršavanje prilikom raspakivanja ili pokrenite `chmod +x arifce`. Nije potrebna posebna instalacija za .NET, Node, Python, Docker ili bazu podataka.
+
+Za novi projekat:
+
+```bash
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+Za postojeći Git repozitorij:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+Koristite `adopt` kada repozitorij već sadrži kod: to bilježi uočenu strukturu bez njenog prepisivanja, a zatim pruža sljedećem agentu početnu tačku lokalnu za taj projekat. [Instalacija i brzi početak](../getting-started/installation.md).
 
 ## Zašto ArifCE postoji
 
@@ -21,7 +60,7 @@ Cilj nije da agenti zvuče sigurnije, već da svaki saradnik razumije šta tim �
 
 ArifCE pretvara kontinuitet u zajedničku inženjersku praksu: usmjeren kontekst za sljedeći zadatak, jasne dokaze za važne tvrdnje i iskrene primopredaje kada posao nije završen.
 
-## Kome je namijenjen
+**Kome je namijenjen.**
 
 ArifCE je namijenjen inženjerskim timovima uz AI, programerima koji rade s kodnim agentima i održavaocima kojima kontekst projekta treba preživjeti jednu osobu, chat ili sesiju. Posebno je koristan kada više saradnika dijeli repozitorij.
 
@@ -42,7 +81,7 @@ flowchart LR
 
 ## Istražite projekat
 
-Pokrenite lokalnu nadzornu ploču za pregled zdravlja projekta, nedavnih zapisa i pretraživog konteksta:
+Pokrenite lokalnu nadzornu ploču za pregled zdravlja projekta, nedavnih zapisa i pretraživog konteksta: Ova komanda za programere koristi .NET SDK; gore opisana instalacija samostalnog izdanja ga ne zahtijeva.
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -65,7 +104,7 @@ ArifCE prati šta je zadatak bio, šta se promijenilo i zašto, šta agent tvrdi
 
 Tehnička verifikacija i prihvatanje proizvoda su odvojeni: zapisi prihvatanja navode ko je odobrio tvrdnju i koji su aktuelni dokazi podržali odluku.
 
-## V0.1 workflow
+## Osnovni radni tok
 
 ```text
 arifce init
@@ -81,64 +120,24 @@ Kanonski Markdown, YAML, JSON i JSONL nalaze se u `.arifce/`. SQLite je izvedeni
 
 ## Arhitektura
 
-Jezgro odvaja pravila domena, kanonsko skladištenje i indeksiranje, posmatranje Gita, dohvat, verifikaciju, refaktorisanje, sigurnost i CLI. Datoteke uputa dobavljača su mali adapteri i nikada ne postaju kanonsko spremište memorije.
+Jezgro odvaja pravila domena, kanonsko skladištenje i indeksiranje, posmatranje Gita, dohvat, verifikaciju, refaktorisanje, sigurnost i CLI. Datoteke uputa dobavljača su mali adapteri i nikada ne postaju kanonsko spremište memorije. Pogledajte [pregled arhitekture](../architecture/overview.md), [model domene](../architecture/domain-model.md) i [historijsku temeljnu specifikaciju V0.1](../SPECIFICATION-v0.1.md).
 
-## Installation and quick start
+**Razvoj iz izvornog koda. V0.8.1 je trenutna verzija. Za razvoj iz izvornog koda, pogledajte uputstva za instalaciju i brzi početak.** [Instalacija i brzi početak](../getting-started/installation.md) · [Brzi početak](../getting-started/quick-start.md).
 
-V0.2.0 je objavljen kao višeplatformski .NET globalni alat. Pogledajte [instalaciju](../getting-started/installation.md) i [brzi početak](../getting-started/quick-start.md). Iz izvornog koda:
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```
 
 Opcionalni lokalni MCP adapter opisan je u [MCP podešavanju](../getting-started/mcp.md).
 
 Za potpunu instalaciju i pregled funkcija pogledajte [korisnički vodič](../USER-GUIDE.md) i [politiku dokumentacije](../DOCUMENTATION-POLICY.md).
 
-### 60-second quick start
+Gore navedene komande za instalaciju i pokretanje kreiraju stanje projekta lokalno za repozitorij, zadatak i primopredaju spremnu za sljedećeg saradnika.
 
-```bash
-dotnet tool install --global ArifCE.Cli --version 0.2.0
-mkdir my-project && cd my-project
-git init
-arifce init
-arifce task create "Ship the first change"
-arifce checkpoint --summary "Project context initialized"
-arifce handoff
-```
-
-Sada imate stanje projekta u repozitoriju, zadatak, kontrolnu tačku i semantičku primopredaju spremnu za sljedećeg saradnika.
-
-Ako već imate Git repozitorij, prijeđite u njega i zabilježite njegovu strukturu pomoću `adopt`:
-
-```bash
-cd path/to/existing-repo
-arifce adopt
-arifce task create "Ship the first change"
-arifce handoff
-```
-
-```bash
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project src/ArifCE.Cli -- init
-```
-
-Pokrenite `init` u novom Git repozitoriju ili `adopt` u postojećem. Obje naredbe su nedestruktivne i idempotentne. `adopt` bilježi uočenu strukturu i nepoznate istorijske razloge označava kao nepoznate.
-
-## Kontinuitet, verifikacija i refaktorisanje
-
-- Novi agent čita `AGENTS.md`, `.arifce/PROTOCOL.md` i `.arifce/CURRENT.md`, zatim traži kontekst zadatka umjesto masovnog učitavanja istorije.
-- Tvrdnje upućuju na dokaze iz repozitorija; dokazi zastarijevaju kada se relevantno stanje promijeni.
-- Kampanje refaktorisanja prate invarijante, inventar, zaštite, napredak i kontrolne tačke; blokirajuće zaštite sprečavaju završetak.
-- Primopredaje sažimaju trenutno tehničko stanje umjesto izlivanja transkripata.
-
-## Sigurnost i ograničenja
-
-Sirovi transkripti nisu pouzdani i nikada se ne učitavaju niti izvršavaju skupno. Uvozni putevi uklanjaju uobičajene tajne; vjerodajnice i podaci za autentifikaciju mašine ne pripadaju u `.arifce/`. V0.1 ne garantuje ispravnost, uštedu tokena ni bolji kvalitet pregleda; nema cloud uslugu, UI, vektorsku bazu, autonomni roj ni produkcijske pozive između agenata.
-
-Pogledajte [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) i [CONTRIBUTING.md](../../CONTRIBUTING.md). Tačna sintaksa implementiranih komandi dokumentovana je u [CLI referenci](../reference/cli.md).
-
-## Licenca
-
-ArifCE je licenciran pod [Apache License 2.0](../../LICENSE).
 ### Nastavite zadatak uz Ollama ili LM Studio
 
 ArifCE čuva kanonske projektne zapise u repozitoriju. Pružalac dobija prompt i odabrani kontekst; pružaoci u oblaku taj odabrani sadržaj primaju udaljeno. Opcija `--with-context` dodaje zapise projekta koje je odabrao ArifCE, ali ne čita izvorne datoteke. Primjeri ispod izričito stavljaju sadržaj migracijske datoteke u prompt, tako da model dobije kod koji treba pregledati. Odaberite primjer za svoj shell.
@@ -194,12 +193,20 @@ Zatim slijedite isti tok zadatka, ulaza izvornog koda, dokaza testiranja i preda
 Pokretanje reviewera zahtijeva izričito odobrenje. Rezervni pružaoci, obračun tokena/troškova, kanonski dokazi, embeddings, benchmark metrike, MCP alati i lokalna kontrolna ploča opisani su u [referenci LLM pružaoca](../reference/LLM-PROVIDERS.md).
 
 Pokrenite `init` u novom Git repozitoriju ili `adopt` u postojećem. Obje naredbe su sigurne za ponavljanje i ne uništavaju postojeći sadržaj; `adopt` bilježi uočenu strukturu i nepoznate historijske razloge označava kao nepoznate.
-### From source
 
-```bash
-git clone https://github.com/seekua/ArifCE.git
-cd ArifCE
-dotnet restore ArifCE.slnx
-dotnet build ArifCE.slnx --configuration Release --no-restore
-dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
-```
+## Kontinuitet, verifikacija i refaktorisanje
+
+- Novi agent čita `AGENTS.md`, `.arifce/PROTOCOL.md` i `.arifce/CURRENT.md`, zatim traži kontekst zadatka umjesto masovnog učitavanja istorije.
+- Tvrdnje upućuju na dokaze iz repozitorija; dokazi zastarijevaju kada se relevantno stanje promijeni.
+- Kampanje refaktorisanja prate invarijante, inventar, zaštite, napredak i kontrolne tačke; blokirajuće zaštite sprečavaju završetak.
+- Primopredaje sažimaju trenutno tehničko stanje umjesto izlivanja transkripata.
+
+## Sigurnost i ograničenja
+
+Neobrađeni transkripti se smatraju nepouzdanim i nikada se ne učitavaju masovno niti izvršavaju. Putanje za uvoz maskiraju uobičajene tajne podatke; akreditivi i podaci za autentifikaciju mašine ne pripadaju datoteci `.arifce`. ArifCE ne garantuje ispravnost, uštedu tokena niti bolji kvalitet pregleda koda. Ne uključuje usluge u oblaku, hostovani korisnički interfejs, vektorsku bazu podataka, autonomni roj agenata niti pozivanje agenata jednih od strane drugih u produkcijskom okruženju. Uključena je lokalna kontrolna tabla; to nije hostovana web aplikacija.
+
+Pogledajte [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) i [CONTRIBUTING.md](../../CONTRIBUTING.md). Tačna sintaksa implementiranih komandi dokumentovana je u [CLI referenci](../reference/cli.md).
+
+## Licenca
+
+ArifCE je licenciran pod [Apache License 2.0](../../LICENSE).

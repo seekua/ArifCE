@@ -1,7 +1,10 @@
 param([switch]$RequireReviewed)
 $root = Split-Path -Parent $PSScriptRoot
 $status = Get-Content (Join-Path $root 'docs/TRANSLATION-STATUS.md') -Raw
-$files = Get-ChildItem (Join-Path $root 'README.*.md')
+$files = Get-ChildItem (Join-Path $root 'docs/locales/README.*.md')
+if ($files.Count -eq 0) {
+  Write-Error 'No localized README files were found under docs/locales.'
+}
 $pending = @()
 foreach ($file in $files) {
   $row = ($status -split "`r?`n" | Where-Object { $_ -match [regex]::Escape($file.Name) } | Select-Object -First 1)

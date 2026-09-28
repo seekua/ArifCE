@@ -1,6 +1,8 @@
 # ArifCE
 <p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
+**다른 언어로 읽기.**
+
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **에이전트는 바뀝니다. 프로젝트는 잊지 않아야 합니다.**
@@ -12,6 +14,43 @@ ArifCE는 AI 지원 소프트웨어 개발을 위한 로컬 우선 프로젝트 
 
 > 저장소가 컨텍스트를 소유하고 에이전트는 그것을 빌릴 뿐입니다.
 
+**사용 한도가 종료되었나요? 두 개의 명령어로 작업을 이어가세요.**
+
+기존 작업의 실제 업무를 완료한 후, 작업을 중단하기 전에 인수인계(handoff) 내용을 기록하세요.
+
+```bash
+arifce handoff --task TASK-0031
+
+# When you return with Codex, Claude Code, OpenCode, or a local model:
+arifce context --task TASK-0031 --budget 2000
+```
+
+인수인계 정보에는 목표, 완료된 작업, 검증된 증거, 미해결 사항, 실패 내역, 그리고 다음 행동 단계가 포함됩니다. 출력된 컨텍스트 내용을 복사하여 새 에이전트의 시작 프롬프트에 입력하세요. CLI는 모델 세션에 컨텍스트를 자동으로 주입하지 않습니다.
+
+## 설치 및 빠른 시작
+
+[GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.1)에서 사용 중인 플랫폼에 맞는 독립형(self-contained) 아카이브를 다운로드하여 압축을 풀고, `arifce`를 `PATH`에 추가하세요. Linux의 경우 압축을 풀 때 실행 권한을 유지하거나 `chmod +x arifce`를 실행해야 합니다. 별도의 .NET, Node, Python, Docker 또는 데이터베이스 설치는 필요하지 않습니다.
+
+새 프로젝트의 경우:
+
+```bash
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+기존 Git 저장소의 경우:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+저장소에 이미 코드가 있는 경우 `adopt`를 사용하세요. 이는 기존 코드를 덮어쓰지 않고 구조를 파악하여 기록하며, 다음 에이전트에게 프로젝트별 시작 지점을 제공합니다. [설치 및 빠른 시작](../getting-started/installation.md).
 
 ## ArifCE가 필요한 이유
 
@@ -21,7 +60,7 @@ ArifCE는 AI 지원 소프트웨어 개발을 위한 로컬 우선 프로젝트 
 
 ArifCE는 연속성을 공동 엔지니어링 실천으로 바꿉니다. 다음 작업을 위한 집중된 컨텍스트, 중요한 주장에 대한 명시적 증거, 작업이 미완료일 때의 정직한 인수인계를 제공합니다.
 
-## 대상 사용자
+**대상 사용자.**
 
 ArifCE는 AI 지원 엔지니어링 팀, 코딩 에이전트와 함께 일하는 개발자, 한 사람이나 채팅 또는 세션을 넘어 프로젝트 컨텍스트를 유지해야 하는 유지관리자를 위한 것입니다. 여러 기여자가 저장소를 공유하고 결정, 검증 및 미완료 작업을 명확히 기록해야 할 때 특히 유용합니다.
 
@@ -42,7 +81,7 @@ flowchart LR
 
 ## 프로젝트 탐색
 
-로컬 대시보드를 실행하면 프로젝트 상태, 최근 기록 및 검색 가능한 컨텍스트를 시각적으로 확인할 수 있습니다.
+로컬 대시보드를 실행하면 프로젝트 상태, 최근 기록 및 검색 가능한 컨텍스트를 시각적으로 확인할 수 있습니다. 이 개발자용 명령어는 .NET SDK를 사용합니다. 앞서 설명한 독립형 릴리스 설치 방식에서는 SDK가 필요하지 않습니다.
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -65,7 +104,7 @@ ArifCE는 작업 내용, 변경 사항과 이유, 에이전트가 완료했다�
 
 기술 검증과 제품 승인은 별개입니다. 승인 기록에는 누가 주장을 승인했는지와 어떤 현재 증거가 결정을 뒷받침했는지가 담깁니다.
 
-## V0.1 워크플로
+## 핵심 워크플로
 
 ```text
 arifce init
@@ -83,62 +122,22 @@ arifce handoff
 
 핵심은 도메인 규칙, 표준 저장소와 인덱싱, Git 관찰, 검색, 검증, 리팩터링, 보안 및 CLI를 분리합니다. 공급업체 지침 파일은 작은 어댑터이며 표준 메모리 저장소가 되지 않습니다. [아키텍처 개요](../architecture/overview.md), [도메인 모델](../architecture/domain-model.md), [V0.1 사양](../SPECIFICATION-v0.1.md)을 참조하세요.
 
-## 설치 및 빠른 시작
+**소스 개발. 현재 릴리스 버전은 V0.8.1입니다. 소스 개발에 대해서는 설치 및 빠른 시작 가이드를 참조하세요.** [설치 및 빠른 시작](../getting-started/installation.md) · [빠른 시작](../getting-started/quick-start.md).
 
-V0.2.0은 크로스 플랫폼 .NET 전역 도구로 게시되었습니다. [설치](../getting-started/installation.md)와 [빠른 시작](../getting-started/quick-start.md)을 참조하세요. 소스에서 실행하려면:
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```
 
 선택적 로컬 MCP 어댑터는 [MCP 설정](../getting-started/mcp.md)에 문서화되어 있습니다.
 
 설치 및 기능 전체 안내는 [사용자 가이드](../USER-GUIDE.md)와 [문서 정책](../DOCUMENTATION-POLICY.md)을 참조하세요.
 
-### 60-second quick start
+위의 설치 및 시작 명령어는 저장소 로컬 프로젝트 상태, 작업(task), 그리고 다음 기여자를 위한 인수인계(handoff) 정보를 생성합니다.
 
-```bash
-dotnet tool install --global ArifCE.Cli --version 0.2.0
-mkdir my-project && cd my-project
-git init
-arifce init
-arifce task create "Ship the first change"
-arifce checkpoint --summary "Project context initialized"
-arifce handoff
-```
-
-이제 저장소에 로컬로 보관되는 프로젝트 상태, 작업, 체크포인트와 다음 기여자를 위한 의미 있는 인수인계가 준비되었습니다.
-
-이미 Git 저장소가 있다면 해당 저장소로 이동한 뒤 `adopt`로 구조를 기록하세요.
-
-```bash
-cd path/to/existing-repo
-arifce adopt
-arifce task create "Ship the first change"
-arifce handoff
-```
-
-```bash
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project src/ArifCE.Cli -- init
-```
-
-새 Git 저장소에서는 `init`을, 기존 저장소에서는 `adopt`를 실행하세요. 두 명령 모두 비파괴적이며 멱등적입니다. `adopt`는 관찰된 구조를 기록하고 알 수 없는 과거의 근거를 알 수 없음으로 표시합니다.
-
-## 연속성, 검증 및 리팩터링
-
-- 새 에이전트는 `AGENTS.md`, `.arifce/PROTOCOL.md`, `.arifce/CURRENT.md`를 읽은 뒤 전체 기록을 불러오지 않고 작업별 컨텍스트를 요청합니다.
-- 주장은 저장소 범위의 증거에 연결됩니다. 관련 저장소 상태가 바뀌면 증거는 오래된 것으로 표시됩니다.
-- 리팩터링 캠페인은 불변식, 목록, 가드, 진행률과 체크포인트를 추적합니다. 차단 가드는 완료를 방지합니다.
-- 인수인계는 대화 기록을 그대로 덤프하지 않고 현재 엔지니어링 상태를 요약합니다.
-
-## 보안 및 제한 사항
-
-원시 대화 기록은 신뢰할 수 없으며 일괄 로드하거나 실행하지 않습니다. 가져오기 경로는 일반적인 비밀을 가립니다. 자격 증명과 시스템 인증 정보는 `.arifce/`에 저장하지 마세요. V0.1은 정확성, 토큰 절약 또는 더 나은 검토 품질을 보장하지 않습니다. 클라우드 서비스, UI, 벡터 데이터베이스, 자율 스웜 또는 프로덕션 에이전트 간 호출도 제공하지 않습니다.
-
-자세한 내용은 [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md), [CONTRIBUTING.md](../../CONTRIBUTING.md)를 참조하세요. 구현된 명령의 정확한 구문은 [CLI 참조](../reference/cli.md)에 문서화되어 있습니다.
-
-## 라이선스
-
-ArifCE는 [Apache License 2.0](../../LICENSE)에 따라 사용이 허가됩니다.
 ### Ollama 또는 LM Studio로 작업 이어가기
 
 ArifCE는 정규 프로젝트 기록을 저장소 안에 보관합니다. 공급자는 프롬프트와 선택된 컨텍스트를 받으며, 클라우드 공급자는 선택된 내용을 원격으로 받습니다. `--with-context`는 ArifCE가 선택한 프로젝트 기록을 추가하지만 소스 파일은 읽지 않습니다. 아래 예제는 검토 대상 코드를 모델에 전달하도록 마이그레이션 파일 내용을 프롬프트에 명시적으로 포함합니다. 사용하는 셸에 맞는 예제를 선택하세요.
@@ -194,12 +193,20 @@ arifce handoff
 Reviewer 실행에는 명시적 승인이 필요합니다. 대체 공급자, 토큰/비용 기록, 정규 증거, 임베딩, 벤치마크 지표, MCP 도구, 로컬 대시보드는 [LLM provider reference](../reference/LLM-PROVIDERS.md)에 설명되어 있습니다.
 
 새 Git 저장소에서는 `init`, 기존 저장소에서는 `adopt`를 실행하세요. 두 명령 모두 비파괴적이고 반복 실행해도 안전하며, `adopt`는 관찰된 구조를 기록하고 알 수 없는 과거 결정 사유를 알 수 없음으로 표시합니다.
-### From source
 
-```bash
-git clone https://github.com/seekua/ArifCE.git
-cd ArifCE
-dotnet restore ArifCE.slnx
-dotnet build ArifCE.slnx --configuration Release --no-restore
-dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
-```
+## 연속성, 검증 및 리팩터링
+
+- 새 에이전트는 `AGENTS.md`, `.arifce/PROTOCOL.md`, `.arifce/CURRENT.md`를 읽은 뒤 전체 기록을 불러오지 않고 작업별 컨텍스트를 요청합니다.
+- 주장은 저장소 범위의 증거에 연결됩니다. 관련 저장소 상태가 바뀌면 증거는 오래된 것으로 표시됩니다.
+- 리팩터링 캠페인은 불변식, 목록, 가드, 진행률과 체크포인트를 추적합니다. 차단 가드는 완료를 방지합니다.
+- 인수인계는 대화 기록을 그대로 덤프하지 않고 현재 엔지니어링 상태를 요약합니다.
+
+## 보안 및 제한 사항
+
+원시 기록(raw transcripts)은 신뢰할 수 없는 데이터로 간주되며, 일괄 로드되거나 실행되지 않습니다. 가져오기 경로(import paths)에서는 일반적인 보안 정보(secrets)가 마스킹 처리됩니다. 자격 증명이나 머신 인증 데이터는 `.arifce`에 포함되어서는 안 됩니다. ArifCE는 정확성, 토큰 절감, 또는 더 나은 검토 품질을 보장하지 않습니다. 클라우드 서비스, 호스팅된 UI, 벡터 데이터베이스, 자율적 에이전트 군집(swarm) 또는 프로덕션 환경에서의 에이전트 간 호출 기능은 포함되어 있지 않습니다. 로컬 대시보드가 ​​포함되어 있지만, 이는 호스팅되는 웹 애플리케이션이 아닙니다.
+
+자세한 내용은 [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md), [CONTRIBUTING.md](../../CONTRIBUTING.md)를 참조하세요. 구현된 명령의 정확한 구문은 [CLI 참조](../reference/cli.md)에 문서화되어 있습니다.
+
+## 라이선스
+
+ArifCE는 [Apache License 2.0](../../LICENSE)에 따라 사용이 허가됩니다.

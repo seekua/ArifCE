@@ -1,6 +1,8 @@
 # ArifCE
 <p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
+**閱讀其他語言版本。**
+
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **代理會更替，專案不應遺忘。**
@@ -12,6 +14,43 @@ ArifCE 是面向 AI 輔助軟體開發的本地優先專案智慧與連續性層
 
 > 儲存庫擁有上下文，代理只是借用它。
 
+**您的限制已用完？請繼續執行兩條指令。**
+
+完成現有任務的實際工作後，請在停止之前記錄其交接資訊。
+
+```bash
+arifce handoff --task TASK-0031
+
+# When you return with Codex, Claude Code, OpenCode, or a local model:
+arifce context --task TASK-0031 --budget 2000
+```
+
+交接資訊包含目標、已完成的工作、已驗證的證據、未解決的事項、失敗情況以及下一步操作。將列印的上下文輸出複製到新代理程式的啟動提示符號中；CLI 不會自動將上下文注入到模型會話中。
+
+## 安裝與快速開始
+
+從 [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.1) 下載適用於您平台的獨立歸檔文件，解壓縮，並將 `arifce` 添加到您的 `PATH` 環境變數中。在 Linux 系統上，解壓縮時請保留可執行權限，或執行 `chmod +x arifce`。無需單獨安裝 .NET、Node、Python、Docker 或資料庫。
+
+對於新項目：
+
+```bash
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+對於現有 Git 倉庫：
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+當倉庫中已有程式碼時，請使用 adopt 指令：它會記錄觀察到的結構，而不會覆蓋現有結構，然後為下一個代理程式提供一個專案本地的起始點。 [安裝與快速開始](../getting-started/installation.md).
 
 ## ArifCE 為何存在
 
@@ -21,7 +60,7 @@ ArifCE 是面向 AI 輔助軟體開發的本地優先專案智慧與連續性層
 
 ArifCE 將連續性轉化為共同的工程實務：為下一項任務提供聚焦脈絡，為重要聲明提供明確證據，並在工作未完成時進行誠實交接。
 
-## 適用對象
+**適用對象.**
 
 ArifCE 適用於 AI 輔助工程團隊、使用編碼代理的開發者，以及希望專案脈絡超越個人、聊天或工作階段持續存在的維護者。當多人共用儲存庫並需要清楚記錄決策、驗證與未完成工作時尤其有用。
 
@@ -42,7 +81,7 @@ flowchart LR
 
 ## 探索專案
 
-執行本機儀表板，以視覺化檢視專案健康狀況、近期記錄與可搜尋脈絡：
+執行本機儀表板，以視覺化檢視專案健康狀況、近期記錄與可搜尋脈絡： 此開發人員命令使用 .NET SDK；上述自包含版本安裝不需要它。
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -65,7 +104,7 @@ ArifCE 追蹤任務內容、變更及原因、代理聲稱完成的事項、支�
 
 技術驗證與產品驗收彼此獨立：驗收記錄會標示誰核准了聲明，以及哪些目前證據支持該決定。
 
-## V0.1 工作流程
+## 核心工作流程
 
 ```text
 arifce init
@@ -83,62 +122,22 @@ arifce handoff
 
 核心將領域規則、規範儲存與索引、Git 觀察、擷取、驗證、重構、安全性與 CLI 分離。供應商指示檔只是小型介面卡，絕不會成為規範記憶儲存庫。請參閱[架構概覽](../architecture/overview.md)、[領域模型](../architecture/domain-model.md)及 [V0.1 規格](../SPECIFICATION-v0.1.md)。
 
-## 安裝與快速開始
+**原始碼開發。目前版本為 V0.8.1。有關原始碼開發，請參閱安裝和快速入門指南。** [安裝與快速開始](../getting-started/installation.md) · [快速入門](../getting-started/quick-start.md).
 
-V0.2.0 已作為跨平台 .NET 全域工具發布。請參閱[安裝](../getting-started/installation.md)與[快速開始](../getting-started/quick-start.md)。從原始碼執行：
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```
 
 選用的本機 MCP 配接器記載於 [MCP 設定](../getting-started/mcp.md)。
 
 完整的安裝與功能說明請參閱[使用者指南](../USER-GUIDE.md)和[文件政策](../DOCUMENTATION-POLICY.md)。
 
-### 60-second quick start
+上述安裝和啟動指令會建立一個倉庫本地的專案狀態、一個任務和一個交接，以便下一個貢獻者使用。
 
-```bash
-dotnet tool install --global ArifCE.Cli --version 0.2.0
-mkdir my-project && cd my-project
-git init
-arifce init
-arifce task create "Ship the first change"
-arifce checkpoint --summary "Project context initialized"
-arifce handoff
-```
-
-現在你已有儲存庫本機專案狀態、任務、檢查點，以及可交給下一位貢獻者的語義交接。
-
-如果你已經有 Git 程式庫，請進入該程式庫並使用 `adopt` 記錄其結構：
-
-```bash
-cd path/to/existing-repo
-arifce adopt
-arifce task create "Ship the first change"
-arifce handoff
-```
-
-```bash
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project src/ArifCE.Cli -- init
-```
-
-在新的 Git 儲存庫中執行 `init`，或在現有儲存庫中執行 `adopt`。兩者都是非破壞性且具冪等性。`adopt` 會記錄觀察到的結構，並將未知的歷史原因標記為未知。
-
-## 連續性、驗證與重構
-
-- 新代理讀取 `AGENTS.md`、`.arifce/PROTOCOL.md` 與 `.arifce/CURRENT.md`，再要求任務脈絡而非批次載入歷史。
-- 聲明連結至儲存庫範圍的證據；相關狀態變更後證據會失效。
-- 重構活動追蹤不變量、清單、防護、進度與檢查點；阻擋性防護會阻止完成。
-- 交接會摘要目前工程狀態，而不是傾倒逐字記錄。
-
-## 安全性與限制
-
-原始記錄不受信任，絕不會批次載入或執行。匯入路徑會遮蔽常見祕密；憑證和機器驗證資料不得放入 `.arifce/`。V0.1 不保證正確性、節省 token 或提升審查品質，也不提供雲端服務、UI、向量資料庫、自主群體或正式環境代理間呼叫。
-
-請參閱 [ROADMAP.md](../../ROADMAP.md)、[SECURITY.md](../../SECURITY.md) 和 [CONTRIBUTING.md](../../CONTRIBUTING.md)。已實作命令的確切語法記載於 [CLI 參考](../reference/cli.md)。
-
-## 授權條款
-
-ArifCE 依據 [Apache License 2.0](../../LICENSE) 授權。
 ### 使用 Ollama 或 LM Studio 繼續任務
 
 ArifCE 將專案的規範記錄保存在程式庫中。提供者會收到提示詞和選取的脈絡；雲端提供者會從遠端接收這些選取內容。`--with-context` 會加入 ArifCE 選取的專案記錄，但不會讀取原始碼檔案。以下範例會將遷移檔案內容明確放入提示詞，因此模型確實能取得待審查的程式碼。請選擇符合所用 shell 的範例。
@@ -194,12 +193,20 @@ arifce handoff
 執行 reviewer 需要明確核准。備援提供者、token/成本記錄、規範證據、embedding、benchmark 指標、MCP 工具和本機儀表板，請參閱 [LLM 提供者參考](../reference/LLM-PROVIDERS.md)。
 
 在新的 Git 程式庫中執行 `init`，在現有程式庫中執行 `adopt`。兩者皆不會破壞內容且可重複執行；`adopt` 會記錄觀察到的結構，並將未知的歷史原因標記為未知。
-### From source
 
-```bash
-git clone https://github.com/seekua/ArifCE.git
-cd ArifCE
-dotnet restore ArifCE.slnx
-dotnet build ArifCE.slnx --configuration Release --no-restore
-dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
-```
+## 連續性、驗證與重構
+
+- 新代理讀取 `AGENTS.md`、`.arifce/PROTOCOL.md` 與 `.arifce/CURRENT.md`，再要求任務脈絡而非批次載入歷史。
+- 聲明連結至儲存庫範圍的證據；相關狀態變更後證據會失效。
+- 重構活動追蹤不變量、清單、防護、進度與檢查點；阻擋性防護會阻止完成。
+- 交接會摘要目前工程狀態，而不是傾倒逐字記錄。
+
+## 安全性與限制
+
+原始轉錄文字不受信任，永遠不會批次載入或執行。匯入路徑會編輯常用金鑰；憑證和機器驗證資料不應包含在 .arifce 檔案中。 ArifCE 不保證正確性、令牌節省或更高的審查品質。它不包含雲端服務、託管式使用者介面、向量資料庫、自主叢集或生產環境跨代理呼叫功能。它包含一個本機儀表板；它不是託管式 Web 應用程式。
+
+請參閱 [ROADMAP.md](../../ROADMAP.md)、[SECURITY.md](../../SECURITY.md) 和 [CONTRIBUTING.md](../../CONTRIBUTING.md)。已實作命令的確切語法記載於 [CLI 參考](../reference/cli.md)。
+
+## 授權條款
+
+ArifCE 依據 [Apache License 2.0](../../LICENSE) 授權。

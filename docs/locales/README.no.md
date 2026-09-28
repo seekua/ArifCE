@@ -1,6 +1,8 @@
 # ArifCE
 <p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
+**Les på et annet språk.**
+
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **Agenter endrer seg. Prosjektet ditt bør ikke glemme.**
@@ -12,6 +14,43 @@ ArifCE er et lokalt først-lag for prosjektintelligens og kontinuitet i AI-assis
 
 > Repositoriet eier konteksten. Agenten låner den bare.
 
+**Har grensen din blitt nådd? Fortsett med to kommandoer.**
+
+Når du har fullført selve arbeidet med en eksisterende oppgave, må du registrere en overlevering før du avslutter.
+
+```bash
+arifce handoff --task TASK-0031
+
+# When you return with Codex, Claude Code, OpenCode, or a local model:
+arifce context --task TASK-0031 --budget 2000
+```
+
+Overleveringen inneholder målet, utført arbeid, verifisert dokumentasjon, uavklarte punkter, feil og neste handling. Kopier den utskrevne konteksten inn i ledeteksten (prompten) for den nye agenten; CLI-et legger ikke automatisk inn kontekst i en modelløkt.
+
+## Installasjon og hurtigstart
+
+Last ned det frittstående arkivet for din plattform fra [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.1), pakk det ut, og legg til `arifce` i PATH-en din. På Linux må du sørge for at kjøretillatelsen bevares under utpakking, eller kjøre `chmod +x arifce`. Det kreves ingen separat installasjon av .NET, Node, Python, Docker eller database.
+
+For et nytt prosjekt:
+
+```bash
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+For et eksisterende Git-depot:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+Bruk `adopt` når depotet allerede inneholder kode: Det registrerer den observerte strukturen uten å overskrive den, og gir deretter neste agent et prosjektspesifikt utgangspunkt. [Installasjon og hurtigstart](../getting-started/installation.md).
 
 ## Hvorfor ArifCE finnes
 
@@ -21,7 +60,7 @@ Målet er ikke å få agenter til å høres sikrere ut. Målet er å hjelpe alle
 
 ArifCE gjør kontinuitet til en felles ingeniørpraksis: fokusert kontekst for neste oppgave, tydelige bevis for viktige påstander og ærlige overleveringer når arbeidet er ufullstendig.
 
-## Hvem det er for
+**Hvem det er for.**
 
 ArifCE er for AI-assisterte ingeniørteam, utviklere som arbeider med kodeagenter og vedlikeholdere som trenger at prosjektkontekst overlever én person, chat eller økt. Det er spesielt nyttig når flere bidragsytere deler et repository og trenger en tydelig oversikt over beslutninger, verifisering og uferdig arbeid.
 
@@ -42,7 +81,7 @@ flowchart LR
 
 ## Utforsk prosjektet
 
-Kjør det lokale dashbordet for en visuell oversikt over prosjektets helse, nylige poster og søkbar kontekst:
+Kjør det lokale dashbordet for en visuell oversikt over prosjektets helse, nylige poster og søkbar kontekst: Denne utviklerkommandoen bruker .NET SDK; den frittstående installasjonen som er beskrevet ovenfor, krever ikke dette.
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -65,7 +104,7 @@ ArifCE sporer hva oppgaven var, hva som ble endret og hvorfor, hva en agent hevd
 
 Teknisk verifisering og produktgodkjenning er separate: godkjenningsposter viser hvem som godkjente en påstand og hvilke aktuelle bevis som støttet avgjørelsen.
 
-## V0.1-arbeidsflyt
+## Grunnleggende arbeidsflyt
 
 ```text
 arifce init
@@ -83,62 +122,22 @@ Kanoniske Markdown-, YAML-, JSON- og JSONL-filer ligger under `.arifce/`. SQLite
 
 Kjernen skiller domeneregler, kanonisk lagring og indeksering, Git-observasjon, henting, verifisering, refaktorering, sikkerhet og CLI. Leverandørens instruksjonsfiler er små adaptere og blir aldri det kanoniske minnelageret. Se [arkitekturoversikten](../architecture/overview.md), [domenemodellen](../architecture/domain-model.md) og [V0.1-spesifikasjonen](../SPECIFICATION-v0.1.md).
 
-## Installasjon og hurtigstart
+**Utvikling fra kildekode. V0.8.1 er gjeldende versjon. For utvikling fra kildekode, se installasjonsveiledningen og hurtigstarten.** [Installasjon og hurtigstart](../getting-started/installation.md) · [Hurtigstart](../getting-started/quick-start.md).
 
-V0.2.0 er publisert som et plattformuavhengig .NET-globalverktøy. Se [installasjon](../getting-started/installation.md) og [hurtigstart](../getting-started/quick-start.md). Fra kildekode:
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```
 
 Den valgfrie lokale MCP-adapteren er dokumentert i [MCP-oppsett](../getting-started/mcp.md).
 
 For en komplett gjennomgang av installasjon og funksjoner, se [brukerveiledningen](../USER-GUIDE.md) og [dokumentasjonspolicyen](../DOCUMENTATION-POLICY.md).
 
-### 60-second quick start
+Kommandoene for installasjon og oppstart ovenfor oppretter en prosjekttilstand lokalt i depotet, en oppgave og en overlevering som er klar for neste bidragsyter.
 
-```bash
-dotnet tool install --global ArifCE.Cli --version 0.2.0
-mkdir my-project && cd my-project
-git init
-arifce init
-arifce task create "Ship the first change"
-arifce checkpoint --summary "Project context initialized"
-arifce handoff
-```
-
-Du har nå en repository-lokal prosjektstatus, en oppgave, et sjekkpunkt og en semantisk overlevering klar for neste bidragsyter.
-
-Hvis du allerede har et Git-repositorium, går du dit og registrerer strukturen med `adopt`:
-
-```bash
-cd path/to/existing-repo
-arifce adopt
-arifce task create "Ship the first change"
-arifce handoff
-```
-
-```bash
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project src/ArifCE.Cli -- init
-```
-
-Kjør `init` i et nytt Git-repositorium eller `adopt` i et eksisterende. Begge er ikke-destruktive og idempotente. `adopt` registrerer observert struktur og merker ukjente historiske begrunnelser som ukjente.
-
-## Kontinuitet, verifisering og refaktorering
-
-- En ny agent leser `AGENTS.md`, `.arifce/PROTOCOL.md` og `.arifce/CURRENT.md`, og ber deretter om oppgavespesifikk kontekst i stedet for å laste inn hele historikken.
-- Påstander lenker til bevis avgrenset til repositoriet. Bevis blir utdatert når relevant repository-status endres.
-- Refaktoreringer sporer invarians, inventar, vakter, fremdrift og sjekkpunkter. Blokkerende vakter hindrer fullføring.
-- Overleveringer oppsummerer gjeldende ingeniørstatus i stedet for å dumpe transkripsjoner.
-
-## Sikkerhet og begrensninger
-
-Rå transkripsjoner er upålitelige og lastes eller kjøres aldri i bulk. Importbaner redigerer vanlige hemmeligheter; legitimasjon og maskinautentisering hører ikke hjemme i `.arifce/`. V0.1 garanterer ikke korrekthet, tokenbesparelser eller bedre gjennomgangskvalitet. Det finnes ingen skytjeneste, UI, vektordatabase, autonom sverm eller produksjonskall mellom agenter.
-
-Se [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) og [CONTRIBUTING.md](../../CONTRIBUTING.md). Den nøyaktige syntaksen for implementerte kommandoer er dokumentert i [CLI-referansen](../reference/cli.md).
-
-## Lisens
-
-ArifCE er lisensiert under [Apache License 2.0](../../LICENSE).
 ### Fortsett en oppgave med Ollama eller LM Studio
 
 ArifCE lagrer kanoniske prosjektoppføringer i repositoriet. Leverandøren mottar prompten og valgt kontekst; skyleverandører mottar det valgte innholdet eksternt. `--with-context` legger til prosjektoppføringene ArifCE har valgt, men leser ikke kildefiler. Eksemplene nedenfor legger uttrykkelig innholdet fra migreringsfilen inn i prompten, slik at modellen får koden den blir bedt om å undersøke. Velg eksempelet for skallet ditt.
@@ -194,12 +193,20 @@ Følg deretter samme flyt for oppgaven, kildekoden, testbeviset og overleveringe
 Kjøring av reviewer krever uttrykkelig godkjenning. Leverandørreserve, token-/kostnadssporing, kanonisk evidens, embeddings, benchmarkmålinger, MCP-verktøy og lokalt dashbord er beskrevet i [LLM-leverandørreferansen](../reference/LLM-PROVIDERS.md).
 
 Kjør `init` i et nytt Git-repositorium eller `adopt` i et eksisterende. Begge er ikke-destruktive og idempotente; `adopt` registrerer observert struktur og markerer ukjente historiske begrunnelser som ukjente.
-### From source
 
-```bash
-git clone https://github.com/seekua/ArifCE.git
-cd ArifCE
-dotnet restore ArifCE.slnx
-dotnet build ArifCE.slnx --configuration Release --no-restore
-dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
-```
+## Kontinuitet, verifisering og refaktorering
+
+- En ny agent leser `AGENTS.md`, `.arifce/PROTOCOL.md` og `.arifce/CURRENT.md`, og ber deretter om oppgavespesifikk kontekst i stedet for å laste inn hele historikken.
+- Påstander lenker til bevis avgrenset til repositoriet. Bevis blir utdatert når relevant repository-status endres.
+- Refaktoreringer sporer invarians, inventar, vakter, fremdrift og sjekkpunkter. Blokkerende vakter hindrer fullføring.
+- Overleveringer oppsummerer gjeldende ingeniørstatus i stedet for å dumpe transkripsjoner.
+
+## Sikkerhet og begrensninger
+
+Råutskrifter anses som upålitelige og blir aldri masseimportert eller kjørt. Importstier maskerer vanlige hemmeligheter; påloggingsinformasjon og maskinautentiseringsdata hører ikke hjemme i `.arifce`. ArifCE garanterer ikke korrekthet, redusert token-bruk eller bedre kvalitet på gjennomganger. Verktøyet har ingen skytjeneste, vertbasert brukergrensesnitt, vektordatabase, autonomt agentnettverk (swarm) eller produksjonsløsninger for kall mellom agenter. Et lokalt dashbord følger med; dette er ikke en vertbasert webapplikasjon.
+
+Se [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) og [CONTRIBUTING.md](../../CONTRIBUTING.md). Den nøyaktige syntaksen for implementerte kommandoer er dokumentert i [CLI-referansen](../reference/cli.md).
+
+## Lisens
+
+ArifCE er lisensiert under [Apache License 2.0](../../LICENSE).

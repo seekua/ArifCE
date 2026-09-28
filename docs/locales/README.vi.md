@@ -1,6 +1,8 @@
 # ArifCE
 <p align="center"><img src="../../assets/ArifCE.svg" alt="ArifCE" width="258" height="102"></p>
 
+**Đọc bằng ngôn ngữ khác.**
+
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [한국어](README.ko.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Dansk](README.da.md) · [日本語](README.ja.md) · [Polski](README.pl.md) · [Русский](README.ru.md) · [Bosanski](README.bs.md) · [العربية](README.ar.md) · [Norsk](README.no.md) · [Português (Brasil)](README.pt-BR.md) · [ไทย](README.th.md) · [Türkçe](README.tr.md) · [Українська](README.uk.md) · [বাংলা](README.bn.md) · [Ελληνικά](README.el.md) · [Tiếng Việt](README.vi.md)
 
 **Agent thay đổi. Dự án của bạn không nên quên.**
@@ -12,6 +14,43 @@ ArifCE là lớp trí tuệ và liên tục dự án ưu tiên cục bộ cho ph
 
 > Repository sở hữu ngữ cảnh. Agent chỉ mượn nó.
 
+**Bạn đã hết hạn mức? Hãy tiếp tục bằng hai lệnh sau.**
+
+Sau khi hoàn thành công việc thực tế cho một tác vụ hiện có, hãy ghi lại thông tin bàn giao (handoff) trước khi dừng lại.
+
+```bash
+arifce handoff --task TASK-0031
+
+# When you return with Codex, Claude Code, OpenCode, or a local model:
+arifce context --task TASK-0031 --budget 2000
+```
+
+Thông tin bàn giao bao gồm mục tiêu, công việc đã hoàn thành, bằng chứng đã xác minh, các vấn đề chưa giải quyết, các lỗi gặp phải và hành động tiếp theo. Hãy sao chép nội dung ngữ cảnh (context output) đã được in ra vào lời nhắc (prompt) khởi tạo cho tác nhân (agent) mới; giao diện dòng lệnh (CLI) không tự động đưa ngữ cảnh vào phiên làm việc của mô hình.
+
+## Cài đặt và bắt đầu nhanh
+
+Tải xuống gói cài đặt độc lập (self-contained archive) phù hợp với nền tảng của bạn từ mục [GitHub Releases](https://github.com/seekua/ArifCE/releases/tag/v0.8.1), giải nén và thêm `arifce` vào biến môi trường PATH. Trên Linux, hãy giữ nguyên quyền thực thi khi giải nén hoặc chạy lệnh `chmod +x arifce`. Không cần cài đặt riêng .NET, Node, Python, Docker hay cơ sở dữ liệu.
+
+Đối với dự án mới:
+
+```bash
+mkdir my-project && cd my-project
+git init
+arifce init
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+Đối với kho lưu trữ Git hiện có:
+
+```bash
+cd path/to/existing-repo
+arifce adopt
+arifce task create "Ship the first change"
+arifce handoff
+```
+
+Sử dụng lệnh `adopt` khi kho lưu trữ đã có mã nguồn: lệnh này ghi lại cấu trúc hiện tại mà không ghi đè lên nó, sau đó cung cấp điểm khởi đầu cục bộ trong dự án cho tác nhân tiếp theo. [Cài đặt và bắt đầu nhanh](../getting-started/installation.md).
 
 ## Vì sao ArifCE tồn tại
 
@@ -21,7 +60,7 @@ Mục tiêu không phải khiến tác nhân nghe chắc chắn hơn, mà giúp 
 
 ArifCE biến tính liên tục thành thực hành kỹ thuật chung: ngữ cảnh tập trung cho nhiệm vụ tiếp theo, bằng chứng rõ ràng cho các khẳng định quan trọng và bàn giao trung thực khi công việc chưa hoàn tất.
 
-## Dành cho ai
+**Dành cho ai.**
 
 ArifCE dành cho nhóm kỹ thuật có AI hỗ trợ, lập trình viên làm việc với tác nhân viết mã và người bảo trì cần ngữ cảnh dự án tồn tại lâu hơn một người, cuộc trò chuyện hoặc phiên làm việc. Công cụ đặc biệt hữu ích khi nhiều người cùng chia sẻ kho mã và cần ghi chép rõ quyết định, xác minh và việc chưa hoàn tất.
 
@@ -42,7 +81,7 @@ flowchart LR
 
 ## Khám phá dự án
 
-Chạy dashboard cục bộ để xem tổng quan trực quan về tình trạng dự án, các bản ghi gần đây và ngữ cảnh có thể tìm kiếm:
+Chạy dashboard cục bộ để xem tổng quan trực quan về tình trạng dự án, các bản ghi gần đây và ngữ cảnh có thể tìm kiếm: Lệnh dành cho nhà phát triển này sử dụng .NET SDK; bản phát hành độc lập được mô tả ở trên không yêu cầu thành phần này.
 
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
@@ -65,7 +104,7 @@ ArifCE theo dõi nhiệm vụ, những gì đã thay đổi và lý do, điều 
 
 Xác minh kỹ thuật và nghiệm thu sản phẩm là hai việc riêng: bản ghi nghiệm thu cho biết ai phê duyệt tuyên bố và bằng chứng hiện tại nào hỗ trợ quyết định đó.
 
-## Quy trình V0.1
+## Quy trình làm việc cốt lõi
 
 ```text
 arifce init
@@ -83,62 +122,22 @@ Markdown, YAML, JSON và JSONL chuẩn nằm trong `.arifce/`. SQLite là chỉ 
 
 Lõi hệ thống tách biệt quy tắc miền, lưu trữ và lập chỉ mục chuẩn, quan sát Git, truy xuất, xác minh, refactor, bảo mật và CLI. Tệp hướng dẫn của nhà cung cấp chỉ là các adapter nhỏ, không bao giờ trở thành kho bộ nhớ chuẩn. Xem [tổng quan kiến trúc](../architecture/overview.md), [mô hình miền](../architecture/domain-model.md) và [đặc tả V0.1](../SPECIFICATION-v0.1.md).
 
-## Cài đặt và bắt đầu nhanh
+**Phát triển từ mã nguồn. V0.8.1 là phiên bản phát hành hiện tại. Để phát triển từ mã nguồn, hãy xem phần cài đặt và hướng dẫn nhanh.** [Cài đặt và bắt đầu nhanh](../getting-started/installation.md) · [Bắt đầu nhanh](../getting-started/quick-start.md).
 
-V0.2.0 được phát hành dưới dạng công cụ .NET toàn cục đa nền tảng. Xem [cài đặt](../getting-started/installation.md) và [bắt đầu nhanh](../getting-started/quick-start.md). Từ mã nguồn:
+```bash
+git clone https://github.com/seekua/ArifCE.git
+cd ArifCE
+dotnet restore ArifCE.slnx
+dotnet build ArifCE.slnx --configuration Release --no-restore
+dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
+```
 
 Adapter MCP cục bộ tùy chọn được mô tả trong [thiết lập MCP](../getting-started/mcp.md).
 
 Để xem hướng dẫn cài đặt và toàn bộ tính năng, hãy đọc [Hướng dẫn người dùng](../USER-GUIDE.md) và [Chính sách tài liệu](../DOCUMENTATION-POLICY.md).
 
-### 60-second quick start
+Các lệnh cài đặt và khởi động nêu trên sẽ tạo ra trạng thái dự án cục bộ trong kho lưu trữ, một tác vụ và thông tin bàn giao sẵn sàng cho người đóng góp tiếp theo.
 
-```bash
-dotnet tool install --global ArifCE.Cli --version 0.2.0
-mkdir my-project && cd my-project
-git init
-arifce init
-arifce task create "Ship the first change"
-arifce checkpoint --summary "Project context initialized"
-arifce handoff
-```
-
-Giờ đây bạn có trạng thái dự án cục bộ trong repository, một nhiệm vụ, một checkpoint và một bàn giao ngữ nghĩa sẵn sàng cho người đóng góp tiếp theo.
-
-Nếu bạn đã có Git repository, hãy chuyển vào đó và ghi nhận cấu trúc bằng `adopt`:
-
-```bash
-cd path/to/existing-repo
-arifce adopt
-arifce task create "Ship the first change"
-arifce handoff
-```
-
-```bash
-dotnet restore
-dotnet build
-dotnet test
-dotnet run --project src/ArifCE.Cli -- init
-```
-
-Chạy `init` trong repository Git mới hoặc `adopt` trong repository hiện có. Cả hai đều không phá hủy dữ liệu và có tính lặp an toàn. `adopt` ghi lại cấu trúc quan sát được và đánh dấu lý do lịch sử chưa biết là chưa biết.
-
-## Tính liên tục, xác minh và tái cấu trúc
-
-- Agent mới đọc `AGENTS.md`, `.arifce/PROTOCOL.md` và `.arifce/CURRENT.md`, sau đó yêu cầu ngữ cảnh theo nhiệm vụ thay vì tải hàng loạt lịch sử.
-- Tuyên bố liên kết với bằng chứng trong repository. Bằng chứng trở nên lỗi thời khi trạng thái repository liên quan thay đổi.
-- Chiến dịch refactor theo dõi bất biến, kiểm kê, guard, tiến độ và checkpoint. Guard chặn sẽ ngăn hoàn tất.
-- Bàn giao tóm tắt trạng thái kỹ thuật hiện tại thay vì đổ toàn bộ transcript.
-
-## Bảo mật và giới hạn
-
-Transcript thô không đáng tin cậy và không bao giờ được tải hàng loạt hoặc thực thi. Đường dẫn import che giấu các bí mật phổ biến; thông tin xác thực và dữ liệu xác thực máy không thuộc `.arifce/`. V0.1 không đảm bảo tính đúng đắn, tiết kiệm token hay chất lượng review tốt hơn. Phiên bản này không có dịch vụ đám mây, UI, cơ sở dữ liệu vector, swarm tự trị hay lời gọi agent chéo trong production.
-
-Xem [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) và [CONTRIBUTING.md](../../CONTRIBUTING.md). Cú pháp lệnh được triển khai chính xác được ghi trong [tài liệu tham khảo CLI](../reference/cli.md).
-
-## Giấy phép
-
-ArifCE được cấp phép theo [Apache License 2.0](../../LICENSE).
 ### Tiếp tục công việc với Ollama hoặc LM Studio
 
 ArifCE lưu các bản ghi dự án chuẩn tắc trong repository. Provider nhận prompt và phần ngữ cảnh được chọn; provider đám mây nhận nội dung đã chọn đó từ xa. `--with-context` thêm các bản ghi dự án do ArifCE chọn nhưng không đọc tệp mã nguồn. Các ví dụ dưới đây chủ động đưa nội dung tệp migration vào prompt để mô hình nhận được đoạn mã cần xem xét. Hãy chọn ví dụ phù hợp với shell của bạn.
@@ -194,12 +193,20 @@ Sau đó tiếp tục theo cùng luồng task, đầu vào mã nguồn, bằng c
 Việc chạy reviewer cần được phê duyệt rõ ràng. Phần [tham chiếu LLM provider](../reference/LLM-PROVIDERS.md) mô tả provider dự phòng, theo dõi token/chi phí, bằng chứng chuẩn tắc, embedding, chỉ số benchmark, công cụ MCP và dashboard cục bộ.
 
 Chạy `init` trong Git repository mới hoặc `adopt` trong repository hiện có. Cả hai đều không phá hủy dữ liệu và có thể chạy lặp lại; `adopt` ghi nhận cấu trúc quan sát được và đánh dấu các lý do lịch sử chưa biết là chưa biết.
-### From source
 
-```bash
-git clone https://github.com/seekua/ArifCE.git
-cd ArifCE
-dotnet restore ArifCE.slnx
-dotnet build ArifCE.slnx --configuration Release --no-restore
-dotnet test ArifCE.slnx --configuration Release --no-build --no-restore
-```
+## Tính liên tục, xác minh và tái cấu trúc
+
+- Agent mới đọc `AGENTS.md`, `.arifce/PROTOCOL.md` và `.arifce/CURRENT.md`, sau đó yêu cầu ngữ cảnh theo nhiệm vụ thay vì tải hàng loạt lịch sử.
+- Tuyên bố liên kết với bằng chứng trong repository. Bằng chứng trở nên lỗi thời khi trạng thái repository liên quan thay đổi.
+- Chiến dịch refactor theo dõi bất biến, kiểm kê, guard, tiến độ và checkpoint. Guard chặn sẽ ngăn hoàn tất.
+- Bàn giao tóm tắt trạng thái kỹ thuật hiện tại thay vì đổ toàn bộ transcript.
+
+## Bảo mật và giới hạn
+
+Các bản ghi thô (raw transcripts) không được coi là dữ liệu tin cậy và không bao giờ được nạp hàng loạt hay thực thi. Các đường dẫn nhập (import paths) sẽ che giấu các thông tin nhạy cảm phổ biến; thông tin xác thực và dữ liệu xác thực máy không được đưa vào tệp `.arifce`. ArifCE không đảm bảo tính chính xác, khả năng tiết kiệm token hay chất lượng đánh giá tốt hơn. Công cụ này không có dịch vụ đám mây, giao diện web được lưu trữ (hosted UI), cơ sở dữ liệu vector, hệ thống tác nhân tự hành (autonomous swarm) hay cơ chế gọi chéo giữa các tác nhân trong môi trường sản xuất. Một bảng điều khiển cục bộ được tích hợp sẵn; đây không phải là ứng dụng web được lưu trữ trên máy chủ.
+
+Xem [ROADMAP.md](../../ROADMAP.md), [SECURITY.md](../../SECURITY.md) và [CONTRIBUTING.md](../../CONTRIBUTING.md). Cú pháp lệnh được triển khai chính xác được ghi trong [tài liệu tham khảo CLI](../reference/cli.md).
+
+## Giấy phép
+
+ArifCE được cấp phép theo [Apache License 2.0](../../LICENSE).
