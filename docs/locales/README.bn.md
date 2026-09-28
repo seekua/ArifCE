@@ -83,6 +83,14 @@ flowchart LR
 
 প্রকল্পের স্বাস্থ্য, সাম্প্রতিক রেকর্ড ও অনুসন্ধানযোগ্য প্রেক্ষাপট দেখতে স্থানীয় ড্যাশবোর্ড চালান: এই ডেভেলপার কমান্ডটি .NET SDK ব্যবহার করে; তবে উপরে বর্ণিত সম্পূর্ণ প্যাকেজযুক্ত রিলিজ ইনস্টলেশনের ক্ষেত্রে এর প্রয়োজন হয় না।
 
+### ড্যাশবোর্ডের পূর্বরূপ
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

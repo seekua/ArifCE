@@ -83,6 +83,14 @@ flowchart LR
 
 Εκτελέστε τον τοπικό πίνακα ελέγχου για οπτική εικόνα της υγείας του έργου, των πρόσφατων εγγραφών και του αναζητήσιμου πλαισίου: Αυτή η εντολή προγραμματιστή χρησιμοποιεί το .NET SDK· η αυτοτελής εγκατάσταση που περιγράφηκε παραπάνω δεν το απαιτεί.
 
+### Προεπισκόπηση πίνακα ελέγχου
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

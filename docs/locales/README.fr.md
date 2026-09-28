@@ -83,6 +83,14 @@ flowchart LR
 
 Lancez le tableau de bord local pour obtenir une vue visuelle de la santé du projet, des enregistrements récents et du contexte consultable : Cette commande destinée aux développeurs utilise le SDK .NET ; l'installation de la version autonome décrite précédemment ne le nécessite pas.
 
+### Aperçu du tableau de bord
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

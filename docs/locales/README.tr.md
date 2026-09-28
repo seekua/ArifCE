@@ -83,6 +83,14 @@ flowchart LR
 
 Proje sağlığını, son kayıtları ve aranabilir bağlamı görsel olarak incelemek için yerel dashboard’u çalıştırın: Bu geliştirici komutu .NET SDK'sını kullanır; yukarıda açıklanan bağımsız sürüm kurulumu için buna gerek yoktur.
 
+### Dashboard önizlemesi
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

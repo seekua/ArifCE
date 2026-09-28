@@ -83,6 +83,14 @@ flowchart LR
 
 شغّل لوحة المعلومات المحلية للحصول على نظرة مرئية عن صحة المشروع والسجلات الأخيرة والسياق القابل للبحث: يستخدم أمر المطور هذا حزمة تطوير البرمجيات .NET SDK؛ في حين أن تثبيت الإصدار المستقل المذكور أعلاه لا يتطلبها.
 
+### معاينة لوحة المعلومات
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

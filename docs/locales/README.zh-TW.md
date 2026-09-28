@@ -83,6 +83,14 @@ flowchart LR
 
 執行本機儀表板，以視覺化檢視專案健康狀況、近期記錄與可搜尋脈絡： 此開發人員命令使用 .NET SDK；上述自包含版本安裝不需要它。
 
+### 儀表板預覽
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

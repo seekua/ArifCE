@@ -83,6 +83,14 @@ flowchart LR
 
 Esegui la dashboard locale per ottenere una panoramica visiva della salute del progetto, dei record recenti e del contesto ricercabile: Questo comando per sviluppatori utilizza l'SDK .NET; l'installazione della release autonoma descritta in precedenza non lo richiede.
 
+### Anteprima della dashboard
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

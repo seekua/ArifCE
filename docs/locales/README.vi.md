@@ -83,6 +83,14 @@ flowchart LR
 
 Chạy dashboard cục bộ để xem tổng quan trực quan về tình trạng dự án, các bản ghi gần đây và ngữ cảnh có thể tìm kiếm: Lệnh dành cho nhà phát triển này sử dụng .NET SDK; bản phát hành độc lập được mô tả ở trên không yêu cầu thành phần này.
 
+### Xem trước bảng điều khiển
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

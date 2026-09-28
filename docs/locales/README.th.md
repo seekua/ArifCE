@@ -83,6 +83,14 @@ flowchart LR
 
 เรียกใช้แดชบอร์ดในเครื่องเพื่อดูภาพรวมสุขภาพโครงการ บันทึกล่าสุด และบริบทที่ค้นหาได้: คำสั่งสำหรับนักพัฒนานี้จำเป็นต้องใช้ .NET SDK ในขณะที่การติดตั้งแบบเบ็ดเสร็จ (self-contained release) ที่กล่าวถึงข้างต้นไม่จำเป็นต้องใช้ SDK ดังกล่าว
 
+### ตัวอย่างแดชบอร์ด
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

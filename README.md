@@ -82,6 +82,14 @@ flowchart LR
 
 When working from a source checkout, run the local dashboard to get a visual overview of project health, recent records, and searchable context. This developer command uses the .NET SDK; the self-contained release installation described above does not require it:
 
+### Dashboard preview
+
+<p align="center">
+  <img src="docs/images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="docs/images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="docs/images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

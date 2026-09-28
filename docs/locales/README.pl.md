@@ -83,6 +83,14 @@ flowchart LR
 
 Uruchom lokalny pulpit, aby uzyskać wizualny podgląd kondycji projektu, ostatnich wpisów i przeszukiwalnego kontekstu: To polecenie dla programistów wykorzystuje zestaw .NET SDK; opisana powyżej instalacja samodzielnego wydania go nie wymaga.
 
+### Podgląd panelu
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

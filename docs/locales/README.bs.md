@@ -83,6 +83,14 @@ flowchart LR
 
 Pokrenite lokalnu nadzornu ploču za pregled zdravlja projekta, nedavnih zapisa i pretraživog konteksta: Ova komanda za programere koristi .NET SDK; gore opisana instalacija samostalnog izdanja ga ne zahtijeva.
 
+### Pregled kontrolne ploče
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

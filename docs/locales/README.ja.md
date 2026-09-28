@@ -83,6 +83,14 @@ flowchart LR
 
 ローカルダッシュボードを起動すると、プロジェクトの健全性、最近の記録、検索可能なコンテキストを視覚的に確認できます。 この開発者用コマンドは.NET SDKを使用します（前述の自己完結型リリースのインストールでは不要です）。
 
+### ダッシュボードのプレビュー
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

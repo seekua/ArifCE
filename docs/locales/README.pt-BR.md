@@ -83,6 +83,14 @@ flowchart LR
 
 Execute o painel local para obter uma visão visual da saúde do projeto, dos registros recentes e do contexto pesquisável: Este comando para desenvolvedores utiliza o SDK do .NET; a instalação da versão autônoma descrita acima não o exige.
 
+### Prévia do painel
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj

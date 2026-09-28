@@ -83,6 +83,14 @@ flowchart LR
 
 로컬 대시보드를 실행하면 프로젝트 상태, 최근 기록 및 검색 가능한 컨텍스트를 시각적으로 확인할 수 있습니다. 이 개발자용 명령어는 .NET SDK를 사용합니다. 앞서 설명한 독립형 릴리스 설치 방식에서는 SDK가 필요하지 않습니다.
 
+### 대시보드 미리보기
+
+<p align="center">
+  <img src="../images/dashboard-overview.png" alt="ArifCE dashboard overview" width="100%">
+  <img src="../images/dashboard-trust.png" alt="ArifCE claims, evidence, work and risk dashboard" width="49%">
+  <img src="../images/dashboard-records.png" alt="ArifCE repository memory explorer" width="49%">
+</p>
+
 ```powershell
 $env:ARIFCE_PROJECT_ROOT = (Get-Location).Path
 dotnet run --project src/ArifCE.Dashboard/ArifCE.Dashboard.csproj
